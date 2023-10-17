@@ -15,7 +15,7 @@ npm start
 
 ## Stuff and things
 ### Components
-[Paper components](https://callstack.github.io/react-native-paper/docs/components/ActivityIndicator)
+[Paper components](https://callstack.github.io/react-native-paper/docs/components/ActivityIndicator)\
 [React Native Components](https://reactnative.dev/docs/components-and-apis)
 
 ### Icons
