@@ -12,7 +12,7 @@ function App(): React.JSX.Element {
 
 	return (
 		<PaperProvider theme={paperTheme}>
-			<BottomNavigationBar />
+			<BottomNavigationBar/>
 		</PaperProvider>
 	);
 }

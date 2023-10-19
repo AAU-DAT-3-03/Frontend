@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { BottomNavigation } from 'react-native-paper';
-import Home from '../screens/Home';
+import Home from '../screens/home/Home';
+import Services from "../screens/Services/Services";
+import History from "../screens/history/History";
 
 interface BNBState {
 	index: number;
@@ -8,8 +10,8 @@ interface BNBState {
 }
 
 class BottomNavigationBar extends Component<any, BNBState> {
-	state = {
-		index: 0,
+	state: BNBState = {
+		index: 1,
 		routes: [
 			{ key: 'overview', title: 'Overview', focusedIcon: 'view-list' },
 			{ key: 'home', title: 'Home', focusedIcon: 'home' },
@@ -23,15 +25,15 @@ class BottomNavigationBar extends Component<any, BNBState> {
 
 	render(): React.JSX.Element {
 		const renderScene = BottomNavigation.SceneMap({
-			overview: () => <Home text={'Overview'} />,
-			home: () => <Home text={'Home'} />,
-			history: () => <Home text={'History'} />
+			overview: () => <Services/>,
+			home: () => <Home/>,
+			history: () => <History/>
 		});
 
 		return (
 			<BottomNavigation
 				navigationState={{ index: this.state.index, routes: this.state.routes }}
-				onIndexChange={(index) => this.setIndex(index)}
+				onIndexChange={(index: number) => this.setIndex(index)}
 				renderScene={renderScene}
 			/>
 		);
