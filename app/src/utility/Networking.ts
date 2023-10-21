@@ -1,5 +1,3 @@
-import * as console from 'console';
-
 enum Method {
 	GET = 'GET',
 	POST = 'POST',
@@ -88,14 +86,14 @@ class Networking {
 	private createFetchSettings(method: Method, options?: NetworkOptions): FetchSettings {
 		let settings: FetchSettings = {
 			method: method,
-			body: options?.body ? JSON.stringify(options.body) : null
+			body: JSON.stringify(options?.body)
 		};
 
 		if (options?.headers) {
 			// Add all headers from options to the pre-existing list
 			options.headers.forEach((value) => this.setHeader(value.key, value.value));
-			settings.headers = this.headers;
 		}
+		settings.headers = this.headers;
 
 		return settings;
 	}
@@ -107,19 +105,33 @@ class Networking {
 	 * @param {NetworkOptions} options - Fetch options for request
 	 * @private
 	 */
-	private async fetch(url: string, method: Method, options?: NetworkOptions): Promise<Object> {
+	private fetch(url: string, method: Method, options?: NetworkOptions): Promise<Object> {
 		let settings = this.createFetchSettings(method, options);
-
-		return fetch(url, settings)
-			.then((value: Response) => {
-				// First get the response body as a string
-				return value.text();
+		console.log(settings.body);
+		return (
+			fetch(url, {
+				method: settings.method,
+				headers: settings.headers,
+				body: settings.body
 			})
-			.then((value: string) => {
-				// Try to convert the body as string to a JSON object
-				return JSON.parse(value);
-			})
-			.catch((reason) => console.error(reason));
+				.then((response) => {
+					return response.text();
+				})
+				//Check the created json
+				.then((value) => {
+					if (value) {
+						if (value.includes('<!DOCTYPE html>')) {
+							console.log(value);
+							return JSON.parse(`{"error" : "${value.toString()}"}`);
+						}
+						return JSON.parse(value);
+					}
+					//Throw an error if the response could not be converted to json
+					else {
+						throw new Error('Value is void');
+					}
+				})
+		);
 	}
 }
 
