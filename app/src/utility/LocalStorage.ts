@@ -1,7 +1,7 @@
-import { MMKVLoader } from 'react-native-mmkv-storage';
+import { MMKVInstance, MMKVLoader } from 'react-native-mmkv-storage';
 
 class LocalStorage {
-	static settings = new MMKVLoader().withEncryption().withInstanceID('settings').initialize();
+	static settings: MMKVInstance = new MMKVLoader().withEncryption().withInstanceID('settings').initialize();
 
 	public static getSettingsValue(key: string): string {
 		return this.settings.getString(key);
