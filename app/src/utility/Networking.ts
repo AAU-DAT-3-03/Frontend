@@ -114,20 +114,19 @@ class Networking {
 				headers: settings.headers,
 				body: settings.body
 			})
-				.then((response) => {
+				.then((response: Response): Promise<string> => {
 					return response.text();
 				})
 				//Check the created json
-				.then((value) => {
+				.then((value: string): Object => {
 					if (value) {
 						if (value.includes('<!DOCTYPE html>')) {
 							console.log(value);
 							return JSON.parse(`{"error" : "${value.toString()}"}`);
 						}
 						return JSON.parse(value);
-					}
-					//Throw an error if the response could not be converted to json
-					else {
+					} else {
+						//Throw an error if the response could not be converted to json
 						throw new Error('Value is void');
 					}
 				})
