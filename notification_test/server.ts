@@ -17,7 +17,6 @@ interface data {
 const registeredTokens: Set<string> = new Set<string>();
 
 const serviceAccount = require("./firebasecert.json");
-1;
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
