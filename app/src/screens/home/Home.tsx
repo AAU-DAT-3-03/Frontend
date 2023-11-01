@@ -1,13 +1,9 @@
 import React, { Component } from 'react';
-import { Appbar, MD3Theme, Text, useTheme } from 'react-native-paper';
+import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
-import Dial from '../../components/Dial';
+import { getCurrentTheme } from '../../themes/ThemeManager';
 
-interface HomeProps {
-	theme: MD3Theme;
-}
-
-class HomeClass extends Component<HomeProps> {
+class Home extends Component {
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
@@ -15,22 +11,21 @@ class HomeClass extends Component<HomeProps> {
 			</Appbar>
 		);
 	}
+
+	private onRefresh(finished: () => void): void {
+		setTimeout(() => finished(), 5000);
+	}
+
 	render(): React.JSX.Element {
+		let theme: any = getCurrentTheme();
 		return (
-			<ContentContainer appBar={this.AppBar()}>
-				<Text variant={'displayLarge'}>test</Text>
-				<Dial percentage={70} scale={3} header={'Cpu'} subHeader={'30%'} />
+			<ContentContainer appBar={this.AppBar()} onRefresh={this.onRefresh}>
+				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
+					test
+				</Text>
 			</ContentContainer>
 		);
 	}
 }
 
-/**
- * To import theme
- * @todo find better solution
- * @constructor
- */
-export default function Home(): React.JSX.Element {
-	const theme: MD3Theme = useTheme();
-	return <HomeClass theme={theme} />;
-}
+export default Home;
