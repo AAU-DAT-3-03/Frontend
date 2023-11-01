@@ -7,43 +7,47 @@ interface DialProps {
 	scale?: number;
 	header?: string;
 	subHeader?: string;
-	foreground?: string;
-	background?: string;
 }
 
 interface DialState {
 	percentage: number;
 	thickness: number;
 	scale: number;
-	foreground: string;
-	background: string;
 	header?: string;
 	subHeader?: string;
 }
 
 class Dial extends Component<DialProps, DialState> {
-	private degreeToRad(degree: number): number {
-		return degree * (Math.PI / 180);
-	}
+	private backgroundColor: string = '#101010';
+	private percentColor75: string = '#f00';
+	private percentColor50: string = '#ff0';
+	private percentColor0: string = '#0f0';
+
 	state: DialState = {
 		percentage: 0,
 		thickness: 10,
 		scale: 1,
 		header: undefined,
-		subHeader: undefined,
-		foreground: '',
-		background: ''
+		subHeader: undefined
 	};
 
 	constructor(props: DialProps) {
 		super(props);
 		this.state.percentage = props.percentage;
 		this.state.scale = props.scale ?? 1;
-		this.state.thickness = props.thickness ?? 10 * this.state.scale;
+		this.state.thickness = props.thickness ?? 15 * this.state.scale;
 		this.state.subHeader = props.subHeader;
 		this.state.header = props.header;
-		this.state.foreground = props.foreground ?? '#0f0';
-		this.state.background = props.background ?? '#f00';
+	}
+
+	/**
+	 * Convert degrees to radians
+	 * @param {number} degree - Degrees 0-360
+	 * @private
+	 * @return {number} - Radians
+	 */
+	private degreeToRad(degree: number): number {
+		return degree * (Math.PI / 180);
 	}
 
 	/**
@@ -66,32 +70,56 @@ class Dial extends Component<DialProps, DialState> {
 		return [x * Math.cos(rotateBy) - y * Math.sin(rotateBy) + 50 * scale, x * Math.sin(rotateBy) + y * Math.cos(rotateBy)];
 	}
 
+	/**
+	 * Get the foreground color base on the percentage in the current state
+	 * @private
+	 * @return {string} - color in hex (#xxxxxx)
+	 */
+	private getForegroundColor(): string {
+		if (this.state.percentage < 50) return this.percentColor0;
+		if (this.state.percentage < 75) return this.percentColor50;
+		return this.percentColor75;
+	}
+
+	/**
+	 * Creates the dial svg
+	 * @param {DialState} state - Current dial state
+	 * @private
+	 */
 	private dialRender(state: DialState): React.JSX.Element {
 		let [x, y]: [number, number] = this.calculateXYForPercentage(this.state.percentage, 100, state.scale);
-		let toCenter: number = 50 * state.scale;
-		let bigCircleRadius: number = 40 * state.scale;
+		let bigCircleRadius: number = 50 * state.scale;
 		let smallCircleRadius: number = bigCircleRadius - state.thickness;
+		let foreground: string = this.getForegroundColor();
 		return (
-			<Svg width={100 * state.scale} height={toCenter}>
+			<Svg width={100 * state.scale} height={bigCircleRadius}>
 				{/* Creates a mask for only the arc of the dial */}
 				<Mask id={'dialMask'}>
-					<Circle cx={toCenter} cy={toCenter} r={bigCircleRadius} fill="white" />
-					<Circle cx={toCenter} cy={toCenter} r={smallCircleRadius} fill="black" />
-					<Rect fill="black" width={120 * state.scale} height={bigCircleRadius} translateX={0} translateY={toCenter}></Rect>
+					<Circle cx={bigCircleRadius} cy={bigCircleRadius} r={bigCircleRadius} fill="white" />
+					<Circle cx={bigCircleRadius} cy={bigCircleRadius} r={smallCircleRadius} fill="black" />
+					<Rect
+						fill="black"
+						width={120 * state.scale}
+						height={bigCircleRadius}
+						translateX={0}
+						translateY={bigCircleRadius}
+					></Rect>
 				</Mask>
-
 				{/* Creates a polygon mask that contains only the percentage area */}
 				<Mask id={'percentMask'}>
-					<Polygon fill={'white'} points={`0,${toCenter} ${toCenter},${toCenter} ${x},${y} 0,${-toCenter}`} />
+					<Polygon
+						fill={'white'}
+						points={`0,${bigCircleRadius} ${bigCircleRadius},${bigCircleRadius} ${x},${y} 0,${-bigCircleRadius}`}
+					/>
 				</Mask>
 
-				{/* Create the actual dial polygon */}
+				{/* Create the actual dial */}
 				<G mask={'url(#dialMask)'}>
 					{/* Background dial */}
-					<Circle id="dial" cx={toCenter} cy={toCenter} r={bigCircleRadius} fill={state.background} />
+					<Circle id="dial" cx={bigCircleRadius} cy={bigCircleRadius} r={bigCircleRadius} fill={this.backgroundColor} />
 					{/* Foreground dial masked by the polygon mask */}
 					<G mask={'url(#percentMask)'}>
-						<Circle id="dial" cx={toCenter} cy={toCenter} r={bigCircleRadius} fill={state.foreground} />
+						<Circle id="dial" cx={bigCircleRadius} cy={bigCircleRadius} r={bigCircleRadius} fill={foreground} />
 					</G>
 				</G>
 
@@ -100,9 +128,9 @@ class Dial extends Component<DialProps, DialState> {
 					<Text
 						fill={'#fff'}
 						textAnchor={'middle'}
-						fontSize={14 * state.scale}
-						x={toCenter - state.header?.length / 2}
-						y={toCenter - 14 * state.scale}
+						fontSize={13 * state.scale}
+						x={bigCircleRadius - state.header?.length / 2}
+						y={bigCircleRadius - 13 * state.scale}
 					>
 						{state.header}
 					</Text>
@@ -113,9 +141,9 @@ class Dial extends Component<DialProps, DialState> {
 					<Text
 						fill={'#fff'}
 						textAnchor={'middle'}
-						fontSize={12 * state.scale}
-						x={toCenter - state.subHeader?.length / 2}
-						y={toCenter}
+						fontSize={11 * state.scale}
+						x={bigCircleRadius - state.subHeader?.length / 2}
+						y={bigCircleRadius}
 					>
 						{state.subHeader}
 					</Text>

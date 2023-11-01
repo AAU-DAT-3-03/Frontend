@@ -19,14 +19,7 @@ class HomeClass extends Component<HomeProps> {
 		return (
 			<ContentContainer appBar={this.AppBar()}>
 				<Text variant={'displayLarge'}>test</Text>
-				<Dial
-					percentage={30}
-					scale={2}
-					foreground={this.props.theme.colors.secondary}
-					background={this.props.theme.colors.tertiary}
-					header={'Cpu'}
-					subHeader={'30%'}
-				/>
+				<Dial percentage={70} scale={3} header={'Cpu'} subHeader={'30%'} />
 			</ContentContainer>
 		);
 	}
