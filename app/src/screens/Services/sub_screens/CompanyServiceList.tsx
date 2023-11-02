@@ -1,21 +1,19 @@
 import React, { Component } from 'react';
-import {Appbar, Text} from 'react-native-paper';
-import {ScrollView} from "react-native";
-import ContentContainer from "../../../components/ContentContainer";
+import { Appbar, Text } from 'react-native-paper';
+import ContentContainer from '../../../components/ContentContainer';
 
 interface CompanyServiceListProps {
-	company: string
+	company: string;
 }
 
 interface CompanyServiceLisState {
-	company: string
+	company: string;
 }
-
 
 class CompanyServiceList extends Component<CompanyServiceListProps, CompanyServiceLisState> {
 	state: CompanyServiceLisState = {
-		company: "Not defined"
-	}
+		company: 'Not defined'
+	};
 
 	constructor(props: CompanyServiceListProps) {
 		super(props);
@@ -25,8 +23,8 @@ class CompanyServiceList extends Component<CompanyServiceListProps, CompanyServi
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
-				<Appbar.BackAction onPress={() => {}}/>
-				<Appbar.Content title={this.state.company}/>
+				<Appbar.BackAction onPress={() => {}} />
+				<Appbar.Content title={this.state.company} />
 			</Appbar>
 		);
 	}
@@ -34,7 +32,7 @@ class CompanyServiceList extends Component<CompanyServiceListProps, CompanyServi
 		return (
 			<>
 				<ContentContainer appBar={this.AppBar()}>
-					<Text variant={"displayLarge"}>test</Text>
+					<Text variant={'displayLarge'}>test</Text>
 				</ContentContainer>
 			</>
 		);

@@ -1,5 +1,5 @@
 import React, { Component, ReactNode } from 'react';
-import { ScrollView } from 'react-native';
+import { RefreshControl, ScrollView } from 'react-native';
 
 /**
  * If no appbar is  desired simply don't pass anything
@@ -7,19 +7,52 @@ import { ScrollView } from 'react-native';
  */
 interface ContentContainerProps {
 	appBar?: React.JSX.Element;
+	onRefresh?: (finished: () => void) => void;
 	children?: ReactNode[] | ReactNode;
 }
 
-class ContentContainer extends Component<ContentContainerProps> {
+interface ContentContainerState {
+	refreshing: boolean;
+}
+
+class ContentContainer extends Component<ContentContainerProps, ContentContainerState> {
+	state: ContentContainerState = {
+		refreshing: false
+	};
+
 	constructor(props: ContentContainerProps) {
 		super(props);
+	}
+
+	private refreshFinished(): void {
+		this.setState({ refreshing: false });
+	}
+
+	/**
+	 * Calls the passed onRefresh
+	 * @param onRefresh
+	 * @private
+	 */
+	private onRefresh(): void {
+		if (this.props.onRefresh === undefined) return;
+		this.setState({ refreshing: true });
+		this.props.onRefresh(this.refreshFinished.bind(this));
+	}
+
+	/**
+	 * Returns a refresh controller if onRefresh has been specified in the props
+	 * @private
+	 */
+	private getRefreshControl(): React.JSX.Element | undefined {
+		if (this.props.onRefresh === undefined) return undefined;
+		return <RefreshControl refreshing={this.state.refreshing} onRefresh={() => this.onRefresh()} />;
 	}
 
 	render(): React.JSX.Element {
 		return (
 			<>
 				{this.props.appBar ?? null}
-				<ScrollView>{this.props.children ?? null}</ScrollView>
+				<ScrollView refreshControl={this.getRefreshControl()}>{this.props.children ?? null}</ScrollView>
 			</>
 		);
 	}
