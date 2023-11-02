@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
-import { Appbar, Text } from 'react-native-paper';
+import { Appbar, Button } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
-import { getCurrentTheme } from '../../themes/ThemeManager';
+import TimePicker from '../../components/TimePicker';
 
 class Home extends Component {
+	state = {
+		timePickerVisible: false
+	};
+
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
@@ -17,12 +21,10 @@ class Home extends Component {
 	}
 
 	render(): React.JSX.Element {
-		let theme: any = getCurrentTheme();
 		return (
 			<ContentContainer appBar={this.AppBar()} onRefresh={this.onRefresh}>
-				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
-					test
-				</Text>
+				<Button onPress={() => this.setState({ timePickerVisible: true })}>Show Time Picker</Button>
+				<TimePicker visible={this.state.timePickerVisible} onDismiss={() => this.setState({ timePickerVisible: false })} />
 			</ContentContainer>
 		);
 	}
