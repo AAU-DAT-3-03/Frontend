@@ -49,5 +49,18 @@ npm start
 [Paper components](https://callstack.github.io/react-native-paper/docs/components/ActivityIndicator)\
 [React Native Components](https://reactnative.dev/docs/components-and-apis)
 
+## If it don't work
+Android sdk 33.0.0, Android tiramisu emulatior
+Use webstorms.\
+Use following commands
+```
+cd app
+cd android
+./gradlew clean
+./gradlew wrapper --gradle-version=8.0.1 --distribution-type=bin
+cd ..
+npm cache clear --force
+```
+
 ### Icons
 [All icons can be seen here, only MaterialCommunityIcons are available](https://oblador.github.io/react-native-vector-icons/)
