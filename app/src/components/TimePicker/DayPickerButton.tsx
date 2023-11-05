@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import Color from 'color';
-import { MD3Colors, Surface, Text, TouchableRipple } from 'react-native-paper';
+import { Surface, Text, TouchableRipple } from 'react-native-paper';
 import { Dimensions, ScaledSize, View } from 'react-native';
 
 interface DayPickerButtonProps {
@@ -17,8 +17,7 @@ class DayPickerButton extends Component<DayPickerButtonProps> {
 		let screenSize: ScaledSize = Dimensions.get('screen');
 		let backgroundColor: string | undefined = this.props.selected
 			? this.props.primary
-				? // @ts-ignore
-				  getCurrentTheme().colors?.secondary
+				? getCurrentTheme().colors?.secondary
 				: getCurrentTheme().colors?.primary
 			: undefined;
 		let rippleColor: string = this.props.selected
@@ -49,7 +48,6 @@ class DayPickerButton extends Component<DayPickerButtonProps> {
 								height: '100%',
 								textAlign: 'center',
 								textAlignVertical: 'center',
-								// @ts-ignore
 								color: this.props.selected ? getCurrentTheme().colors?.onPrimary : getCurrentTheme().colors?.onSurface
 							}}
 						>

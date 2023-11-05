@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Modal, Portal, Text, TouchableRipple, Button, IconButton, List } from 'react-native-paper';
-import { Dimensions, FlatList, StyleProp, View, ViewStyle, VirtualizedList } from 'react-native';
+import { Modal, Portal, Text, TouchableRipple, Button, IconButton } from 'react-native-paper';
+import { Dimensions, FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle } from 'react-native';
 import Color from 'color';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import DayPickerButton from './DayPickerButton';
@@ -8,7 +8,7 @@ import {
 	compareDatesEqual,
 	compareDatesLessThanOrEqual,
 	dateFormatter,
-	days,
+	daysAbbreviated,
 	daysInMonth,
 	fullMonths,
 	getFirstDayInWeekOfMonth,
@@ -33,12 +33,12 @@ interface TimePickerState {
 
 class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	state: TimePickerState = {
-		currentMonth: getToday()[1],
-		currentYear: getToday()[2],
-		selectedTimeStart: getToday(),
-		selectedTimeEnd: getToday(),
+		currentMonth: 0,
+		currentYear: 0,
+		selectedTimeStart: [0, 0, 0],
+		selectedTimeEnd: [0, 0, 0],
 		activeDay: true,
-		landscape: isLandscape(),
+		landscape: false,
 		datePicker: true
 	};
 
@@ -65,6 +65,12 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 
 	constructor(props: TimePickerProps) {
 		super(props);
+		let today: [number, number, number] = getToday();
+		this.state.currentMonth = today[1];
+		this.state.currentYear = today[2];
+		this.state.selectedTimeStart = today;
+		this.state.selectedTimeEnd = today;
+		this.state.landscape = isLandscape();
 		Dimensions.addEventListener('change', ({ window: { width, height } }) => {
 			if (width < height) {
 				this.setState({ landscape: false });
@@ -74,12 +80,19 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		});
 	}
 
+	/**
+	 * @brief Triggers once timepicker is dismissed. Will trigger the props onDismiss if exists
+	 */
 	private onDismiss(): void {
 		if (this.props.onDismiss === undefined) return;
 		this.props.onDismiss([this.state.selectedTimeStart, this.state.selectedTimeEnd]);
 	}
 
-	private dayButtonOnPress(buttonDay: [number, number, number]) {
+	/**
+	 * @brief Handles when a day button is pressed
+	 * @param {[number, number, number]} buttonDay The day of the button that was pressed.
+	 */
+	private dayButtonOnPress(buttonDay: [number, number, number]): void {
 		if (this.state.activeDay && compareDatesLessThanOrEqual(this.state.selectedTimeStart, buttonDay)) {
 			this.state.selectedTimeEnd = buttonDay;
 		} else if (compareDatesLessThanOrEqual(buttonDay, this.state.selectedTimeEnd)) {
@@ -90,6 +103,11 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		this.forceUpdate();
 	}
 
+	/**
+	 * @brief Creates a single day button
+	 * @param {number} day The day to create a button for.
+	 * @returns A React.JSX.Element representing the button.
+	 */
 	private createDayButton(day: number): React.JSX.Element {
 		let buttonDay: [number, number, number] = [day, this.state.currentMonth, this.state.currentYear];
 		let today: boolean = compareDatesEqual(buttonDay, getToday());
@@ -106,26 +124,17 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		);
 	}
 
-	private createDaysButtons(): React.JSX.Element[] {
-		let buttonStyle: StyleProp<ViewStyle> = {
-			padding: 1,
-			alignItems: 'center',
-			aspectRatio: 1,
-			width: `${100 / 7}%`
-		};
+	/**
+	 * @brief Creates all day buttons for a month, including empty space
+	 * @returns An array of React.JSX.Element representing the buttons for the days.
+	 */
+	private createDaysButtons(buttonStyle: StyleProp<ViewStyle>): React.JSX.Element[] {
 		let daysButton: Array<React.JSX.Element> = new Array<React.JSX.Element>();
-		for (let day of days) {
-			daysButton.push(
-				<View key={daysButton.length} style={buttonStyle}>
-					<Text style={{ textAlign: 'center', width: '100%' }}>{day}</Text>
-				</View>
-			);
-		}
 
 		let amountDaysInMonth: number = daysInMonth(this.state.currentYear, this.state.currentMonth);
 		let firstDay: number = getFirstDayInWeekOfMonth(this.state.currentYear, this.state.currentMonth);
 		// Push empty elements, so start day is correct
-		for (let i: number = 0; daysButton.length - 7 <= firstDay; i++) {
+		for (let i: number = 0; daysButton.length <= firstDay; i++) {
 			daysButton.push(<View key={daysButton.length} style={buttonStyle}></View>);
 		}
 
@@ -141,6 +150,10 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		return daysButton;
 	}
 
+	/**
+	 * @brief Changes the month state and ensures correct change
+	 * @param {number} change The amount to change the month by.
+	 */
 	private changeMonth(change: number): void {
 		let newMonth = this.state.currentMonth + change;
 		if (newMonth < 1) {
@@ -153,6 +166,10 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		this.setState({ currentMonth: newMonth });
 	}
 
+	/**
+	 * @brief Creates the section with all the day buttons
+	 * @returns A React.JSX.Element representing the date selector.
+	 */
 	private dateSelectorRender(): React.JSX.Element {
 		let rowStyle: StyleProp<ViewStyle> = {
 			display: 'flex',
@@ -163,13 +180,32 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 			height: this.state.landscape ? '100%' : 'auto'
 		};
 
+		let buttonStyle: StyleProp<ViewStyle> = {
+			padding: 1,
+			alignItems: 'center',
+			aspectRatio: 1,
+			width: `${100 / 7}%`
+		};
+
 		return (
 			<View style={{ padding: 16 }}>
-				<View style={rowStyle}>{this.createDaysButtons()}</View>
+				<View style={rowStyle}>
+					{daysAbbreviated.map((value: string, key: number) => (
+						<View key={key} style={buttonStyle}>
+							<Text style={{ textAlign: 'center', width: '100%' }}>{value}</Text>
+						</View>
+					))}
+					{this.createDaysButtons(buttonStyle)}
+				</View>
 			</View>
 		);
 	}
 
+	/**
+	 * @brief Creates the section with the menu
+	 * @param {ViewStyle} containerStyle The style for the container.
+	 * @returns A React.JSX.Element representing the menu.
+	 */
 	private menuRender(containerStyle: ViewStyle): React.JSX.Element {
 		return (
 			<View style={containerStyle}>
@@ -183,6 +219,10 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		);
 	}
 
+	/**
+	 * @brief Creates the month and year navigator
+	 * @returns A React.JSX.Element representing the navigator.
+	 */
 	private navigatorRender(): React.JSX.Element {
 		return (
 			<View style={{ flexDirection: 'row', justifyContent: 'space-evenly', width: '100%' }}>
@@ -219,6 +259,10 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		);
 	}
 
+	/**
+	 * @brief Creates the section showing the 2 dates selected
+	 * @returns A React.JSX.Element representing the date display.
+	 */
 	private dateDisplayRender(): React.JSX.Element {
 		return (
 			<View style={{ flexDirection: 'row', gap: 16, justifyContent: 'space-evenly' }}>
@@ -232,7 +276,6 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 						{dateFormatter(this.state.selectedTimeStart)}
 					</Text>
 				</TouchableRipple>
-
 				<Text variant={'titleLarge'} style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}>
 					-
 				</Text>
@@ -250,7 +293,11 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		);
 	}
 
-	private yearSelectorRender() {
+	/**
+	 * @brief Create the section showing a list of years
+	 * @returns A React.JSX.Element representing the year selector.
+	 */
+	private yearSelectorRender(): React.JSX.Element {
 		let rowStyle: StyleProp<ViewStyle> = {
 			maxHeight: this.state.landscape ? Dimensions.get('screen').height * 0.9 : Dimensions.get('screen').height / 2,
 			width: this.state.landscape ? '60%' : '100%',
@@ -266,7 +313,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 					data={data}
 					numColumns={2}
 					initialNumToRender={20}
-					renderItem={(info) => {
+					renderItem={(info: ListRenderItemInfo<number>) => {
 						return (
 							<Button
 								style={{ width: '50%' }}
@@ -282,6 +329,10 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		);
 	}
 
+	/**
+	 * @brief Main render function for the component
+	 * @returns A React.JSX.Element representing the TimePicker component.
+	 */
 	render(): React.JSX.Element {
 		let mainViewStyle: StyleProp<ViewStyle> = {
 			backgroundColor: getCurrentTheme().colors?.surface,
