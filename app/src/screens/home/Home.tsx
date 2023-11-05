@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Appbar, Button } from 'react-native-paper';
+import { Appbar, Button, Card, IconButton, MD3Colors, Title } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import TimePicker from '../../components/TimePicker/TimePicker';
+import { View } from 'react-native';
 
 class Home extends Component {
 	state = {

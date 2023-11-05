@@ -4,29 +4,38 @@ import { Dimensions, StyleProp, View, ViewStyle } from 'react-native';
 import Color from 'color';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import DayPickerButton from './DayPickerButton';
-import { dateFormatter, days, daysInMonth, fullMonths, getFirstDayInWeekOfMonth, getToday } from './DateHelper';
+import {
+	compareDatesEqual,
+	compareDatesLessThanOrEqual,
+	dateFormatter,
+	days,
+	daysInMonth,
+	fullMonths,
+	getFirstDayInWeekOfMonth,
+	getToday
+} from './DateHelper';
 import { isLandscape } from '../../utility/ScreenUtility';
 
 interface TimePickerProps {
 	visible: boolean;
-	onDismiss?: (date: [number, number]) => void;
+	onDismiss?: (date: [[number, number, number], [number, number, number]]) => void;
 }
 
 interface TimePickerState {
 	currentMonth: number;
 	currentYear: number;
-	selectedTimeStart: number;
-	selectedTimeEnd: number;
+	selectedTimeStart: [number, number, number];
+	selectedTimeEnd: [number, number, number];
 	activeDay: boolean;
 	landscape: boolean;
 }
 
 class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	state: TimePickerState = {
-		currentMonth: 6,
-		currentYear: 2023,
-		selectedTimeStart: getToday(2),
-		selectedTimeEnd: getToday(5),
+		currentMonth: getToday()[1],
+		currentYear: getToday()[2],
+		selectedTimeStart: getToday(),
+		selectedTimeEnd: getToday(),
 		activeDay: true,
 		landscape: isLandscape()
 	};
@@ -68,29 +77,29 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		this.props.onDismiss([this.state.selectedTimeStart, this.state.selectedTimeEnd]);
 	}
 
+	private dayButtonOnPress(buttonDay: [number, number, number]) {
+		if (this.state.activeDay && compareDatesLessThanOrEqual(this.state.selectedTimeStart, buttonDay)) {
+			this.state.selectedTimeEnd = buttonDay;
+		} else if (compareDatesLessThanOrEqual(buttonDay, this.state.selectedTimeEnd)) {
+			this.state.selectedTimeStart = buttonDay;
+		} else {
+			this.state.selectedTimeEnd = buttonDay;
+		}
+		this.forceUpdate();
+	}
+
 	private createDayButton(day: number): React.JSX.Element {
-		let buttonDay: number = new Date(this.state.currentYear, this.state.currentMonth - 1, day + 2).getTime();
-		let today: boolean = buttonDay === getToday();
+		let buttonDay: [number, number, number] = [day, this.state.currentMonth, this.state.currentYear];
+		let today: boolean = compareDatesEqual(buttonDay, getToday());
+		let isPrimary: boolean =
+			(compareDatesEqual(buttonDay, this.state.selectedTimeStart) && !this.state.activeDay) ||
+			(compareDatesEqual(buttonDay, this.state.selectedTimeEnd) && this.state.activeDay);
+		let isSelected: boolean =
+			compareDatesLessThanOrEqual(buttonDay, this.state.selectedTimeEnd) &&
+			compareDatesLessThanOrEqual(this.state.selectedTimeStart, buttonDay);
 		return (
-			<DayPickerButton
-				selected={buttonDay <= this.state.selectedTimeEnd && buttonDay >= this.state.selectedTimeStart}
-				primary={
-					(buttonDay === this.state.selectedTimeStart && !this.state.activeDay) ||
-					(buttonDay === this.state.selectedTimeEnd && this.state.activeDay)
-				}
-				today={today}
-				onPress={() => {
-					if (this.state.activeDay && this.state.selectedTimeStart <= buttonDay) {
-						this.state.selectedTimeEnd = buttonDay;
-					} else if (this.state.selectedTimeEnd >= buttonDay) {
-						this.state.selectedTimeStart = buttonDay;
-					} else {
-						this.state.selectedTimeEnd = buttonDay;
-					}
-					this.forceUpdate();
-				}}
-			>
-				{day + 1}
+			<DayPickerButton selected={isSelected} primary={isPrimary} today={today} onPress={() => this.dayButtonOnPress(buttonDay)}>
+				{day}
 			</DayPickerButton>
 		);
 	}
@@ -132,7 +141,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 			}
 			daysButton.push(
 				<View key={i} style={{ flex: 100 / 7, padding: 5, alignItems: 'center' }}>
-					{this.createDayButton(i)}
+					{this.createDayButton(i + 1)}
 				</View>
 			);
 		}
@@ -175,82 +184,84 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 			display: 'flex',
 			flexDirection: 'row',
 			flexWrap: 'wrap',
-			width: this.state.landscape ? '50%' : '100%',
-			height: 'auto'
+			width: this.state.landscape ? '50%' : '100%'
 		};
 
 		return (
 			<Portal>
 				<Modal visible={this.props.visible} style={this.modalStyle} onDismiss={() => this.onDismiss()}>
 					<View style={mainViewStyle}>
-						<View style={containerStyle}>
-							<View style={{ flexDirection: 'row', gap: 8 }}>
-								<Text style={{ textAlign: 'left', width: '100%', paddingHorizontal: 12 }}>Select period</Text>
-							</View>
-
-							<View style={{ flexDirection: 'row', gap: 16, justifyContent: 'space-evenly' }}>
-								<TouchableRipple
-									style={!this.state.activeDay ? this.dateActiveStyle : this.dateStyle}
-									rippleColor={Color(getCurrentTheme().colors?.onSurface).alpha(0.3).string()}
-									onPress={() => this.setState({ activeDay: false })}
-									borderless={true}
-								>
-									<Text
-										variant={'titleLarge'}
-										style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}
-									>
-										{dateFormatter(this.state.selectedTimeStart)}
-									</Text>
-								</TouchableRipple>
-
-								<Text
-									variant={'titleLarge'}
-									style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}
-								>
-									-
-								</Text>
-								<TouchableRipple
-									style={this.state.activeDay ? this.dateActiveStyle : this.dateStyle}
-									rippleColor={Color(getCurrentTheme().colors?.onSurface).alpha(0.3).string()}
-									onPress={() => this.setState({ activeDay: true })}
-									borderless={true}
-								>
-									<Text
-										variant={'titleLarge'}
-										style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}
-									>
-										{dateFormatter(this.state.selectedTimeEnd)}
-									</Text>
-								</TouchableRipple>
-								{/*<IconButton icon={'pencil'} onPress={() => null} />*/}
-							</View>
-							<View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-								<View style={{ width: '49%' }}>
-									<Button
-										style={{ alignItems: 'baseline' }}
-										compact={true}
-										icon={'menu-down'}
-										textColor={getCurrentTheme().colors?.onSurface}
-										contentStyle={{ flexDirection: 'row-reverse' }}
-									>
-										{fullMonths[this.state.currentMonth - 1]} {this.state.currentYear}
-									</Button>
-								</View>
-								<View style={{ width: '49%', display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
-									<IconButton size={20} onPress={() => this.changeMonth(-1)} icon={'chevron-left'}></IconButton>
-									<IconButton size={20} onPress={() => this.changeMonth(1)} icon={'chevron-right'}></IconButton>
-								</View>
-							</View>
-						</View>
-						<View>
-							{this.createDaysButtons()}
-							<View style={{ flexDirection: 'row', width: '100%', justifyContent: 'flex-end' }}>
-								<Button onPress={() => this.onDismiss()}>Confirm</Button>
-							</View>
-						</View>
+						{this.menuRender(containerStyle)}
+						{this.dateSelectorRender()}
 					</View>
 				</Modal>
 			</Portal>
+		);
+	}
+
+	private dateSelectorRender() {
+		return (
+			<View style={{ padding: 16 }}>
+				{this.createDaysButtons()}
+				<View style={{ flexDirection: 'row', width: '100%', justifyContent: 'flex-end' }}>
+					<Button onPress={() => this.onDismiss()}>Confirm</Button>
+				</View>
+			</View>
+		);
+	}
+
+	private menuRender(containerStyle: ViewStyle) {
+		return (
+			<View style={containerStyle}>
+				<View style={{ flexDirection: 'row', gap: 8 }}>
+					<Text style={{ textAlign: 'left', width: '100%', paddingHorizontal: 12 }}>Select period</Text>
+				</View>
+
+				<View style={{ flexDirection: 'row', gap: 16, justifyContent: 'space-evenly' }}>
+					<TouchableRipple
+						style={!this.state.activeDay ? this.dateActiveStyle : this.dateStyle}
+						rippleColor={Color(getCurrentTheme().colors?.onSurface).alpha(0.3).string()}
+						onPress={() => this.setState({ activeDay: false })}
+						borderless={true}
+					>
+						<Text variant={'titleLarge'} style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}>
+							{dateFormatter(this.state.selectedTimeStart)}
+						</Text>
+					</TouchableRipple>
+
+					<Text variant={'titleLarge'} style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}>
+						-
+					</Text>
+					<TouchableRipple
+						style={this.state.activeDay ? this.dateActiveStyle : this.dateStyle}
+						rippleColor={Color(getCurrentTheme().colors?.onSurface).alpha(0.3).string()}
+						onPress={() => this.setState({ activeDay: true })}
+						borderless={true}
+					>
+						<Text variant={'titleLarge'} style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}>
+							{dateFormatter(this.state.selectedTimeEnd)}
+						</Text>
+					</TouchableRipple>
+					{/*<IconButton icon={'pencil'} onPress={() => null} />*/}
+				</View>
+				<View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+					<View style={{ width: '49%' }}>
+						<Button
+							style={{ alignItems: 'baseline' }}
+							compact={true}
+							icon={'menu-down'}
+							textColor={getCurrentTheme().colors?.onSurface}
+							contentStyle={{ flexDirection: 'row-reverse' }}
+						>
+							{fullMonths[this.state.currentMonth - 1]} {this.state.currentYear}
+						</Button>
+					</View>
+					<View style={{ width: '49%', display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
+						<IconButton size={20} onPress={() => this.changeMonth(-1)} icon={'chevron-left'}></IconButton>
+						<IconButton size={20} onPress={() => this.changeMonth(1)} icon={'chevron-right'}></IconButton>
+					</View>
+				</View>
+			</View>
 		);
 	}
 }
