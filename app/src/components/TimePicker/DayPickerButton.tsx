@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import Color from 'color';
-import { Surface, Text, TouchableRipple } from 'react-native-paper';
+import { MD3Colors, Surface, Text, TouchableRipple } from 'react-native-paper';
 import { Dimensions, ScaledSize, View } from 'react-native';
 
 interface DayPickerButtonProps {
@@ -24,7 +24,6 @@ class DayPickerButton extends Component<DayPickerButtonProps> {
 		let rippleColor: string = this.props.selected
 			? Color(getCurrentTheme().colors?.surface).alpha(0.3).string()
 			: Color(getCurrentTheme().colors?.onSurface).alpha(0.3).string();
-
 		return (
 			<Surface mode={'flat'} elevation={0}>
 				<TouchableRipple
