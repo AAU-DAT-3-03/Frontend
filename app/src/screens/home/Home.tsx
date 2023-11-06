@@ -21,7 +21,7 @@ class Home extends Component {
 		let theme: any = getCurrentTheme();
 		return (
 			<ContentContainer appBar={this.AppBar()} onRefresh={this.onRefresh}>
-				<CompanyCard company={'Jysk'} state={2} />
+				<CompanyCard company={'Jysk'} state={2} onPress={() => console.log()} />
 			</ContentContainer>
 		);
 	}

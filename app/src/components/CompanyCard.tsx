@@ -11,6 +11,7 @@ enum Status {
 interface CompanyCardProps {
 	company: string;
 	state: Status;
+	onPress: () => void;
 }
 
 interface CompanyCardState {
@@ -38,7 +39,7 @@ class CompanyCard extends Component<CompanyCardProps, CompanyCardState> {
 
 	render(): React.JSX.Element {
 		return (
-			<TouchableRipple onPress={() => console.log(1)} rippleColor={'rgba(255, 255, 255, 0.3)'}>
+			<TouchableRipple onPress={() => this.props.onPress()} rippleColor={'rgba(255, 255, 255, 0.3)'}>
 				<Card>
 					<Card.Content
 						style={{
