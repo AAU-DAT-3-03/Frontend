@@ -15,10 +15,22 @@ import {
 	getToday
 } from './DateHelper';
 import { isLandscape } from '../../utility/ScreenUtility';
+import DateInput from './DateInput';
 
 interface TimePickerProps {
 	visible: boolean;
 	onDismiss?: (date: [[number, number, number], [number, number, number]]) => void;
+}
+
+enum ScreenSelector {
+	DATEPICKER,
+	YEARPICKER,
+	DATEINPUT
+}
+
+enum DateInputField {
+	STARTDATE,
+	ENDDATE
 }
 
 interface TimePickerState {
@@ -26,9 +38,10 @@ interface TimePickerState {
 	currentYear: number;
 	selectedTimeStart: [number, number, number];
 	selectedTimeEnd: [number, number, number];
-	activeDay: boolean;
 	landscape: boolean;
-	datePicker: boolean;
+	screenSelector: ScreenSelector;
+	dateInputField: DateInputField;
+	inputTargetValue: [number, number, number];
 }
 
 class TimePicker extends Component<TimePickerProps, TimePickerState> {
@@ -37,9 +50,10 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		currentYear: 0,
 		selectedTimeStart: [0, 0, 0],
 		selectedTimeEnd: [0, 0, 0],
-		activeDay: true,
 		landscape: false,
-		datePicker: true
+		screenSelector: ScreenSelector.DATEPICKER,
+		dateInputField: DateInputField.STARTDATE,
+		inputTargetValue: [0, 0, 0]
 	};
 
 	modalStyle: StyleProp<ViewStyle> = {
@@ -84,6 +98,10 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	 * @brief Triggers once timepicker is dismissed. Will trigger the props onDismiss if exists
 	 */
 	private onDismiss(): void {
+		if (this.state.screenSelector === ScreenSelector.DATEINPUT) {
+			this.setState({ screenSelector: ScreenSelector.DATEPICKER });
+			return;
+		}
 		if (this.props.onDismiss === undefined) return;
 		this.props.onDismiss([this.state.selectedTimeStart, this.state.selectedTimeEnd]);
 	}
@@ -93,7 +111,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	 * @param {[number, number, number]} buttonDay The day of the button that was pressed.
 	 */
 	private dayButtonOnPress(buttonDay: [number, number, number]): void {
-		if (this.state.activeDay && compareDatesLessThanOrEqual(this.state.selectedTimeStart, buttonDay)) {
+		if (this.state.dateInputField === DateInputField.ENDDATE && compareDatesLessThanOrEqual(this.state.selectedTimeStart, buttonDay)) {
 			this.state.selectedTimeEnd = buttonDay;
 		} else if (compareDatesLessThanOrEqual(buttonDay, this.state.selectedTimeEnd)) {
 			this.state.selectedTimeStart = buttonDay;
@@ -112,8 +130,8 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		let buttonDay: [number, number, number] = [day, this.state.currentMonth, this.state.currentYear];
 		let today: boolean = compareDatesEqual(buttonDay, getToday());
 		let isPrimary: boolean =
-			(compareDatesEqual(buttonDay, this.state.selectedTimeStart) && !this.state.activeDay) ||
-			(compareDatesEqual(buttonDay, this.state.selectedTimeEnd) && this.state.activeDay);
+			(compareDatesEqual(buttonDay, this.state.selectedTimeStart) && this.state.dateInputField === DateInputField.STARTDATE) ||
+			(compareDatesEqual(buttonDay, this.state.selectedTimeEnd) && this.state.dateInputField === DateInputField.ENDDATE);
 		let isSelected: boolean =
 			compareDatesLessThanOrEqual(buttonDay, this.state.selectedTimeEnd) &&
 			compareDatesLessThanOrEqual(this.state.selectedTimeStart, buttonDay);
@@ -129,13 +147,13 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	 * @returns An array of React.JSX.Element representing the buttons for the days.
 	 */
 	private createDaysButtons(buttonStyle: StyleProp<ViewStyle>): React.JSX.Element[] {
-		let daysButton: Array<React.JSX.Element> = new Array<React.JSX.Element>();
+		let daysButton: React.JSX.Element[] = new Array<React.JSX.Element>();
 
 		let amountDaysInMonth: number = daysInMonth(this.state.currentYear, this.state.currentMonth);
 		let firstDay: number = getFirstDayInWeekOfMonth(this.state.currentYear, this.state.currentMonth);
 		// Push empty elements, so start day is correct
 		for (let i: number = 0; daysButton.length <= firstDay; i++) {
-			daysButton.push(<View key={daysButton.length} style={buttonStyle}></View>);
+			daysButton.push(<View key={daysButton.length} style={buttonStyle} />);
 		}
 
 		// Create all the days in the month
@@ -214,7 +232,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 				</View>
 
 				{this.dateDisplayRender()}
-				{this.navigatorRender()}
+				{this.state.screenSelector !== ScreenSelector.DATEINPUT ? this.navigatorRender() : null}
 			</View>
 		);
 	}
@@ -233,7 +251,14 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 						icon={'menu-down'}
 						textColor={getCurrentTheme().colors?.onSurface}
 						contentStyle={{ flexDirection: 'row-reverse' }}
-						onPress={() => this.setState({ datePicker: !this.state.datePicker })}
+						onPress={() =>
+							this.setState({
+								screenSelector:
+									this.state.screenSelector !== ScreenSelector.YEARPICKER
+										? ScreenSelector.YEARPICKER
+										: ScreenSelector.DATEPICKER
+							})
+						}
 					>
 						{fullMonths[this.state.currentMonth - 1]} {this.state.currentYear}
 					</Button>
@@ -247,13 +272,8 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 						marginRight: 0
 					}}
 				>
-					<IconButton size={20} onPress={() => this.changeMonth(-1)} icon={'chevron-left'}></IconButton>
-					<IconButton
-						size={20}
-						style={{ marginRight: 0 }}
-						onPress={() => this.changeMonth(1)}
-						icon={'chevron-right'}
-					></IconButton>
+					<IconButton size={20} onPress={() => this.changeMonth(-1)} icon={'chevron-left'} />
+					<IconButton size={20} style={{ marginRight: 0 }} onPress={() => this.changeMonth(1)} icon={'chevron-right'} />
 				</View>
 			</View>
 		);
@@ -267,9 +287,23 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		return (
 			<View style={{ flexDirection: 'row', gap: 16, justifyContent: 'space-evenly' }}>
 				<TouchableRipple
-					style={!this.state.activeDay ? this.dateActiveStyle : this.dateStyle}
+					style={this.state.dateInputField === DateInputField.STARTDATE ? this.dateActiveStyle : this.dateStyle}
 					rippleColor={Color(getCurrentTheme().colors?.onSurface).alpha(0.3).string()}
-					onPress={() => this.setState({ activeDay: false })}
+					onPress={() =>
+						this.setState({
+							dateInputField: DateInputField.STARTDATE,
+							currentMonth: this.state.selectedTimeStart[1],
+							currentYear: this.state.selectedTimeStart[2],
+							inputTargetValue: this.state.selectedTimeStart
+						})
+					}
+					onLongPress={() => {
+						this.setState({
+							dateInputField: DateInputField.STARTDATE,
+							screenSelector: ScreenSelector.DATEINPUT,
+							inputTargetValue: this.state.selectedTimeStart
+						});
+					}}
 					borderless={true}
 				>
 					<Text variant={'titleLarge'} style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}>
@@ -280,9 +314,23 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 					-
 				</Text>
 				<TouchableRipple
-					style={this.state.activeDay ? this.dateActiveStyle : this.dateStyle}
+					style={this.state.dateInputField === DateInputField.ENDDATE ? this.dateActiveStyle : this.dateStyle}
 					rippleColor={Color(getCurrentTheme().colors?.onSurface).alpha(0.3).string()}
-					onPress={() => this.setState({ activeDay: true })}
+					onPress={() =>
+						this.setState({
+							dateInputField: DateInputField.ENDDATE,
+							currentMonth: this.state.selectedTimeEnd[1],
+							currentYear: this.state.selectedTimeEnd[2],
+							inputTargetValue: this.state.selectedTimeEnd
+						})
+					}
+					onLongPress={() => {
+						this.setState({
+							dateInputField: DateInputField.ENDDATE,
+							screenSelector: ScreenSelector.DATEINPUT,
+							inputTargetValue: this.state.selectedTimeEnd
+						});
+					}}
 					borderless={true}
 				>
 					<Text variant={'titleLarge'} style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}>
@@ -318,11 +366,28 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 							<Button
 								style={{ width: '50%' }}
 								textColor={getCurrentTheme().colors?.onSurface}
-								onPress={() => this.setState({ currentYear: info.item + 1970, datePicker: true })}
+								onPress={() => this.setState({ currentYear: info.item + 1970, screenSelector: ScreenSelector.DATEPICKER })}
 							>
 								{info.item + 1970}
 							</Button>
 						);
+					}}
+				/>
+			</View>
+		);
+	}
+
+	private dateInputRender(): React.JSX.Element {
+		return (
+			<View style={{ padding: 16, width: '100%', marginBottom: 16 }}>
+				<DateInput
+					value={this.state.inputTargetValue}
+					onChange={(date: [number, number, number]) => {
+						if (this.state.dateInputField === DateInputField.STARTDATE) {
+							this.setState({ selectedTimeStart: date });
+						} else {
+							this.setState({ selectedTimeEnd: date });
+						}
 					}}
 				/>
 			</View>
@@ -352,12 +417,25 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 			width: this.state.landscape ? '40%' : '100%'
 		};
 
+		let screen: () => React.JSX.Element;
+		switch (this.state.screenSelector) {
+			case ScreenSelector.DATEINPUT:
+				screen = this.dateInputRender.bind(this);
+				break;
+			case ScreenSelector.DATEPICKER:
+				screen = this.dateSelectorRender.bind(this);
+				break;
+			case ScreenSelector.YEARPICKER:
+				screen = this.yearSelectorRender.bind(this);
+				break;
+		}
+
 		return (
 			<Portal>
 				<Modal visible={this.props.visible} style={this.modalStyle} onDismiss={() => this.onDismiss()}>
 					<View style={mainViewStyle}>
 						{this.menuRender(containerStyle)}
-						{this.state.datePicker ? this.dateSelectorRender() : this.yearSelectorRender()}
+						{screen()}
 						<View style={{ position: 'absolute', bottom: 16, right: 32 }}>
 							<Button onPress={() => this.onDismiss()}>Confirm</Button>
 						</View>
