@@ -36,9 +36,9 @@ export function getToday(offset?: number): [number, number, number] {
 			month = 12;
 			year -= 1;
 		}
-		day = daysInMonth(now.getFullYear(), month);
+		day = daysInMonth(now.getFullYear(), month) + day;
 	}
-	if (month > 12) {
+	while (month > 12) {
 		month = 1;
 		year += 1;
 	}

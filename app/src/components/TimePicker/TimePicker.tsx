@@ -20,6 +20,8 @@ import DateInput from './DateInput';
 interface TimePickerProps {
 	visible: boolean;
 	onDismiss?: (date: [[number, number, number], [number, number, number]]) => void;
+	startDate?: [number, number, number];
+	endDate?: [number, number, number];
 }
 
 enum ScreenSelector {
@@ -80,10 +82,10 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	constructor(props: TimePickerProps) {
 		super(props);
 		let today: [number, number, number] = getToday();
-		this.state.currentMonth = today[1];
-		this.state.currentYear = today[2];
-		this.state.selectedTimeStart = today;
-		this.state.selectedTimeEnd = today;
+		this.state.selectedTimeStart = this.props.startDate ?? today;
+		this.state.selectedTimeEnd = this.props.endDate ?? today;
+		this.state.currentMonth = this.state.selectedTimeStart[1];
+		this.state.currentYear = this.state.selectedTimeStart[2];
 		this.state.landscape = isLandscape();
 		Dimensions.addEventListener('change', ({ window: { width, height } }) => {
 			if (width < height) {
