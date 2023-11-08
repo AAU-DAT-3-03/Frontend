@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 import { Modal, Portal, Text, TouchableRipple, Button, IconButton } from 'react-native-paper';
-import { Dimensions, FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle } from 'react-native';
+import { Dimensions, FlatList, ListRenderItemInfo, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import Color from 'color';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import DayPickerButton from './DayPickerButton';
@@ -17,9 +17,11 @@ import {
 import { isLandscape } from '../../utility/ScreenUtility';
 import DateInput from './DateInput';
 
+type PickerDate = [number, number, number];
+
 interface TimePickerProps {
 	visible: boolean;
-	onDismiss?: (date: [[number, number, number], [number, number, number]]) => void;
+	onDismiss?: (date: [PickerDate, PickerDate]) => void;
 }
 
 enum ScreenSelector {
@@ -36,12 +38,12 @@ enum DateInputField {
 interface TimePickerState {
 	currentMonth: number;
 	currentYear: number;
-	selectedTimeStart: [number, number, number];
-	selectedTimeEnd: [number, number, number];
+	selectedTimeStart: PickerDate;
+	selectedTimeEnd: PickerDate;
 	landscape: boolean;
 	screenSelector: ScreenSelector;
 	dateInputField: DateInputField;
-	inputTargetValue: [number, number, number];
+	inputRef: React.RefObject<DateInput>;
 }
 
 class TimePicker extends Component<TimePickerProps, TimePickerState> {
@@ -53,28 +55,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		landscape: false,
 		screenSelector: ScreenSelector.DATEPICKER,
 		dateInputField: DateInputField.STARTDATE,
-		inputTargetValue: [0, 0, 0]
-	};
-
-	modalStyle: StyleProp<ViewStyle> = {
-		backgroundColor: undefined,
-		position: 'absolute',
-		padding: 16,
-		justifyContent: 'center'
-	};
-
-	dateStyle: StyleProp<ViewStyle> = {
-		padding: 10,
-		borderRadius: 100,
-		borderColor: getCurrentTheme().colors?.surface,
-		borderWidth: 2
-	};
-
-	dateActiveStyle: StyleProp<ViewStyle> = {
-		padding: 10,
-		borderRadius: 100,
-		borderColor: getCurrentTheme().colors?.onSurface,
-		borderWidth: 2
+		inputRef: createRef<DateInput>()
 	};
 
 	constructor(props: TimePickerProps) {
@@ -110,15 +91,14 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	 * @brief Handles when a day button is pressed
 	 * @param {[number, number, number]} buttonDay The day of the button that was pressed.
 	 */
-	private dayButtonOnPress(buttonDay: [number, number, number]): void {
+	private dayButtonOnPress(buttonDay: PickerDate): void {
 		if (this.state.dateInputField === DateInputField.ENDDATE && compareDatesLessThanOrEqual(this.state.selectedTimeStart, buttonDay)) {
-			this.state.selectedTimeEnd = buttonDay;
+			this.setState({ selectedTimeEnd: buttonDay });
 		} else if (compareDatesLessThanOrEqual(buttonDay, this.state.selectedTimeEnd)) {
-			this.state.selectedTimeStart = buttonDay;
+			this.setState({ selectedTimeStart: buttonDay });
 		} else {
-			this.state.selectedTimeEnd = buttonDay;
+			this.setState({ selectedTimeEnd: buttonDay });
 		}
-		this.forceUpdate();
 	}
 
 	/**
@@ -127,7 +107,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	 * @returns A React.JSX.Element representing the button.
 	 */
 	private createDayButton(day: number): React.JSX.Element {
-		let buttonDay: [number, number, number] = [day, this.state.currentMonth, this.state.currentYear];
+		let buttonDay: PickerDate = [day, this.state.currentMonth, this.state.currentYear];
 		let today: boolean = compareDatesEqual(buttonDay, getToday());
 		let isPrimary: boolean =
 			(compareDatesEqual(buttonDay, this.state.selectedTimeStart) && this.state.dateInputField === DateInputField.STARTDATE) ||
@@ -190,30 +170,20 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	 */
 	private dateSelectorRender(): React.JSX.Element {
 		let rowStyle: StyleProp<ViewStyle> = {
-			display: 'flex',
-			flexDirection: 'row',
-			justifyContent: 'flex-start',
-			flexWrap: 'wrap',
+			...timePickerStyleSheet.dateSelectorRow,
 			width: this.state.landscape ? '75%' : '100%',
 			height: this.state.landscape ? '100%' : 'auto'
-		};
-
-		let buttonStyle: StyleProp<ViewStyle> = {
-			padding: 1,
-			alignItems: 'center',
-			aspectRatio: 1,
-			width: `${100 / 7}%`
 		};
 
 		return (
 			<View style={{ padding: 16 }}>
 				<View style={rowStyle}>
 					{daysAbbreviated.map((value: string, key: number) => (
-						<View key={key} style={buttonStyle}>
+						<View key={key} style={timePickerStyleSheet.dateSelectorButtonStyle}>
 							<Text style={{ textAlign: 'center', width: '100%' }}>{value}</Text>
 						</View>
 					))}
-					{this.createDaysButtons(buttonStyle)}
+					{this.createDaysButtons(timePickerStyleSheet.dateSelectorButtonStyle)}
 				</View>
 			</View>
 		);
@@ -263,15 +233,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 						{fullMonths[this.state.currentMonth - 1]} {this.state.currentYear}
 					</Button>
 				</View>
-				<View
-					style={{
-						width: '50%',
-						display: 'flex',
-						flexDirection: 'row',
-						justifyContent: 'flex-end',
-						marginRight: 0
-					}}
-				>
+				<View style={timePickerStyleSheet.monthPickerContainer}>
 					<IconButton size={20} onPress={() => this.changeMonth(-1)} icon={'chevron-left'} />
 					<IconButton size={20} style={{ marginRight: 0 }} onPress={() => this.changeMonth(1)} icon={'chevron-right'} />
 				</View>
@@ -286,59 +248,73 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	private dateDisplayRender(): React.JSX.Element {
 		return (
 			<View style={{ flexDirection: 'row', gap: 16, justifyContent: 'space-evenly' }}>
-				<TouchableRipple
-					style={this.state.dateInputField === DateInputField.STARTDATE ? this.dateActiveStyle : this.dateStyle}
-					rippleColor={Color(getCurrentTheme().colors?.onSurface).alpha(0.3).string()}
-					onPress={() =>
-						this.setState({
-							dateInputField: DateInputField.STARTDATE,
-							currentMonth: this.state.selectedTimeStart[1],
-							currentYear: this.state.selectedTimeStart[2],
-							inputTargetValue: this.state.selectedTimeStart
-						})
-					}
-					onLongPress={() => {
-						this.setState({
-							dateInputField: DateInputField.STARTDATE,
-							screenSelector: ScreenSelector.DATEINPUT,
-							inputTargetValue: this.state.selectedTimeStart
-						});
-					}}
-					borderless={true}
-				>
-					<Text variant={'titleLarge'} style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}>
-						{dateFormatter(this.state.selectedTimeStart)}
-					</Text>
-				</TouchableRipple>
+				{this.singleDateDisplayRender(
+					this.state.selectedTimeStart,
+					this.state.dateInputField === DateInputField.STARTDATE,
+					this.onPressStartDate.bind(this),
+					this.onLongPressStartDate.bind(this)
+				)}
+
 				<Text variant={'titleLarge'} style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}>
 					-
 				</Text>
-				<TouchableRipple
-					style={this.state.dateInputField === DateInputField.ENDDATE ? this.dateActiveStyle : this.dateStyle}
-					rippleColor={Color(getCurrentTheme().colors?.onSurface).alpha(0.3).string()}
-					onPress={() =>
-						this.setState({
-							dateInputField: DateInputField.ENDDATE,
-							currentMonth: this.state.selectedTimeEnd[1],
-							currentYear: this.state.selectedTimeEnd[2],
-							inputTargetValue: this.state.selectedTimeEnd
-						})
-					}
-					onLongPress={() => {
-						this.setState({
-							dateInputField: DateInputField.ENDDATE,
-							screenSelector: ScreenSelector.DATEINPUT,
-							inputTargetValue: this.state.selectedTimeEnd
-						});
-					}}
-					borderless={true}
-				>
-					<Text variant={'titleLarge'} style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}>
-						{dateFormatter(this.state.selectedTimeEnd)}
-					</Text>
-				</TouchableRipple>
+
+				{this.singleDateDisplayRender(
+					this.state.selectedTimeEnd,
+					this.state.dateInputField === DateInputField.ENDDATE,
+					this.onPressEndDate.bind(this),
+					this.onLongPressEndDate.bind(this)
+				)}
 			</View>
 		);
+	}
+
+	private singleDateDisplayRender(date: PickerDate, active: boolean, onPress: () => void, onLongPress: () => void): React.JSX.Element {
+		return (
+			<TouchableRipple
+				style={active ? timePickerStyleSheet.dateActiveStyle : timePickerStyleSheet.dateStyle}
+				rippleColor={Color(getCurrentTheme().colors?.onSurface).alpha(0.3).string()}
+				onPress={() => onPress()}
+				onLongPress={() => onLongPress()}
+				borderless={true}
+			>
+				<Text variant={'titleLarge'} style={{ marginBottom: 'auto', marginTop: 'auto', textAlignVertical: 'center' }}>
+					{dateFormatter(date)}
+				</Text>
+			</TouchableRipple>
+		);
+	}
+
+	private onPressStartDate(): void {
+		this.setState({
+			dateInputField: DateInputField.STARTDATE,
+			currentMonth: this.state.selectedTimeStart[1],
+			currentYear: this.state.selectedTimeStart[2]
+		});
+		this.state.inputRef.current?.setState({ text: DateInput.dateFormatter(this.state.selectedTimeStart) });
+	}
+
+	private onLongPressStartDate(): void {
+		this.setState({
+			dateInputField: DateInputField.STARTDATE,
+			screenSelector: ScreenSelector.DATEINPUT
+		});
+	}
+
+	private onPressEndDate(): void {
+		this.setState({
+			dateInputField: DateInputField.ENDDATE,
+			currentMonth: this.state.selectedTimeEnd[1],
+			currentYear: this.state.selectedTimeEnd[2]
+		});
+		this.state.inputRef.current?.setState({ text: DateInput.dateFormatter(this.state.selectedTimeEnd) });
+	}
+
+	private onLongPressEndDate(): void {
+		this.setState({
+			dateInputField: DateInputField.ENDDATE,
+			screenSelector: ScreenSelector.DATEINPUT
+		});
 	}
 
 	/**
@@ -347,11 +323,9 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	 */
 	private yearSelectorRender(): React.JSX.Element {
 		let rowStyle: StyleProp<ViewStyle> = {
+			...timePickerStyleSheet.rowStyle,
 			maxHeight: this.state.landscape ? Dimensions.get('screen').height * 0.9 : Dimensions.get('screen').height / 2,
-			width: this.state.landscape ? '60%' : '100%',
-			padding: 16,
-			marginBottom: 16,
-			overflow: 'hidden'
+			width: this.state.landscape ? '60%' : '100%'
 		};
 		let years: number = new Date(Date.now()).getFullYear() - 1970 + 1;
 		let data: number[] = [...Array(years).keys()].reverse();
@@ -361,33 +335,39 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 					data={data}
 					numColumns={2}
 					initialNumToRender={20}
-					renderItem={(info: ListRenderItemInfo<number>) => {
-						return (
-							<Button
-								style={{ width: '50%' }}
-								textColor={getCurrentTheme().colors?.onSurface}
-								onPress={() => this.setState({ currentYear: info.item + 1970, screenSelector: ScreenSelector.DATEPICKER })}
-							>
-								{info.item + 1970}
-							</Button>
-						);
-					}}
+					renderItem={(info: ListRenderItemInfo<number>) => this.yearButtonRender(info)}
 				/>
 			</View>
 		);
 	}
 
+	private yearButtonRender(info: ListRenderItemInfo<number>) {
+		return (
+			<Button
+				style={{ width: '50%' }}
+				textColor={getCurrentTheme().colors?.onSurface}
+				onPress={() =>
+					this.setState({
+						currentYear: info.item + 1970,
+						screenSelector: ScreenSelector.DATEPICKER
+					})
+				}
+			>
+				{info.item + 1970}
+			</Button>
+		);
+	}
+
 	private dateInputRender(): React.JSX.Element {
+		let value: [number, number, number] =
+			this.state.dateInputField === DateInputField.STARTDATE ? this.state.selectedTimeStart : this.state.selectedTimeEnd;
 		return (
 			<View style={{ padding: 16, width: '100%', marginBottom: 16 }}>
 				<DateInput
-					value={this.state.inputTargetValue}
+					ref={this.state.inputRef}
+					value={value}
 					onChange={(date: [number, number, number]) => {
-						if (this.state.dateInputField === DateInputField.STARTDATE) {
-							this.setState({ selectedTimeStart: date });
-						} else {
-							this.setState({ selectedTimeEnd: date });
-						}
+						this.dayButtonOnPress(date);
 					}}
 				/>
 			</View>
@@ -400,20 +380,12 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	 */
 	render(): React.JSX.Element {
 		let mainViewStyle: StyleProp<ViewStyle> = {
-			backgroundColor: getCurrentTheme().colors?.surface,
-			padding: 16,
-			borderRadius: 30,
-			display: 'flex',
-			flexDirection: this.state.landscape ? 'column' : 'row',
-			flexWrap: 'wrap',
-			width: 'auto'
+			...timePickerStyleSheet.mainViewStyle,
+			flexDirection: this.state.landscape ? 'column' : 'row'
 		};
 
 		let containerStyle: StyleProp<ViewStyle> = {
-			paddingHorizontal: 16,
-			display: 'flex',
-			flexDirection: 'row',
-			flexWrap: 'wrap',
+			...timePickerStyleSheet.containerStyle,
 			width: this.state.landscape ? '40%' : '100%'
 		};
 
@@ -432,11 +404,11 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 
 		return (
 			<Portal>
-				<Modal visible={this.props.visible} style={this.modalStyle} onDismiss={() => this.onDismiss()}>
+				<Modal visible={this.props.visible} style={timePickerStyleSheet.modalStyle} onDismiss={() => this.onDismiss()}>
 					<View style={mainViewStyle}>
 						{this.menuRender(containerStyle)}
 						{screen()}
-						<View style={{ position: 'absolute', bottom: 16, right: 32 }}>
+						<View style={timePickerStyleSheet.confirmButton}>
 							<Button onPress={() => this.onDismiss()}>Confirm</Button>
 						</View>
 					</View>
@@ -445,4 +417,70 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		);
 	}
 }
+
+const timePickerStyleSheet = StyleSheet.create({
+	mainViewStyle: {
+		backgroundColor: getCurrentTheme().colors?.surface,
+		padding: 16,
+		borderRadius: 30,
+		display: 'flex',
+		flexWrap: 'wrap',
+		width: 'auto'
+	},
+	containerStyle: {
+		paddingHorizontal: 16,
+		display: 'flex',
+		flexDirection: 'row',
+		flexWrap: 'wrap'
+	},
+	confirmButton: {
+		position: 'absolute',
+		bottom: 16,
+		right: 32
+	},
+	rowStyle: {
+		padding: 16,
+		marginBottom: 16,
+		overflow: 'hidden'
+	},
+	monthPickerContainer: {
+		width: '50%',
+		display: 'flex',
+		flexDirection: 'row',
+		justifyContent: 'flex-end',
+		marginRight: 0
+	},
+	dateSelectorRow: {
+		display: 'flex',
+		flexDirection: 'row',
+		justifyContent: 'flex-start',
+		flexWrap: 'wrap'
+	},
+	dateSelectorButtonStyle: {
+		padding: 1,
+		alignItems: 'center',
+		aspectRatio: 1,
+		width: `${100 / 7}%`
+	},
+	modalStyle: {
+		backgroundColor: undefined,
+		position: 'absolute',
+		padding: 16,
+		justifyContent: 'center'
+	},
+
+	dateStyle: {
+		padding: 10,
+		borderRadius: 100,
+		borderColor: getCurrentTheme().colors?.surface,
+		borderWidth: 2
+	},
+	dateActiveStyle: {
+		padding: 10,
+		borderRadius: 100,
+		borderColor: getCurrentTheme().colors?.onSurface,
+		borderWidth: 2
+	}
+});
+
 export default TimePicker;
