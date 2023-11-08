@@ -15,10 +15,10 @@ class DateInput extends Component<DataInputProps> {
 
 	constructor(props: DataInputProps) {
 		super(props);
-		this.state.text = this.dateFormatter(props.value);
+		this.state.text = DateInput.dateFormatter(props.value);
 	}
 
-	private dateFormatter(date: [number, number, number]): string {
+	public static dateFormatter(date: [number, number, number]): string {
 		let day: string = date[0] < 10 ? `0${date[0]}` : `${date[0]}`;
 		let month: string = date[1] < 10 ? `0${date[1]}` : `${date[1]}`;
 		return `${day}/${month}/${date[2]}`;
@@ -49,7 +49,7 @@ class DateInput extends Component<DataInputProps> {
 		years = Math.max(years, 1970);
 
 		this.props.onChange([days, months, years]);
-		this.setState({ text: this.dateFormatter([days, months, years]) });
+		this.setState({ text: DateInput.dateFormatter([days, months, years]) });
 	}
 
 	private async onTextInput(e: NativeSyntheticEvent<TextInputTextInputEventData>) {
