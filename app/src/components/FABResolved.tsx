@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, FAB, Modal, Portal } from 'react-native-paper';
+import { Button, FAB, IconButton, Modal, Portal, Text } from 'react-native-paper';
 import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
 
@@ -12,14 +12,16 @@ const styles = StyleSheet.create({
 		bottom: 80
 	},
 	container: {
-		flex: 1,
 		alignItems: 'center',
 		justifyContent: 'center',
 		backgroundColor: undefined,
 		position: 'absolute'
 	},
 	view: {
-		flexDirection: 'row-reverse',
+		paddingBottom: 16,
+		alignItems: 'center',
+		justifyContent: 'space-evenly',
+		flexDirection: 'column',
 		borderRadius: 20,
 		backgroundColor: getCurrentTheme().colors.surface,
 		width: 230,
@@ -27,7 +29,22 @@ const styles = StyleSheet.create({
 	},
 	button: {
 		alignItems: 'center',
-		borderRadius: 20
+		justifyContent: 'center',
+		backgroundColor: getCurrentTheme().colors.primary,
+		borderRadius: 20,
+		width: '50%'
+	},
+	buttonview: {
+		flexDirection: 'row',
+		justifyContent: 'flex-end',
+		width: '100%'
+	},
+	text: {
+		paddingBottom: 16,
+		alignItems: 'center',
+		justifyContent: 'center',
+		textAlign: 'center',
+		width: '60%'
 	}
 });
 
@@ -42,7 +59,32 @@ class ResolvedConfirm extends Component<ResolvedProps> {
 			<Portal>
 				<Modal style={styles.container} visible={this.props.visible} onDismiss={() => this.props.onDismiss()}>
 					<View style={styles.view}>
-						<Button style={styles.button} icon={'close-thick'} onPress={() => {}}></Button>
+						<View style={styles.buttonview}>
+							<IconButton
+								icon="close-thick"
+								iconColor={getCurrentTheme().colors.onBackground}
+								size={20}
+								onPress={() => this.props.onDismiss()}
+							/>
+						</View>
+						<Text style={styles.text}>Are you sure you want to resolve this incident? (Hold To Resolve)</Text>
+						<View>
+							<Button
+								style={styles.button}
+								icon="check"
+								mode="contained"
+								onLongPress={() => {
+									console.log('Pressed');
+									this.props.onDismiss();
+								}}
+								delayLongPress={3000}
+								onPressIn={() => {
+									console.log('pressing in');
+								}}
+							>
+								Resolve
+							</Button>
+						</View>
 					</View>
 				</Modal>
 			</Portal>
@@ -52,7 +94,6 @@ class ResolvedConfirm extends Component<ResolvedProps> {
 
 class FABResolved extends Component {
 	state = { assignVisible: false };
-
 	render(): React.JSX.Element {
 		return (
 			<Portal>
