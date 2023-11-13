@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Button, FAB, IconButton, Modal, Portal, Text } from 'react-native-paper';
-import { StyleSheet, View } from 'react-native';
+import { FAB, Icon, IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
 
 interface ResolvedProps {
@@ -10,7 +10,12 @@ interface ResolvedProps {
 }
 
 class ResolvedConfirm extends Component<ResolvedProps> {
+	state = { assignVisible: false, resolvedActive: false };
 	render(): React.JSX.Element {
+		let buttonStyle = {
+			...styles.resolveButton,
+			backgroundColor: !this.props.resolvedActive ? getCurrentTheme().colors.onSurfaceDisabled : getCurrentTheme().colors.onPrimary
+		};
 		return (
 			<Portal>
 				<Modal style={styles.container} visible={this.props.visible} onDismiss={() => this.props.onDismiss()}>
@@ -23,20 +28,32 @@ class ResolvedConfirm extends Component<ResolvedProps> {
 								onPress={() => this.props.onDismiss()}
 							/>
 						</View>
-						<Text style={styles.text}>Are you sure you want to resolve this incident?</Text>
+						<Text>Are you sure you want to resolve this incident?</Text>
 						<View>
-							<Button
+							<TouchableRipple
+								style={{ borderRadius: buttonStyle.borderRadius }}
 								disabled={!this.props.resolvedActive}
-								style={styles.button}
-								icon="check"
-								mode="contained"
 								onPress={() => {
 									console.log('Pressed');
 									this.props.onDismiss();
 								}}
+								borderless={true}
 							>
-								Resolve
-							</Button>
+								<View style={buttonStyle}>
+									{!this.props.resolvedActive ? (
+										<ActivityIndicator
+											size={24}
+											animating={true}
+											color={getCurrentTheme().colors.inverseSurface}
+										></ActivityIndicator>
+									) : (
+										<Icon size={24} source={'check'}></Icon>
+									)}
+									<Text style={styles.text} variant={'bodyLarge'}>
+										Resolve
+									</Text>
+								</View>
+							</TouchableRipple>
 						</View>
 					</View>
 				</Modal>
@@ -47,10 +64,10 @@ class ResolvedConfirm extends Component<ResolvedProps> {
 
 class FABResolved extends Component {
 	state = { assignVisible: false, resolvedActive: false };
-
+	timeout: NodeJS.Timeout | undefined;
 	private resolvedTimeout(): void {
 		this.setState({ assignVisible: true });
-		setTimeout((): void => {
+		this.timeout = setTimeout((): void => {
 			this.setState({ resolvedActive: true });
 		}, 5000);
 	}
@@ -58,17 +75,26 @@ class FABResolved extends Component {
 	render(): React.JSX.Element {
 		return (
 			<Portal>
-				<FAB
-					style={styles.fab}
-					icon="check-bold"
-					onPress={() => this.resolvedTimeout()}
-					rippleColor={getCurrentTheme().colors.primary}
-				/>
+				<View style={styles.fab}>
+					<FAB
+						elevation={0}
+						variant={'tertiary'}
+						icon="check-bold"
+						onPress={() => this.resolvedTimeout()}
+						rippleColor={getCurrentTheme().colors.primary}
+					/>
+				</View>
 				<ResolvedConfirm
 					visible={this.state.assignVisible}
 					resolvedActive={this.state.resolvedActive}
 					onDismiss={() => {
-						this.setState({ assignVisible: false });
+						this.setState({ assignVisible: false }, () => {
+							this.setState({ resolvedActive: false });
+							if (this.timeout !== undefined) {
+								clearTimeout(this.timeout);
+								this.timeout = undefined;
+							}
+						});
 					}}
 				/>
 			</Portal>
@@ -114,11 +140,15 @@ const styles = StyleSheet.create({
 		width: '100%'
 	},
 	text: {
-		paddingBottom: 16,
-		alignItems: 'center',
-		justifyContent: 'center',
-		textAlign: 'center',
-		width: '60%'
+		verticalAlign: 'middle'
+	},
+	resolveButton: {
+		height: 48,
+		flexDirection: 'row',
+		padding: 10,
+		borderRadius: 20,
+
+		gap: 16
 	}
 });
 
