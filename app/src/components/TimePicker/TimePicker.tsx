@@ -17,11 +17,13 @@ import {
 import { isLandscape } from '../../utility/ScreenUtility';
 import DateInput from './DateInput';
 
-type PickerDate = [number, number, number];
+export type PickerDate = [number, number, number];
 
 interface TimePickerProps {
 	visible: boolean;
 	onDismiss?: (date: [PickerDate, PickerDate]) => void;
+	startDate?: PickerDate;
+	endDate?: PickerDate;
 }
 
 enum ScreenSelector {
@@ -60,11 +62,11 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 
 	constructor(props: TimePickerProps) {
 		super(props);
-		let today: [number, number, number] = getToday();
+		let today: PickerDate = getToday();
 		this.state.currentMonth = today[1];
 		this.state.currentYear = today[2];
-		this.state.selectedTimeStart = today;
-		this.state.selectedTimeEnd = today;
+		this.state.selectedTimeStart = props.startDate ?? today;
+		this.state.selectedTimeEnd = props.endDate ?? today;
 		this.state.landscape = isLandscape();
 		Dimensions.addEventListener('change', ({ window: { width, height } }) => {
 			if (width < height) {
@@ -359,7 +361,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	}
 
 	private dateInputRender(): React.JSX.Element {
-		let value: [number, number, number] =
+		let value: PickerDate =
 			this.state.dateInputField === DateInputField.STARTDATE ? this.state.selectedTimeStart : this.state.selectedTimeEnd;
 		return (
 			<View style={{ padding: 16, width: '100%', marginBottom: 16 }}>

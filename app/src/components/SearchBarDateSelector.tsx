@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { Searchbar } from 'react-native-paper';
-import TimePicker from './TimePicker/TimePicker';
+import TimePicker, { PickerDate } from './TimePicker/TimePicker';
 import { compareDatesLessThanOrEqual, getToday } from './TimePicker/DateHelper';
 
 type Period = {
-	start: [number, number, number];
-	end: [number, number, number];
+	start: PickerDate;
+	end: PickerDate;
 };
 
 interface SearchBarDateSelectorProps {
@@ -16,8 +16,8 @@ interface SearchBarDateSelectorProps {
 interface SearchBarDateSelectorState {
 	query: string;
 	timePickerVisible: boolean;
-	startDate: [number, number, number];
-	endDate: [number, number, number];
+	startDate: PickerDate;
+	endDate: PickerDate;
 }
 
 class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, SearchBarDateSelectorState> {
@@ -35,8 +35,8 @@ class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, Search
 		}
 	}
 
-	private async onDismiss(date: [[number, number, number], [number, number, number]]): Promise<void> {
-		let today: [number, number, number] = getToday();
+	private async onDismiss(date: [PickerDate, PickerDate]): Promise<void> {
+		let today: PickerDate = getToday();
 		if (compareDatesLessThanOrEqual(today, date[0])) {
 			date[0] = today;
 		}
@@ -66,7 +66,7 @@ class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, Search
 					visible={this.state.timePickerVisible}
 					startDate={this.state.startDate}
 					endDate={this.state.endDate}
-					onDismiss={(date: [[number, number, number], [number, number, number]]) => this.onDismiss(date)}
+					onDismiss={(date: [PickerDate, PickerDate]) => this.onDismiss(date)}
 				/>
 			</>
 		);
