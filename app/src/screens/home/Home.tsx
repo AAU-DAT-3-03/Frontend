@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import { getCurrentTheme } from '../../themes/ThemeManager';
+import Notecard from '../../components/NoteCard';
 
 class Home extends Component {
 	private AppBar(): React.JSX.Element {
@@ -23,6 +24,7 @@ class Home extends Component {
 				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
 					test
 				</Text>
+				<Notecard noteInfo={'bla bla bla'}></Notecard>
 			</ContentContainer>
 		);
 	}
