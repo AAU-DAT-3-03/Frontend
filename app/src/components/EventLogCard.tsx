@@ -100,8 +100,8 @@ class EventLogCard extends Component<EventLogProps> {
 					<Text variant={'titleMedium'} style={eventLogStyleSheet.title}>
 						Event Log
 					</Text>
-					{this.props.eventLog.map((log) => {
-						return <EventLogCardContent eventLog={log} />;
+					{this.props.eventLog.map((log: EventLog, key: number) => {
+						return <EventLogCardContent key={key} eventLog={log} />;
 					})}
 				</Card.Content>
 			</Card>
