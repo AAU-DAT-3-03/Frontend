@@ -4,18 +4,16 @@ import ContentContainer from '../../components/ContentContainer';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import AddUser, { User } from '../../components/AddUser';
 
-const users: User[] = [{ name: 'Bent', phoneNr: 12345678 }];
+const users: User[] = [{ name: 'Bent', team: 'Cloud', phoneNr: 12345678 }];
 
 const usersAll: User[] = [
-	{ name: 'Bent', phoneNr: 12345678 },
-	{ name: 'Ole', phoneNr: 12345678 },
-	{ name: 'Benjamin', phoneNr: 12345678 },
-	{ name: 'Nikolaj', phoneNr: 12345678 },
-	{ name: 'Olivia', phoneNr: 12345678 },
-	{ name: 'Kamilla', phoneNr: 12345678 },
-	{ name: 'Caroline', phoneNr: 12345678 },
-	{ name: 'Peter', phoneNr: 12345678 },
-	{ name: 'Ib', phoneNr: 12345678 }
+	{ name: 'Bent', team: 'Cloud', phoneNr: 12345678 },
+	{ name: 'Bølle', team: 'Cloud', phoneNr: 12345678 },
+	{ name: 'Mikkel', team: 'Server', phoneNr: 12345678 },
+	{ name: 'Rasmus', team: 'Server', phoneNr: 12345678 },
+	{ name: 'Sandra', team: 'Admin', phoneNr: 12345678 },
+	{ name: 'Mads', team: 'Admin', phoneNr: 12345678 },
+	{ name: 'Camilla', team: 'Database', phoneNr: 12345678 }
 ];
 
 class Home extends Component {
@@ -38,7 +36,7 @@ class Home extends Component {
 				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
 					test
 				</Text>
-				<AddUser type={'Called'} users={users} usersAll={usersAll} />
+				<AddUser removable={true} type={'Assigned'} users={users} usersAll={usersAll} />
 			</ContentContainer>
 		);
 	}

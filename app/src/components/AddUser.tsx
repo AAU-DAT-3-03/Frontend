@@ -13,6 +13,7 @@ const styles = StyleSheet.create({
 		position: 'absolute'
 	},
 	view: {
+		flexDirection: 'column',
 		alignItems: 'center',
 		borderRadius: 20,
 		backgroundColor: getCurrentTheme().colors.surface,
@@ -30,6 +31,7 @@ interface AssignUserProps {
 	users: User[];
 	visible: boolean;
 	onDismiss: (user: User | undefined) => void;
+	removable: boolean;
 }
 
 class AssignUser extends Component<AssignUserProps> {
@@ -56,8 +58,14 @@ class AssignUser extends Component<AssignUserProps> {
 							)}
 							renderItem={(info) => {
 								return (
-									<Button icon={'account'} onPress={() => this.props.onDismiss(info.item)}>
+									<Button
+										style={{ justifyContent: 'space-evenly' }}
+										icon={'account'}
+										onPress={() => this.props.onDismiss(info.item)}
+									>
 										{info.item.name}
+
+										{info.item.team}
 									</Button>
 								);
 							}}
@@ -71,6 +79,7 @@ class AssignUser extends Component<AssignUserProps> {
 
 export type User = {
 	name: string;
+	team: string;
 	phoneNr: number;
 };
 
@@ -78,6 +87,7 @@ interface AddUserProps {
 	type: string;
 	usersAll: User[];
 	users?: User[];
+	removable: boolean;
 }
 
 interface AddUserState {
@@ -95,8 +105,7 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 
 	private onDeleteUser(user: User): void {
 		let users: User[] = this.state.users.filter((value: User) => {
-			if (value.name === user.name && value.phoneNr === user.phoneNr) return false;
-			return true;
+			return !(value.name === user.name && value.phoneNr === user.phoneNr);
 		});
 		this.setState({ users: users });
 	}
@@ -110,10 +119,17 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 						{this.state.users?.map((user: User, key: number) => {
 							return (
 								<UserAvatar
+									team={user.team}
 									key={key}
 									name={user.name}
 									phoneNr={user.phoneNr}
-									onDelete={(user: User) => this.onDeleteUser(user)}
+									onDelete={
+										this.props.removable
+											? (user: User) => {
+													this.onDeleteUser(user);
+											  }
+											: undefined
+									}
 								/>
 							);
 						})}
@@ -127,6 +143,7 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 						style={{}}
 					/>
 					<AssignUser
+						removable={this.props.removable}
 						visible={this.state.assignVisible}
 						onDismiss={(user: User | undefined): void => {
 							if (user !== undefined) this.addUser(user);
@@ -141,8 +158,7 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 
 	private addUser(user: User): void {
 		let users: User[] = this.state.users.filter((value: User) => {
-			if (value.name === user.name && value.phoneNr === user.phoneNr) return true;
-			return false;
+			return value.name === user.name && value.phoneNr === user.phoneNr;
 		});
 		if (users.length > 0) return;
 		this.state.users.push(user);

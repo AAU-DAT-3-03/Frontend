@@ -6,6 +6,7 @@ import Color from 'color';
 import { User } from './AddUser';
 
 interface UserAvatarProps {
+	team: string;
 	name: string;
 	phoneNr: number;
 	onDelete?: (user: User) => void;
@@ -23,6 +24,7 @@ class UserAvatar extends Component<UserAvatarProps> {
 						onPress={() => {
 							if (this.props.onDelete !== undefined)
 								this.props.onDelete({
+									team: this.props.team,
 									name: this.props.name,
 									phoneNr: this.props.phoneNr
 								});
