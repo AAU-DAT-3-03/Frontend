@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import { SegmentedButtons } from 'react-native-paper';
 
-type Status = 1 | 2 | 3 | 4;
-
 interface PrioritySelectorProps {
-	state: Status;
 	onPress: (value: number) => void;
 }
 interface PrioritySelectorState {
@@ -22,7 +19,7 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 				density={'small'}
 				onValueChange={(value) => {
 					this.setState({ state: value });
-					this.props.onPress(parseInt(value));
+					this.props.onPress(parseInt(value, 10));
 				}}
 				buttons={[
 					{ value: '1', label: 'P1' },
