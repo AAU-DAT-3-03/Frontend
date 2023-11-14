@@ -28,7 +28,7 @@ class ResolvedConfirm extends Component<ResolvedProps> {
 								onPress={() => this.props.onDismiss()}
 							/>
 						</View>
-						<Text>Are you sure you want to resolve this incident?</Text>
+						<Text style={styles.fabtext}>Are you sure you want to resolve this incident?</Text>
 						<View>
 							<TouchableRipple
 								style={{ borderRadius: buttonStyle.borderRadius }}
@@ -107,9 +107,8 @@ const styles = StyleSheet.create({
 		borderRadius: 40,
 		backgroundColor: getCurrentTheme().colors.onTertiary,
 		position: 'absolute',
-		margin: 16,
-		right: 0,
-		bottom: 80
+		right: 5,
+		bottom: '12%'
 	},
 	container: {
 		alignItems: 'center',
@@ -117,7 +116,13 @@ const styles = StyleSheet.create({
 		backgroundColor: undefined,
 		position: 'absolute'
 	},
+	fabtext: {
+		paddingBottom: 10,
+		textAlign: 'center'
+	},
 	view: {
+		paddingLeft: 16,
+		paddingRight: 16,
 		paddingBottom: 16,
 		alignItems: 'center',
 		justifyContent: 'space-evenly',
