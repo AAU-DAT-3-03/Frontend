@@ -26,26 +26,34 @@ const styles = StyleSheet.create({
 	}
 });
 
-enum Status {
-	ASSIGNED,
-	CALLED
-}
-
 interface AssignUserProps {
 	users: User[];
 	visible: boolean;
 	onDismiss: (user: User | undefined) => void;
 }
 
-class AssignUser extends Component<AssignUserProps, Status> {
+class AssignUser extends Component<AssignUserProps> {
+	state = {
+		query: ''
+	};
+
 	render(): React.JSX.Element {
 		return (
 			<Portal>
 				<Modal style={styles.container} visible={this.props.visible} onDismiss={() => this.props.onDismiss(undefined)}>
 					<View style={styles.view}>
-						<Searchbar placeholder={'User'} mode={'view'} icon={'account'} showDivider={true} value={''} />
+						<Searchbar
+							placeholder={'User'}
+							mode={'view'}
+							icon={'account'}
+							showDivider={true}
+							value={this.state.query}
+							onChange={(e) => this.setState({ query: e.nativeEvent.text })}
+						/>
 						<FlatList
-							data={this.props.users}
+							data={this.props.users.filter(
+								(value) => value.name.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1
+							)}
 							renderItem={(info) => {
 								return (
 									<Button icon={'account'} onPress={() => this.props.onDismiss(info.item)}>
