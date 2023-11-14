@@ -35,8 +35,8 @@ class StatusIcon extends Component<StatusIconProps> {
 		}
 
 		return (
-			<View style={{ backgroundColor: backgroundColor, aspectRatio: 1, width: 33, padding: 4, borderRadius: 100 }}>
-				<Icon source={icon} color={'white'} size={25} />
+			<View style={{ backgroundColor: backgroundColor, aspectRatio: 1, width: 40, padding: 8, borderRadius: 100 }}>
+				<Icon source={icon} color={'white'} size={24} />
 			</View>
 		);
 	}

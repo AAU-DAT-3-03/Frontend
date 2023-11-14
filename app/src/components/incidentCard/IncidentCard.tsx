@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Card, IconButton, Text } from 'react-native-paper';
+import { Card, IconButton, Text, TouchableRipple } from 'react-native-paper';
 import { StyleSheet, View } from 'react-native';
 import StatusIcon, { IncidentState } from '../StatusIcon';
 import UserAvatar from './UserAvatar';
 import { getCurrentTheme } from '../../themes/ThemeManager';
+import alarm from '../../screens/alarm/Alarm';
 
 type User = {
 	name: string;
@@ -27,7 +28,7 @@ export type Incident = {
 interface IncidentCardHeaderProps {
 	collapsed: boolean;
 	onClickButton: () => void;
-	onClickIncident?: () => void;
+	onClickIncident: () => void;
 	company: string;
 	case: number;
 	users?: User[];
@@ -36,36 +37,42 @@ interface IncidentCardHeaderProps {
 
 class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 	render(): React.JSX.Element {
-		let headerContainer = {
-			...incidentCardStyle().headerContainer,
+		let outerContainer = {
 			borderBottomWidth: this.props.collapsed ? 0 : 0.5,
+			borderBottomColor: getCurrentTheme().colors.onSurface,
 			paddingBottom: this.props.collapsed ? 0 : 8
 		};
 
 		let icon: string = this.props.collapsed ? 'menu-up' : 'menu-down';
 		return (
-			<View style={headerContainer}>
-				<View style={incidentCardStyle().headerSection}>
-					<View style={{ marginTop: 5, marginRight: 16 }}>
-						<StatusIcon status={this.props.status} />
+			<View style={outerContainer}>
+				<TouchableRipple style={incidentCardStyle().headerRipple} onPress={() => this.props.onClickIncident()} borderless={true}>
+					<View style={incidentCardStyle().headerContainer}>
+						<View style={incidentCardStyle().headerSection}>
+							<View style={{ marginTop: 2, marginRight: 16 }}>
+								<StatusIcon status={this.props.status} />
+							</View>
+							<View>
+								<Text variant={'titleMedium'}>{this.props.company}</Text>
+								<Text variant={'bodySmall'}>#{this.props.case}</Text>
+							</View>
+						</View>
+						<View style={incidentCardStyle().headerSection}>
+							<View style={{ marginTop: 9 }}>
+								{this.props.users === undefined ? null : (
+									<UserAvatar
+										name={`${this.props.users[0].name}${
+											this.props.users.length > 1 ? ` +${this.props.users.length - 1}` : ''
+										}`}
+									/>
+								)}
+							</View>
+							<View style={{ marginTop: -3 }}>
+								<IconButton icon={icon} onPress={() => this.props.onClickButton()} />
+							</View>
+						</View>
 					</View>
-					<View>
-						<Text variant={'titleMedium'}>{this.props.company}</Text>
-						<Text variant={'bodySmall'}>#{this.props.case}</Text>
-					</View>
-				</View>
-				<View style={incidentCardStyle().headerSection}>
-					<View style={{ marginTop: 8 }}>
-						{this.props.users === undefined ? null : (
-							<UserAvatar
-								name={`${this.props.users[0].name}${this.props.users.length > 1 ? ` +${this.props.users.length - 1}` : ''}`}
-							/>
-						)}
-					</View>
-					<View style={{ marginTop: -4 }}>
-						<IconButton icon={icon} onPress={() => this.props.onClickButton()} />
-					</View>
-				</View>
+				</TouchableRipple>
 			</View>
 		);
 	}
@@ -74,20 +81,24 @@ class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 interface IncidentCardListItemProps {
 	alarm: Alarm;
 	alternate: boolean;
+	onClickAlarm: (id: number) => void;
 }
 
 class IncidentCardListItem extends Component<IncidentCardListItemProps> {
 	render(): React.JSX.Element {
 		return (
-			<View style={this.props.alternate ? incidentCardStyle().listItemAlternate : incidentCardStyle().listItem}>
-				<Text>{this.props.alarm.alarmError}</Text>
-			</View>
+			<TouchableRipple onPress={() => this.props.onClickAlarm(this.props.alarm.id)} borderless={true}>
+				<View style={this.props.alternate ? incidentCardStyle().listItemAlternate : incidentCardStyle().listItem}>
+					<Text>{this.props.alarm.alarmError}</Text>
+				</View>
+			</TouchableRipple>
 		);
 	}
 }
 
 interface IncidentCardListProps {
 	alarms: Alarm[];
+	onClickAlarm: (id: number) => void;
 }
 
 class IncidentCardList extends Component<IncidentCardListProps> {
@@ -95,7 +106,12 @@ class IncidentCardList extends Component<IncidentCardListProps> {
 		return (
 			<View style={{ borderRadius: 16, overflow: 'hidden', marginTop: 16 }}>
 				{this.props.alarms.map((alarm: Alarm, key: number) => (
-					<IncidentCardListItem key={key} alarm={alarm} alternate={key % 2 === 0} />
+					<IncidentCardListItem
+						key={key}
+						alarm={alarm}
+						alternate={key % 2 === 0}
+						onClickAlarm={(id: number) => this.props.onClickAlarm(id)}
+					/>
 				))}
 			</View>
 		);
@@ -104,6 +120,8 @@ class IncidentCardList extends Component<IncidentCardListProps> {
 
 interface IncidentCardProps {
 	incident: Incident;
+	onClickIncident: (id: number) => void;
+	onClickAlarm: (id: number) => void;
 }
 
 interface IncidentCardState {
@@ -126,9 +144,15 @@ class IncidentCard extends Component<IncidentCardProps, IncidentCardState> {
 						case={this.props.incident.caseNr}
 						users={this.props.incident.users}
 						status={this.props.incident.state}
+						onClickIncident={() => this.props.onClickIncident(this.props.incident.caseNr)}
 					/>
 					<View style={incidentCardStyle().list}>
-						{this.state.collapsed ? null : <IncidentCardList alarms={this.props.incident.alarms} />}
+						{this.state.collapsed ? null : (
+							<IncidentCardList
+								alarms={this.props.incident.alarms}
+								onClickAlarm={(id: number) => this.props.onClickAlarm(id)}
+							/>
+						)}
 					</View>
 				</Card.Content>
 			</Card>
@@ -139,12 +163,15 @@ class IncidentCard extends Component<IncidentCardProps, IncidentCardState> {
 const incidentCardStyle = () => {
 	return StyleSheet.create({
 		headerContainer: {
+			paddingTop: 4,
 			flexDirection: 'row',
-			justifyContent: 'space-between',
-			borderBottomWidth: 1,
-			borderBottomColor: getCurrentTheme().colors.onSurface
+			justifyContent: 'space-between'
+		},
+		headerRipple: {
+			borderRadius: 16
 		},
 		headerSection: {
+			paddingLeft: 4,
 			flexDirection: 'row'
 		},
 		list: {

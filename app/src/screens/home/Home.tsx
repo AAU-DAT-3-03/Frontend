@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, lazy } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import IncidentCard, { Incident } from '../../components/incidentCard/IncidentCard';
@@ -41,7 +41,11 @@ class Home extends Component {
 				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
 					test
 				</Text>
-				<IncidentCard incident={incident} />
+				<IncidentCard
+					incident={incident}
+					onClickIncident={(id) => console.log('Incident', id)}
+					onClickAlarm={(id) => console.log('Alarm', id)}
+				/>
 			</ContentContainer>
 		);
 	}
