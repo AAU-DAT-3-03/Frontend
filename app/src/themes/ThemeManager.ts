@@ -10,3 +10,9 @@ import { MD3Theme } from 'react-native-paper';
 export function getCurrentTheme(): MD3Theme {
 	return Appearance.getColorScheme() === 'dark' ? DarkTheme : LightTheme;
 }
+
+export const Colors = {
+	error: '#AA1E2E',
+	warn: '#E1B000',
+	allGood: '#44BE50'
+};
