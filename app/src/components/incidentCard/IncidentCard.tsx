@@ -4,7 +4,6 @@ import { StyleSheet, View } from 'react-native';
 import StatusIcon, { IncidentState } from '../StatusIcon';
 import UserAvatar from './UserAvatar';
 import { getCurrentTheme } from '../../themes/ThemeManager';
-import alarm from '../../screens/alarm/Alarm';
 
 type User = {
 	name: string;
@@ -43,7 +42,7 @@ class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 			paddingBottom: this.props.collapsed ? 0 : 8
 		};
 
-		let icon: string = this.props.collapsed ? 'menu-up' : 'menu-down';
+		let icon: string = this.props.collapsed ? 'menu-down' : 'menu-up';
 		return (
 			<View style={outerContainer}>
 				<TouchableRipple style={incidentCardStyle().headerRipple} onPress={() => this.props.onClickIncident()} borderless={true}>
