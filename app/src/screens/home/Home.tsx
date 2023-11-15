@@ -3,6 +3,7 @@ import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import IncidentCard, { Incident } from '../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../themes/ThemeManager';
+import { View } from 'react-native';
 
 const incident: Incident = {
 	state: 'acknowledged',
@@ -18,7 +19,7 @@ const incident: Incident = {
 		{ name: 'Ole', phoneNr: 12345678 },
 		{ name: 'Rasmus', phoneNr: 12345678 }
 	],
-	priority: 4
+	priority: 2
 };
 
 class Home extends Component {
@@ -41,11 +42,28 @@ class Home extends Component {
 				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
 					test
 				</Text>
-				<IncidentCard
-					incident={incident}
-					onClickIncident={(id) => console.log('Incident', id)}
-					onClickAlarm={(id) => console.log('Alarm', id)}
-				/>
+				<View style={{ flexDirection: 'column', gap: 20 }}>
+					<IncidentCard
+						incident={incident}
+						onClickIncident={(id) => console.log('Incident', id)}
+						onClickAlarm={(id) => console.log('Alarm', id)}
+					/>
+					<IncidentCard
+						incident={incident}
+						onClickIncident={(id) => console.log('Incident', id)}
+						onClickAlarm={(id) => console.log('Alarm', id)}
+					/>
+					<IncidentCard
+						incident={incident}
+						onClickIncident={(id) => console.log('Incident', id)}
+						onClickAlarm={(id) => console.log('Alarm', id)}
+					/>
+					<IncidentCard
+						incident={incident}
+						onClickIncident={(id) => console.log('Incident', id)}
+						onClickAlarm={(id) => console.log('Alarm', id)}
+					/>
+				</View>
 			</ContentContainer>
 		);
 	}
