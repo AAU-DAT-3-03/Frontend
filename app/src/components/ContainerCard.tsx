@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
 
 interface CardProps {
 	children: React.ReactNode | React.ReactNode[] | undefined;
+	style?: StyleProp<any>;
 }
 
 class Header extends Component<CardProps> {
@@ -19,11 +20,21 @@ class Content extends Component<CardProps> {
 }
 
 class ContainerCard extends Component<CardProps> {
+	state = {
+		header: false,
+		content: false
+	};
 	static Header: (props: CardProps) => React.JSX.Element = (props: CardProps) => <Header>{props.children}</Header>;
 	static Content: (props: CardProps) => React.JSX.Element = (props: CardProps) => <Content>{props.children}</Content>;
 
 	render(): React.JSX.Element {
-		return <View style={cardStyle().card}>{this.props.children}</View>;
+		let style: StyleProp<ViewStyle>;
+		if (this.props.style !== undefined) {
+			style = { ...cardStyle().card, ...this.props.style };
+		} else {
+			style = cardStyle().card;
+		}
+		return <View style={style}>{this.props.children}</View>;
 	}
 }
 
@@ -33,7 +44,7 @@ const cardStyle = () => {
 			width: '100%',
 			paddingVertical: 16,
 			borderRadius: 16,
-			backgroundColor: getCurrentTheme().colors.surface
+			backgroundColor: getCurrentTheme().colors.elevation.level2
 		},
 		header: {
 			borderBottomColor: getCurrentTheme().colors.outline,
