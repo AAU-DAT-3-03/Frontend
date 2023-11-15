@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import { getCurrentTheme } from '../../themes/ThemeManager';
-import InformationCard from '../../components/InformationCard';
 
 class Home extends Component {
 	private AppBar(): React.JSX.Element {
@@ -24,7 +23,6 @@ class Home extends Component {
 				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
 					test
 				</Text>
-				<InformationCard errorType={'Out of memory killed'} errorInfo={'bla bla bla'}></InformationCard>
 			</ContentContainer>
 		);
 	}
