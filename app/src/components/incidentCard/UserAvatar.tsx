@@ -1,19 +1,24 @@
 import React, { Component } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Icon, Text } from 'react-native-paper';
+import { Icon, Text, TouchableRipple } from 'react-native-paper';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 
 interface UserAvatarProps {
 	name: string;
+	onPress?: () => void;
 }
 
 class UserAvatar extends Component<UserAvatarProps> {
 	render(): React.JSX.Element {
+		// @ts-ignore
+		let onPress = this.props.onPress !== undefined ? () => this.props.onPress() : undefined;
 		return (
-			<View style={userAvatarStyle.container}>
-				<Icon color={userAvatarStyle.contentText.color} size={18} source={'account'} />
-				<Text style={userAvatarStyle.contentText}>{this.props.name}</Text>
-			</View>
+			<TouchableRipple style={{ borderRadius: userAvatarStyle.container.borderRadius }} onPress={onPress} borderless={true}>
+				<View style={userAvatarStyle.container}>
+					<Icon color={userAvatarStyle.contentText.color} size={18} source={'account'} />
+					<Text style={userAvatarStyle.contentText}>{this.props.name}</Text>
+				</View>
+			</TouchableRipple>
 		);
 	}
 }
