@@ -24,7 +24,7 @@ class Home extends Component {
 				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
 					test
 				</Text>
-				<InformationCard errorType={'Out of memory'} errorInfo={'bla bla bla'}></InformationCard>
+				<InformationCard errorType={'Out of memory killed'} errorInfo={'bla bla bla'}></InformationCard>
 			</ContentContainer>
 		);
 	}
