@@ -48,7 +48,7 @@ class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 				<TouchableRipple style={incidentCardStyle().headerRipple} onPress={() => this.props.onClickIncident()} borderless={true}>
 					<View style={incidentCardStyle().headerContainer}>
 						<View style={incidentCardStyle().headerSection}>
-							<View style={{ marginTop: 2, marginRight: 16 }}>
+							<View style={{ marginRight: 16 }}>
 								<StatusIcon status={this.props.status} />
 							</View>
 							<View>
@@ -57,7 +57,7 @@ class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 							</View>
 						</View>
 						<View style={incidentCardStyle().headerSection}>
-							<View style={{ marginTop: 9 }}>
+							<View>
 								{this.props.users === undefined ? null : (
 									<UserAvatar
 										name={`${this.props.users[0].name}${
@@ -66,7 +66,7 @@ class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 									/>
 								)}
 							</View>
-							<View style={{ marginTop: -3 }}>
+							<View>
 								<IconButton icon={icon} onPress={() => this.props.onClickButton()} />
 							</View>
 						</View>
@@ -171,7 +171,8 @@ const incidentCardStyle = () => {
 		},
 		headerSection: {
 			paddingLeft: 4,
-			flexDirection: 'row'
+			flexDirection: 'row',
+			alignItems: 'center'
 		},
 		list: {
 			width: '100%'
