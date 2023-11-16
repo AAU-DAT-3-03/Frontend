@@ -328,6 +328,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	private yearSelectorRender(): React.JSX.Element {
 		let rowStyle: StyleProp<ViewStyle> = {
 			...timePickerStyleSheet.rowStyle,
+			flexDirection: 'row',
 			maxHeight: this.state.landscape ? Dimensions.get('screen').height * 0.9 : Dimensions.get('screen').height / 2,
 			width: this.state.landscape ? '60%' : '100%'
 		};
@@ -336,10 +337,32 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 		return (
 			<View style={rowStyle}>
 				<FlatList
+					style={{ width: '50%' }}
 					data={data}
-					numColumns={2}
+					numColumns={1}
 					initialNumToRender={20}
+					showsVerticalScrollIndicator={false}
 					renderItem={(info: ListRenderItemInfo<number>) => this.yearButtonRender(info)}
+				/>
+				<FlatList
+					style={{ width: '50%' }}
+					data={fullMonths}
+					numColumns={1}
+					initialNumToRender={20}
+					showsVerticalScrollIndicator={false}
+					renderItem={(info: ListRenderItemInfo<string>) => (
+						<Button
+							textColor={getCurrentTheme().colors?.onSurface}
+							onPress={() =>
+								this.setState({
+									currentMonth: info.index + 1,
+									screenSelector: ScreenSelector.DATEPICKER
+								})
+							}
+						>
+							{info.item}
+						</Button>
+					)}
 				/>
 			</View>
 		);
@@ -348,7 +371,6 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	private yearButtonRender(info: ListRenderItemInfo<number>) {
 		return (
 			<Button
-				style={{ width: '50%' }}
 				textColor={getCurrentTheme().colors?.onSurface}
 				onPress={() =>
 					this.setState({
@@ -378,16 +400,6 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 			</View>
 		);
 	}
-
-	/**
-	 * 				<DateInput
-	 * 					ref={this.state.inputRef}
-	 * 					value={value}
-	 * 					onChange={(date: [number, number, number]) => {
-	 * 						this.dayButtonOnPress(date);
-	 * 					}}
-	 * 				/>
-	 */
 
 	/**
 	 * @brief Main render function for the component
