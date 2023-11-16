@@ -3,6 +3,7 @@ import { Card, Icon, IconButton, MD3Theme, Text, TouchableRipple } from 'react-n
 import { getCurrentTheme } from '../themes/ThemeManager';
 import { StyleSheet, View } from 'react-native';
 import Color from 'color';
+import ContainerCard from './ContainerCard';
 
 type EventLog = {
 	dateTime: number;
@@ -39,15 +40,15 @@ class EventLogCardContent extends Component<EventLogContentProps> {
 		let formattedDate: string = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 		let formattedTime: string = `${date.getHours()}:${date.getMinutes()}`;
 		return (
-			<View style={eventLogStyleSheet.logHeader}>
-				<View style={eventLogStyleSheet.avatarContainer}>
+			<View style={eventLogStyleSheet().logHeader}>
+				<View style={eventLogStyleSheet().avatarContainer}>
 					<Icon size={18} source={'account'} color={getCurrentTheme().colors.onPrimary} />
-					<Text style={eventLogStyleSheet.avatarText}>{this.props.eventLog.user}</Text>
+					<Text style={eventLogStyleSheet().avatarText}>{this.props.eventLog.user}</Text>
 				</View>
 				<Text variant={'titleSmall'} style={{ verticalAlign: 'middle' }}>
 					{formattedDate}
 				</Text>
-				<Text variant={'titleLarge'} style={{ verticalAlign: 'middle' }}>
+				<Text variant={'titleSmall'} style={{ verticalAlign: 'middle' }}>
 					{formattedTime}
 				</Text>
 			</View>
@@ -57,7 +58,7 @@ class EventLogCardContent extends Component<EventLogContentProps> {
 	render(): React.JSX.Element {
 		let theme: MD3Theme = getCurrentTheme();
 		return (
-			<View style={eventLogStyleSheet.logContainer}>
+			<View style={eventLogStyleSheet().logContainer}>
 				{this.header()}
 
 				{this.state.expandable ? (
@@ -65,15 +66,15 @@ class EventLogCardContent extends Component<EventLogContentProps> {
 						rippleColor={Color(theme.colors.onSurface).alpha(0.3).string()}
 						onPress={() => this.setState({ logVisible: !this.state.logVisible })}
 						borderless={true}
-						style={eventLogStyleSheet.logMessageContainer}
+						style={eventLogStyleSheet().logMessageContainer}
 					>
 						<View>
 							<IconButton
-								style={eventLogStyleSheet.avatarIcon}
+								style={eventLogStyleSheet().avatarIcon}
 								icon={this.state.logVisible ? 'menu-up' : 'menu-down'}
-								iconColor={eventLogStyleSheet.logMessage.color}
+								iconColor={eventLogStyleSheet().logMessage.color}
 							/>
-							<Text variant={'bodyLarge'} style={eventLogStyleSheet.logMessage}>
+							<Text variant={'bodyLarge'} style={eventLogStyleSheet().logMessage}>
 								{this.state.logVisible
 									? this.props.eventLog.message
 									: this.props.eventLog.message.slice(0, this.state.indexSplice) + (this.state.expandable ? '...' : '')}
@@ -81,8 +82,8 @@ class EventLogCardContent extends Component<EventLogContentProps> {
 						</View>
 					</TouchableRipple>
 				) : (
-					<View style={eventLogStyleSheet.logMessageContainer}>
-						<Text variant={'bodyLarge'} style={eventLogStyleSheet.logMessage}>
+					<View style={eventLogStyleSheet().logMessageContainer}>
+						<Text variant={'bodyLarge'} style={eventLogStyleSheet().logMessage}>
 							{this.props.eventLog.message}
 						</Text>
 					</View>
@@ -95,82 +96,86 @@ class EventLogCardContent extends Component<EventLogContentProps> {
 class EventLogCard extends Component<EventLogProps> {
 	render(): React.JSX.Element {
 		return (
-			<Card>
-				<Card.Content style={eventLogStyleSheet.card}>
-					<Text variant={'titleMedium'} style={eventLogStyleSheet.title}>
+			<ContainerCard>
+				<ContainerCard.Header>
+					<Text variant={'titleMedium'} style={eventLogStyleSheet().title}>
 						Event Log
 					</Text>
+				</ContainerCard.Header>
+				<ContainerCard.Content style={eventLogStyleSheet().card}>
 					{this.props.eventLog.map((log: EventLog, key: number) => {
 						return <EventLogCardContent key={key} eventLog={log} />;
 					})}
-				</Card.Content>
-			</Card>
+				</ContainerCard.Content>
+			</ContainerCard>
 		);
 	}
 }
 
 const mainColor: string = getCurrentTheme().colors.onSurface;
-const eventLogStyleSheet = StyleSheet.create({
-	avatarIcon: {
-		position: 'absolute',
-		right: 0,
-		top: -4
-	},
-	avatarContainer: {
-		flexDirection: 'row',
-		justifyContent: 'space-evenly',
-		gap: 3,
-		paddingLeft: 4,
-		paddingRight: 8,
-		paddingVertical: 4,
-		borderRadius: 16,
-		backgroundColor: getCurrentTheme().colors.primary
-	},
-	avatarText: {
-		height: '100%',
-		verticalAlign: 'top',
-		color: getCurrentTheme().colors.onPrimary
-	},
-	card: {
-		padding: 0
-	},
-	logMessage: {
-		color: getCurrentTheme().colors.onSurface,
-		padding: 8
-	},
-	logMessageContainer: {
-		padding: 0,
-		margin: 0,
-		marginTop: 4,
-		marginHorizontal: 4,
-		borderRadius: 16,
-		backgroundColor: getCurrentTheme().colors.elevation.level1
-	},
-	logContainer: {
-		backgroundColor: getCurrentTheme().colors.background,
-		borderRadius: 16,
-		paddingHorizontal: 4,
-		paddingVertical: 8,
-		marginTop: 4,
-		flexDirection: 'column',
-		justifyContent: 'flex-start'
-	},
-	title: {
-		width: '100%',
-		textAlign: 'center',
-		paddingBottom: 8,
-		borderBottomWidth: 1,
-		borderBottomColor: mainColor
-	},
-	logHeader: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		marginBottom: 2,
-		borderRadius: 16,
-		paddingHorizontal: 4,
-		verticalAlign: 'middle',
-		padding: 0
-	}
-});
+const eventLogStyleSheet = () => {
+	return StyleSheet.create({
+		avatarIcon: {
+			position: 'absolute',
+			right: 0,
+			top: -4
+		},
+		avatarContainer: {
+			flexDirection: 'row',
+			justifyContent: 'space-evenly',
+			gap: 3,
+			paddingLeft: 4,
+			paddingRight: 8,
+			paddingVertical: 4,
+			borderRadius: 16,
+			backgroundColor: getCurrentTheme().colors.primary
+		},
+		avatarText: {
+			height: '100%',
+			verticalAlign: 'top',
+			color: getCurrentTheme().colors.onPrimary
+		},
+		card: {
+			padding: 0
+		},
+		logMessage: {
+			color: getCurrentTheme().colors.onSurface,
+			padding: 8
+		},
+		logMessageContainer: {
+			padding: 0,
+			margin: 0,
+			marginTop: 4,
+			marginHorizontal: 4,
+			borderRadius: 16,
+			backgroundColor: getCurrentTheme().colors.elevation.level3
+		},
+		logContainer: {
+			backgroundColor: getCurrentTheme().colors.elevation.level2,
+			borderRadius: 16,
+			paddingHorizontal: 4,
+			paddingVertical: 12,
+			marginTop: 4,
+			flexDirection: 'column',
+			justifyContent: 'flex-start'
+		},
+		title: {
+			width: '100%',
+			textAlign: 'center',
+			paddingBottom: 8,
+			borderBottomWidth: 1,
+			borderBottomColor: mainColor
+		},
+		logHeader: {
+			flexDirection: 'row',
+			justifyContent: 'space-between',
+			marginBottom: 2,
+			borderRadius: 16,
+			paddingHorizontal: 4,
+			verticalAlign: 'middle',
+			padding: 0
+		}
+	});
+};
 
 export default EventLogCard;
