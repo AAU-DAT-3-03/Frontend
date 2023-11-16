@@ -1,7 +1,7 @@
 import { Appearance } from 'react-native';
 import { DarkTheme } from './DarkTheme';
 import { LightTheme } from './LightTheme';
-import { ThemeProp } from 'react-native-paper/lib/typescript/types';
+import { MD3Theme } from 'react-native-paper';
 
 export const Colors = {
 	error: '#AA1E2E',
