@@ -1,9 +1,9 @@
-import React, { Component, lazy } from 'react';
+import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
-import IncidentCard, { Incident } from '../../components/incidentCard/IncidentCard';
-import { getCurrentTheme } from '../../themes/ThemeManager';
-import { View } from 'react-native';
+import { Incident } from '../../components/incidentCard/IncidentCard';
+import Menu from './components/Menu';
+import { StyleSheet, View } from 'react-native';
 
 const incident: Incident = {
 	state: 'acknowledged',
@@ -22,12 +22,39 @@ const incident: Incident = {
 	priority: 2
 };
 
-class Home extends Component {
+interface HomeState {
+	menuVisible: boolean;
+	incidents: Incident[] | undefined;
+}
+
+class Home extends Component<any, HomeState> {
+	state: HomeState = {
+		menuVisible: false,
+		incidents: undefined
+	};
+
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
-				<Appbar.Content title={'Home'} />
+				<Appbar.Action icon={'menu'} onPress={() => this.setState({ menuVisible: true })} />
+				<Menu visible={this.state.menuVisible} onDismiss={() => this.setState({ menuVisible: false })} />
 			</Appbar>
+		);
+	}
+
+	private noIncidentsRender(): React.JSX.Element {
+		return (
+			<View style={HomeStyle().noIncidentContainer}>
+				<Text variant={'titleLarge'}>No active incidents</Text>
+			</View>
+		);
+	}
+
+	private incidentsRender(): React.JSX.Element {
+		return (
+			<View>
+				<Text>No active incidents</Text>
+			</View>
 		);
 	}
 
@@ -36,37 +63,24 @@ class Home extends Component {
 	}
 
 	render(): React.JSX.Element {
-		let theme: any = getCurrentTheme();
 		return (
 			<ContentContainer appBar={this.AppBar()} onRefresh={this.onRefresh}>
-				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
-					test
-				</Text>
-				<View style={{ flexDirection: 'column', gap: 20 }}>
-					<IncidentCard
-						incident={incident}
-						onClickIncident={(id) => console.log('Incident', id)}
-						onClickAlarm={(id) => console.log('Alarm', id)}
-					/>
-					<IncidentCard
-						incident={incident}
-						onClickIncident={(id) => console.log('Incident', id)}
-						onClickAlarm={(id) => console.log('Alarm', id)}
-					/>
-					<IncidentCard
-						incident={incident}
-						onClickIncident={(id) => console.log('Incident', id)}
-						onClickAlarm={(id) => console.log('Alarm', id)}
-					/>
-					<IncidentCard
-						incident={incident}
-						onClickIncident={(id) => console.log('Incident', id)}
-						onClickAlarm={(id) => console.log('Alarm', id)}
-					/>
-				</View>
+				{this.state.incidents === undefined ? this.noIncidentsRender() : this.incidentsRender()}
 			</ContentContainer>
 		);
 	}
 }
+
+const HomeStyle = () => {
+	return StyleSheet.create({
+		noIncidentContainer: {
+			height: '100%',
+			width: '100%',
+			flexDirection: 'column',
+			alignItems: 'center',
+			justifyContent: 'center'
+		}
+	});
+};
 
 export default Home;

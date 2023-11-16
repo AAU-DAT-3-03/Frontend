@@ -1,5 +1,5 @@
 import React, { Component, ReactNode } from 'react';
-import { RefreshControl, ScrollView } from 'react-native';
+import { RefreshControl, ScrollView, View } from 'react-native';
 
 /**
  * If no appbar is  desired simply don't pass anything
@@ -50,10 +50,12 @@ class ContentContainer extends Component<ContentContainerProps, ContentContainer
 
 	render(): React.JSX.Element {
 		return (
-			<>
+			<View style={{ flexDirection: 'column' }}>
 				{this.props.appBar ?? null}
-				<ScrollView refreshControl={this.getRefreshControl()}>{this.props.children ?? null}</ScrollView>
-			</>
+				<ScrollView style={{ flexGrow: 2, backgroundColor: 'red' }} refreshControl={this.getRefreshControl()}>
+					{this.props.children ?? null}
+				</ScrollView>
+			</View>
 		);
 	}
 }
