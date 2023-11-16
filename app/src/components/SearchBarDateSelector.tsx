@@ -3,7 +3,7 @@ import { Searchbar } from 'react-native-paper';
 import TimePicker, { PickerDate } from './TimePicker/TimePicker';
 import { compareDatesLessThanOrEqual, getToday } from './TimePicker/DateHelper';
 
-type Period = {
+export type Period = {
 	start: PickerDate;
 	end: PickerDate;
 };

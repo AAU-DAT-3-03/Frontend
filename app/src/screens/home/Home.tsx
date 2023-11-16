@@ -9,10 +9,29 @@ import { IncidentGenerator } from './IncidentGenerator';
 import Incident from '../incident/Incident';
 import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationProp } from '@react-navigation/native';
+import { ScreenProps } from '../../../App';
 
 let incidents: IncidentType[] = IncidentGenerator.generateIncidentList(2);
 
 const Stack = createStackNavigator();
+
+export const compareIncident = (a: IncidentType, b: IncidentType): number => {
+	if (a.state === 'acknowledged' && b.state === 'error') return 1;
+	if (a.state === 'error' && b.state === 'acknowledged') return -1;
+	if (a.priority > b.priority) return 1;
+	if (a.priority < b.priority) return -1;
+	if (a.priority === b.priority) {
+		if (a.company.toLowerCase() < b.company.toLowerCase()) return -1;
+		if (a.company.toLowerCase() > b.company.toLowerCase()) return 1;
+	}
+	if (a.company === b.company) {
+		if (a.caseNr > b.caseNr) return 1;
+		return -1;
+	}
+
+	return 0;
+};
 
 interface HomeState {
 	menuVisible: boolean;
@@ -62,22 +81,7 @@ class Home extends Component<any, HomeState> {
 	 * @return {IncidentType[]} - The sorted list
 	 */
 	private sortIncidents(incidents: IncidentType[]): IncidentType[] {
-		return incidents.sort((a: IncidentType, b: IncidentType) => {
-			if (a.state === 'acknowledged' && b.state === 'error') return 1;
-			if (a.state === 'error' && b.state === 'acknowledged') return -1;
-			if (a.priority > b.priority) return 1;
-			if (a.priority < b.priority) return -1;
-			if (a.priority === b.priority) {
-				if (a.company.toLowerCase() < b.company.toLowerCase()) return -1;
-				if (a.company.toLowerCase() > b.company.toLowerCase()) return 1;
-			}
-			if (a.company === b.company) {
-				if (a.caseNr > b.caseNr) return 1;
-				return -1;
-			}
-
-			return 0;
-		});
+		return incidents.sort(compareIncident);
 	}
 
 	private noIncidentsRender(): React.JSX.Element {
@@ -92,7 +96,7 @@ class Home extends Component<any, HomeState> {
 		);
 	}
 
-	private incidentsRender(navigation: any): React.JSX.Element {
+	private incidentsRender(navigation: NavigationProp<any>): React.JSX.Element {
 		return (
 			<View style={HomeStyle().incidentContainer}>
 				{this.state.incidents?.map((value, index) => {
@@ -133,13 +137,13 @@ class Home extends Component<any, HomeState> {
 		return (
 			<Stack.Navigator initialRouteName={'Home'}>
 				<Stack.Screen options={{ headerShown: false }} name="HomeRender">
-					{(props) => this.homeRender(props.navigation)}
+					{(props: ScreenProps) => this.homeRender(props.navigation)}
 				</Stack.Screen>
 				<Stack.Screen options={{ headerShown: false }} name="Incident">
-					{(props: any) => <Incident {...props} />}
+					{(props: ScreenProps) => <Incident {...props} />}
 				</Stack.Screen>
 				<Stack.Screen options={{ headerShown: false }} name="Alarm">
-					{(props: any) => <Alarm {...props} />}
+					{(props: ScreenProps) => <Alarm {...props} />}
 				</Stack.Screen>
 			</Stack.Navigator>
 		);

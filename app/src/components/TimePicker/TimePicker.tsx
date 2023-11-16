@@ -119,7 +119,13 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 			compareDatesLessThanOrEqual(buttonDay, this.state.selectedTimeEnd) &&
 			compareDatesLessThanOrEqual(this.state.selectedTimeStart, buttonDay);
 		return (
-			<DayPickerButton selected={isSelected} primary={isPrimary} today={today} onPress={() => this.dayButtonOnPress(buttonDay)}>
+			<DayPickerButton
+				disabled={!compareDatesLessThanOrEqual(buttonDay, getToday())}
+				selected={isSelected}
+				primary={isPrimary}
+				today={today}
+				onPress={() => this.dayButtonOnPress(buttonDay)}
+			>
 				{day}
 			</DayPickerButton>
 		);

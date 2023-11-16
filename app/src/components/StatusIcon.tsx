@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { Icon, MD3Theme } from 'react-native-paper';
+import { Icon } from 'react-native-paper';
 import { View } from 'react-native';
-import { Colors, getCurrentTheme } from '../themes/ThemeManager';
+import { Colors } from '../themes/ThemeManager';
 
 export type IncidentState = 'acknowledged' | 'error' | 'resolved' | 'none';
 
@@ -11,13 +11,12 @@ interface StatusIconProps {
 
 class StatusIcon extends Component<StatusIconProps> {
 	render(): React.JSX.Element {
-		let theme: MD3Theme = getCurrentTheme();
 		let backgroundColor: string = 'transparent';
 		let icon: string | undefined;
 
 		switch (this.props.status) {
 			case 'resolved': {
-				backgroundColor = theme.colors.tertiary;
+				backgroundColor = Colors.allGood;
 				icon = 'check';
 				break;
 			}
@@ -27,7 +26,7 @@ class StatusIcon extends Component<StatusIconProps> {
 				break;
 			}
 			case 'error': {
-				backgroundColor = theme.colors.error;
+				backgroundColor = Colors.error;
 				icon = 'exclamation';
 				break;
 			}

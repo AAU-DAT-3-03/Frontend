@@ -10,6 +10,7 @@ interface DayPickerButtonProps {
 	primary?: boolean;
 	today?: boolean;
 	onPress?: () => void;
+	disabled?: boolean;
 }
 
 class DayPickerButton extends Component<DayPickerButtonProps> {
@@ -36,7 +37,7 @@ class DayPickerButton extends Component<DayPickerButtonProps> {
 						maxHeight: screenSize.height / 10,
 						maxWidth: screenSize.width / 10
 					}}
-					onPress={this.props.onPress}
+					onPress={this.props.disabled === true ? undefined : this.props.onPress}
 					rippleColor={rippleColor}
 					borderless={true}
 				>
@@ -48,7 +49,11 @@ class DayPickerButton extends Component<DayPickerButtonProps> {
 								height: '100%',
 								textAlign: 'center',
 								textAlignVertical: 'center',
-								color: this.props.selected ? getCurrentTheme().colors?.onPrimary : getCurrentTheme().colors?.onSurface
+								color: this.props.selected
+									? getCurrentTheme().colors?.onPrimary
+									: this.props.disabled
+									? getCurrentTheme().colors.surfaceDisabled
+									: getCurrentTheme().colors?.onSurface
 							}}
 						>
 							{this.props.children}
