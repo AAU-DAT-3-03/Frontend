@@ -54,7 +54,9 @@ class AssignUser extends Component<AssignUserProps> {
 						/>
 						<FlatList
 							data={this.props.users.filter(
-								(value) => value.name.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1
+								(value) =>
+									value.name.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1 ||
+									value.team.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1
 							)}
 							renderItem={(info) => {
 								return (
@@ -63,9 +65,7 @@ class AssignUser extends Component<AssignUserProps> {
 										icon={'account'}
 										onPress={() => this.props.onDismiss(info.item)}
 									>
-										{info.item.name}
-
-										{info.item.team}
+										{info.item.name} -{info.item.team}
 									</Button>
 								);
 							}}
@@ -181,6 +181,7 @@ const addUserStyle = StyleSheet.create({
 		width: '100%'
 	},
 	users: {
+		height: 'auto',
 		flex: 1,
 		flexDirection: 'row',
 		flexWrap: 'wrap',
@@ -188,5 +189,4 @@ const addUserStyle = StyleSheet.create({
 		gap: 8
 	}
 });
-
 export default AddUser;
