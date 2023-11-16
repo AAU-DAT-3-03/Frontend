@@ -1,30 +1,39 @@
 import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../../components/ContentContainer';
-
-interface CompanyServiceListProps {
-	company: string;
-}
+import { ScreenProps } from '../../../../App';
+import { StyleSheet } from 'react-native';
 
 interface CompanyServiceLisState {
 	company: string;
+	id: number;
 }
 
-class CompanyServiceList extends Component<CompanyServiceListProps, CompanyServiceLisState> {
+class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> {
 	state: CompanyServiceLisState = {
-		company: 'Not defined'
+		company: 'Not defined',
+		id: 0
 	};
 
-	constructor(props: CompanyServiceListProps) {
+	constructor(props: ScreenProps) {
 		super(props);
-		this.state.company = props.company;
+		this.state.company = props.route.params?.companyName;
+		this.state.id = props.route.params?.companyId;
 	}
 
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
-				<Appbar.BackAction onPress={() => {}} />
-				<Appbar.Content title={this.state.company} />
+				<Appbar.BackAction
+					onPress={() => {
+						this.props.navigation.goBack();
+					}}
+				/>
+				<Appbar.Header mode={'center-aligned'}>
+					<Text style={cslStyle().headerText} variant={'titleLarge'}>
+						{this.state.company}
+					</Text>
+				</Appbar.Header>
 			</Appbar>
 		);
 	}
@@ -38,5 +47,15 @@ class CompanyServiceList extends Component<CompanyServiceListProps, CompanyServi
 		);
 	}
 }
+
+const cslStyle = () => {
+	return StyleSheet.create({
+		headerText: {
+			width: '100%',
+			paddingRight: 110,
+			textAlign: 'center'
+		}
+	});
+};
 
 export default CompanyServiceList;

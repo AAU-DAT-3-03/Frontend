@@ -9,6 +9,7 @@ import { IncidentGenerator } from './IncidentGenerator';
 import Incident from '../incident/Incident';
 import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
+import { ScreenProps } from '../../../App';
 
 let incidents: IncidentType[] = IncidentGenerator.generateIncidentList(2);
 
@@ -133,13 +134,13 @@ class Home extends Component<any, HomeState> {
 		return (
 			<Stack.Navigator initialRouteName={'Home'}>
 				<Stack.Screen options={{ headerShown: false }} name="HomeRender">
-					{(props) => this.homeRender(props.navigation)}
+					{(props: ScreenProps) => this.homeRender(props.navigation)}
 				</Stack.Screen>
 				<Stack.Screen options={{ headerShown: false }} name="Incident">
-					{(props: any) => <Incident {...props} />}
+					{(props: ScreenProps) => <Incident {...props} />}
 				</Stack.Screen>
 				<Stack.Screen options={{ headerShown: false }} name="Alarm">
-					{(props: any) => <Alarm {...props} />}
+					{(props: ScreenProps) => <Alarm {...props} />}
 				</Stack.Screen>
 			</Stack.Navigator>
 		);
