@@ -12,6 +12,6 @@ export const Colors = {
  * Gets the current theme. Light or dark depending on the system setting
  * @return {ThemeProp} - the current theme
  */
-export function getCurrentTheme(): ThemeProp {
+export function getCurrentTheme(): MD3Theme {
 	return Appearance.getColorScheme() === 'dark' ? DarkTheme : LightTheme;
 }
