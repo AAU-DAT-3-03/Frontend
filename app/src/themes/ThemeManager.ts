@@ -1,7 +1,6 @@
 import { Appearance } from 'react-native';
 import { DarkTheme } from './DarkTheme';
 import { LightTheme } from './LightTheme';
-import { ThemeProp } from 'react-native-paper/lib/typescript/types';
 import { MD3Theme } from 'react-native-paper';
 
 export const Colors = {
@@ -11,7 +10,7 @@ export const Colors = {
 };
 /**
  * Gets the current theme. Light or dark depending on the system setting
- * @return {ThemeProp} - the current theme
+ * @return {MD3Theme} - the current theme
  */
 export function getCurrentTheme(): MD3Theme {
 	return Appearance.getColorScheme() === 'dark' ? DarkTheme : LightTheme;
