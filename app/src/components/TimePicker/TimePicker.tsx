@@ -174,7 +174,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	 */
 	private dateSelectorRender(): React.JSX.Element {
 		let rowStyle: StyleProp<ViewStyle> = {
-			...timePickerStyleSheet.dateSelectorRow,
+			...timePickerStyleSheet().dateSelectorRow,
 			width: this.state.landscape ? '75%' : '100%',
 			height: this.state.landscape ? '100%' : 'auto'
 		};
@@ -183,11 +183,11 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 			<View style={{ padding: 16 }}>
 				<View style={rowStyle}>
 					{daysAbbreviated.map((value: string, key: number) => (
-						<View key={key} style={timePickerStyleSheet.dateSelectorButtonStyle}>
+						<View key={key} style={timePickerStyleSheet().dateSelectorButtonStyle}>
 							<Text style={{ textAlign: 'center', width: '100%' }}>{value}</Text>
 						</View>
 					))}
-					{this.createDaysButtons(timePickerStyleSheet.dateSelectorButtonStyle)}
+					{this.createDaysButtons(timePickerStyleSheet().dateSelectorButtonStyle)}
 				</View>
 			</View>
 		);
@@ -237,7 +237,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 						{fullMonths[this.state.currentMonth - 1]} {this.state.currentYear}
 					</Button>
 				</View>
-				<View style={timePickerStyleSheet.monthPickerContainer}>
+				<View style={timePickerStyleSheet().monthPickerContainer}>
 					<IconButton size={20} onPress={() => this.changeMonth(-1)} icon={'chevron-left'} />
 					<IconButton size={20} style={{ marginRight: 0 }} onPress={() => this.changeMonth(1)} icon={'chevron-right'} />
 				</View>
@@ -276,7 +276,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	private singleDateDisplayRender(date: PickerDate, active: boolean, onPress: () => void, onLongPress: () => void): React.JSX.Element {
 		return (
 			<TouchableRipple
-				style={active ? timePickerStyleSheet.dateActiveStyle : timePickerStyleSheet.dateStyle}
+				style={active ? timePickerStyleSheet().dateActiveStyle : timePickerStyleSheet().dateStyle}
 				rippleColor={Color(getCurrentTheme().colors?.onSurface).alpha(0.3).string()}
 				onPress={() => onPress()}
 				onLongPress={() => onLongPress()}
@@ -327,7 +327,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	 */
 	private yearSelectorRender(): React.JSX.Element {
 		let rowStyle: StyleProp<ViewStyle> = {
-			...timePickerStyleSheet.rowStyle,
+			...timePickerStyleSheet().rowStyle,
 			flexDirection: 'row',
 			maxHeight: this.state.landscape ? Dimensions.get('screen').height * 0.9 : Dimensions.get('screen').height / 2,
 			width: this.state.landscape ? '60%' : '100%'
@@ -407,12 +407,12 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	 */
 	render(): React.JSX.Element {
 		let mainViewStyle: StyleProp<ViewStyle> = {
-			...timePickerStyleSheet.mainViewStyle,
+			...timePickerStyleSheet().mainViewStyle,
 			flexDirection: this.state.landscape ? 'column' : 'row'
 		};
 
 		let containerStyle: StyleProp<ViewStyle> = {
-			...timePickerStyleSheet.containerStyle,
+			...timePickerStyleSheet().containerStyle,
 			width: this.state.landscape ? '40%' : '100%'
 		};
 
@@ -431,11 +431,11 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 
 		return (
 			<Portal>
-				<Modal visible={this.props.visible} style={timePickerStyleSheet.modalStyle} onDismiss={() => this.onDismiss()}>
+				<Modal visible={this.props.visible} style={timePickerStyleSheet().modalStyle} onDismiss={() => this.onDismiss()}>
 					<View style={mainViewStyle}>
 						{this.menuRender(containerStyle)}
 						{screen()}
-						<View style={timePickerStyleSheet.confirmButton}>
+						<View style={timePickerStyleSheet().confirmButton}>
 							<Button onPress={() => this.onDismiss()}>Confirm</Button>
 						</View>
 					</View>
@@ -445,69 +445,71 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	}
 }
 
-const timePickerStyleSheet = StyleSheet.create({
-	mainViewStyle: {
-		backgroundColor: getCurrentTheme().colors?.surface,
-		padding: 16,
-		borderRadius: 30,
-		display: 'flex',
-		flexWrap: 'wrap',
-		width: 'auto'
-	},
-	containerStyle: {
-		paddingHorizontal: 16,
-		display: 'flex',
-		flexDirection: 'row',
-		flexWrap: 'wrap'
-	},
-	confirmButton: {
-		position: 'absolute',
-		bottom: 16,
-		right: 32
-	},
-	rowStyle: {
-		padding: 16,
-		marginBottom: 16,
-		overflow: 'hidden'
-	},
-	monthPickerContainer: {
-		width: '50%',
-		display: 'flex',
-		flexDirection: 'row',
-		justifyContent: 'flex-end',
-		marginRight: 0
-	},
-	dateSelectorRow: {
-		display: 'flex',
-		flexDirection: 'row',
-		justifyContent: 'flex-start',
-		flexWrap: 'wrap'
-	},
-	dateSelectorButtonStyle: {
-		padding: 1,
-		alignItems: 'center',
-		aspectRatio: 1,
-		width: `${100 / 7}%`
-	},
-	modalStyle: {
-		backgroundColor: undefined,
-		position: 'absolute',
-		padding: 16,
-		justifyContent: 'center'
-	},
+const timePickerStyleSheet = () => {
+	return StyleSheet.create({
+		mainViewStyle: {
+			backgroundColor: getCurrentTheme().colors?.surface,
+			padding: 16,
+			borderRadius: 30,
+			display: 'flex',
+			flexWrap: 'wrap',
+			width: 'auto'
+		},
+		containerStyle: {
+			paddingHorizontal: 16,
+			display: 'flex',
+			flexDirection: 'row',
+			flexWrap: 'wrap'
+		},
+		confirmButton: {
+			position: 'absolute',
+			bottom: 16,
+			right: 32
+		},
+		rowStyle: {
+			padding: 16,
+			marginBottom: 16,
+			overflow: 'hidden'
+		},
+		monthPickerContainer: {
+			width: '50%',
+			display: 'flex',
+			flexDirection: 'row',
+			justifyContent: 'flex-end',
+			marginRight: 0
+		},
+		dateSelectorRow: {
+			display: 'flex',
+			flexDirection: 'row',
+			justifyContent: 'flex-start',
+			flexWrap: 'wrap'
+		},
+		dateSelectorButtonStyle: {
+			padding: 1,
+			alignItems: 'center',
+			aspectRatio: 1,
+			width: `${100 / 7}%`
+		},
+		modalStyle: {
+			backgroundColor: undefined,
+			position: 'absolute',
+			padding: 16,
+			justifyContent: 'center'
+		},
 
-	dateStyle: {
-		padding: 10,
-		borderRadius: 100,
-		borderColor: getCurrentTheme().colors?.surface,
-		borderWidth: 2
-	},
-	dateActiveStyle: {
-		padding: 10,
-		borderRadius: 100,
-		borderColor: getCurrentTheme().colors?.onSurface,
-		borderWidth: 2
-	}
-});
+		dateStyle: {
+			padding: 10,
+			borderRadius: 100,
+			borderColor: getCurrentTheme().colors?.surface,
+			borderWidth: 2
+		},
+		dateActiveStyle: {
+			padding: 10,
+			borderRadius: 100,
+			borderColor: getCurrentTheme().colors?.onSurface,
+			borderWidth: 2
+		}
+	});
+};
 
 export default TimePicker;
