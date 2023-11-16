@@ -5,6 +5,9 @@ import { getCurrentTheme } from '../../themes/ThemeManager';
 import Notecard from '../../components/NoteCard';
 
 class Home extends Component {
+	handleNoteCardChange = (text: string) => {
+		console.log('changed text:', text);
+	};
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
@@ -24,7 +27,7 @@ class Home extends Component {
 				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
 					test
 				</Text>
-				<Notecard noteInfo={'bla bla bla'}></Notecard>
+				<Notecard noteInfo={'bla bla bla'} onChange={this.handleNoteCardChange}></Notecard>
 			</ContentContainer>
 		);
 	}
