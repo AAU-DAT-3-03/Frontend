@@ -17,7 +17,7 @@ class DayPickerButton extends Component<DayPickerButtonProps> {
 		let screenSize: ScaledSize = Dimensions.get('screen');
 		let backgroundColor: string | undefined = this.props.selected
 			? this.props.primary
-				? getCurrentTheme().colors?.secondary
+				? getCurrentTheme().colors?.tertiary
 				: getCurrentTheme().colors?.primary
 			: undefined;
 		let rippleColor: string = this.props.selected

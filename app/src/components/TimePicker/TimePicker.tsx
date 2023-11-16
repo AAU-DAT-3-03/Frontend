@@ -16,6 +16,7 @@ import {
 } from './DateHelper';
 import { isLandscape } from '../../utility/ScreenUtility';
 import DateInput from './DateInput';
+import DatePicker from 'react-native-date-picker';
 
 export type PickerDate = [number, number, number];
 
@@ -163,6 +164,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 			this.state.currentYear = this.state.currentYear + 1;
 			newMonth = 1;
 		}
+		if (newMonth > getToday()[1]) return;
 		this.setState({ currentMonth: newMonth });
 	}
 
@@ -329,7 +331,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 			maxHeight: this.state.landscape ? Dimensions.get('screen').height * 0.9 : Dimensions.get('screen').height / 2,
 			width: this.state.landscape ? '60%' : '100%'
 		};
-		let years: number = new Date(Date.now()).getFullYear() - 1970 + 1;
+		let years: number = new Date(Date.now()).getFullYear() - 2002 + 1;
 		let data: number[] = [...Array(years).keys()].reverse();
 		return (
 			<View style={rowStyle}>
@@ -350,12 +352,12 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 				textColor={getCurrentTheme().colors?.onSurface}
 				onPress={() =>
 					this.setState({
-						currentYear: info.item + 1970,
+						currentYear: info.item + 2002,
 						screenSelector: ScreenSelector.DATEPICKER
 					})
 				}
 			>
-				{info.item + 1970}
+				{info.item + 2002}
 			</Button>
 		);
 	}
@@ -363,18 +365,29 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 	private dateInputRender(): React.JSX.Element {
 		let value: PickerDate =
 			this.state.dateInputField === DateInputField.STARTDATE ? this.state.selectedTimeStart : this.state.selectedTimeEnd;
+		let date = new Date(`${value[2]}-${value[1]}-${value[0]}`);
 		return (
 			<View style={{ padding: 16, width: '100%', marginBottom: 16 }}>
-				<DateInput
-					ref={this.state.inputRef}
-					value={value}
-					onChange={(date: [number, number, number]) => {
-						this.dayButtonOnPress(date);
-					}}
+				<DatePicker
+					androidVariant={'nativeAndroid'}
+					mode={'date'}
+					maximumDate={new Date(Date.now())}
+					date={date}
+					onDateChange={(date) => this.dayButtonOnPress([date.getDate(), date.getMonth() + 1, date.getFullYear()])}
 				/>
 			</View>
 		);
 	}
+
+	/**
+	 * 				<DateInput
+	 * 					ref={this.state.inputRef}
+	 * 					value={value}
+	 * 					onChange={(date: [number, number, number]) => {
+	 * 						this.dayButtonOnPress(date);
+	 * 					}}
+	 * 				/>
+	 */
 
 	/**
 	 * @brief Main render function for the component
