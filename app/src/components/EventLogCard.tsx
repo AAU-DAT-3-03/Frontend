@@ -154,8 +154,8 @@ const eventLogStyleSheet = () => {
 			backgroundColor: getCurrentTheme().colors.elevation.level2,
 			borderRadius: 16,
 			paddingHorizontal: 4,
-			paddingVertical: 12,
-			marginTop: 4,
+			paddingVertical: 8,
+			marginTop: 10,
 			flexDirection: 'column',
 			justifyContent: 'flex-start'
 		},
