@@ -7,6 +7,7 @@ import LocalStorage from '../../../utility/LocalStorage';
 interface MenuProps {
 	visible: boolean;
 	onDismiss: () => void;
+	onLogOut: () => void;
 }
 
 class Menu extends Component<MenuProps> {
@@ -43,7 +44,14 @@ class Menu extends Component<MenuProps> {
 							</Drawer.Section>
 						</View>
 						<View style={MenuStyle().logOut}>
-							<Button buttonColor={Colors.error} textColor={'white'}>
+							<Button
+								buttonColor={Colors.error}
+								textColor={'white'}
+								onPress={() => {
+									LocalStorage.setSettingsValue('authKey', 'null');
+									this.props.onLogOut();
+								}}
+							>
 								Log out
 							</Button>
 						</View>
