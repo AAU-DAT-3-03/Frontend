@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../../components/ContentContainer';
+import { ScreenProps } from '../../../../App';
 
 interface CompanyServiceListProps {
 	company: string;
@@ -10,20 +11,24 @@ interface CompanyServiceLisState {
 	company: string;
 }
 
-class CompanyServiceList extends Component<CompanyServiceListProps, CompanyServiceLisState> {
+class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> {
 	state: CompanyServiceLisState = {
 		company: 'Not defined'
 	};
 
-	constructor(props: CompanyServiceListProps) {
+	constructor(props: ScreenProps) {
 		super(props);
-		this.state.company = props.company;
+		this.state.company = props.route.params?.company;
 	}
 
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
-				<Appbar.BackAction onPress={() => {}} />
+				<Appbar.BackAction
+					onPress={() => {
+						this.props.navigation.goBack();
+					}}
+				/>
 				<Appbar.Content title={this.state.company} />
 			</Appbar>
 		);

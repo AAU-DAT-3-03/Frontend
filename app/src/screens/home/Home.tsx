@@ -46,7 +46,7 @@ class Home extends Component {
 				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
 					test
 				</Text>
-				<Notecard noteInfo={'bla bla bla'} onChange={this.handleNoteCardChange}></Notecard>
+				<Notecard noteInfo={'bla bla bla'} onChange={this.handleNoteCardChange} />
 				<View style={{ flexDirection: 'column', gap: 20 }}>
 					<IncidentCard
 						incident={incident}
