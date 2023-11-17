@@ -3,8 +3,9 @@ import { Appbar } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import InformationCard from '../../components/InformationCard';
 import NoteCard from '../../components/NoteCard';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-interface AlarmProps {
+interface AlarmData {
 	alarm: string;
 	alarmError: string;
 	alarmLog: string;
@@ -12,55 +13,51 @@ interface AlarmProps {
 	service: string;
 }
 
-class AlarmInfo {
-	get service(): string {
-		return this._service as string;
-	}
-
-	set service(value: string) {
-		this._service = value;
-	}
-
-	get alarmNote(): string {
-		return this._alarmNote as string;
-	}
-
-	set alarmNote(value: string) {
-		this._alarmNote = value;
-	}
-
-	get alarmLog(): string {
-		return this._alarmLog as string;
-	}
-
-	set alarmLog(value: string) {
-		this._alarmLog = value;
-	}
-
-	get alarmError(): string {
-		return this._alarmError as string;
-	}
-
-	set alarmError(value: string) {
-		this._alarmError = value;
-	}
-
-	private _alarmError: string | undefined;
-	private _alarmLog: string | undefined;
-	private _alarmNote: string | undefined;
-	private _service: string | undefined;
-}
-interface AlarmState {
-	alarm: string;
+interface AlarmProps {
+	id: number;
 }
 
-class Alarm extends Component<AlarmProps, AlarmState, AlarmInfo> {
+interface AlarmState extends AlarmData {
+	loading: boolean;
+}
+
+async function getAlarmData(id: number) {
+	let promise: Promise<AlarmData> = new Promise((resolve): void => {
+		setTimeout(() => {
+			let alarmdata: AlarmData = {
+				alarm: 'BOOBA',
+				alarmError: 'errror 404',
+				alarmLog: 'shit not good',
+				alarmNote: 'fix det habibi',
+				service: 'gurli gris'
+			};
+			resolve(alarmdata);
+		}, 3);
+	});
+	return await promise;
+}
+
+class Alarm extends Component<AlarmProps, AlarmState> {
 	state: AlarmState = {
-		alarm: 'Not defined'
+		alarm: 'Loading',
+		alarmError: '',
+		alarmLog: '',
+		alarmNote: 'string',
+		service: '',
+		loading: true
 	};
-	constructor(props: AlarmProps) {
-		super(props);
-		this.state.alarm = props.alarm;
+
+	componentDidMount() {
+		getAlarmData(this.props.id).then((value) =>
+			this.setState({
+				alarm: value.alarm,
+				alarmError: value.alarmError,
+				alarmLog: value.alarmLog,
+				alarmNote: value.alarmNote,
+				service: value.service,
+				loading: false
+			})
+		);
 	}
 
 	private AppBar(): React.JSX.Element {
@@ -75,11 +72,25 @@ class Alarm extends Component<AlarmProps, AlarmState, AlarmInfo> {
 	render(): React.JSX.Element {
 		return (
 			<ContentContainer appBar={this.AppBar()}>
-				<InformationCard errorType={this.state.alarm} errorInfo={this.props.alarmLog}></InformationCard>
-				<NoteCard noteInfo={this.props.alarmNote} onChange={() => {}}></NoteCard>
+				{this.state.loading ? (
+					<ActivityIndicator></ActivityIndicator>
+				) : (
+					<View style={container.padding}>
+						<InformationCard errorType={this.state.alarm} errorInfo={this.state.alarmLog}></InformationCard>
+						<NoteCard noteInfo={this.state.alarmNote} onChange={() => {}}></NoteCard>
+					</View>
+				)}
 			</ContentContainer>
 		);
 	}
 }
+
+const container = StyleSheet.create({
+	padding: {
+		flexDirection: 'column',
+		gap: 16,
+		padding: 16
+	}
+});
 
 export default Alarm;
