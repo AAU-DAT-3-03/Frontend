@@ -1,8 +1,9 @@
-import React, { Component, lazy } from 'react';
+import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import IncidentCard, { Incident } from '../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../themes/ThemeManager';
+import Notecard from '../../components/NoteCard';
 import { View } from 'react-native';
 
 const incident: Incident = {
@@ -23,6 +24,9 @@ const incident: Incident = {
 };
 
 class Home extends Component {
+	handleNoteCardChange = (text: string) => {
+		console.log('changed text:', text);
+	};
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
@@ -42,6 +46,7 @@ class Home extends Component {
 				<Text style={{ color: theme.colors.tertiary }} variant={'displayLarge'}>
 					test
 				</Text>
+				<Notecard noteInfo={'bla bla bla'} onChange={this.handleNoteCardChange}></Notecard>
 				<View style={{ flexDirection: 'column', gap: 20 }}>
 					<IncidentCard
 						incident={incident}
