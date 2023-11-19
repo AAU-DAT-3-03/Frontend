@@ -15,7 +15,7 @@ export interface ScreenProps {
 	route: RouteProp<any>;
 }
 
-export const serverIp = 'http://10.92.0.231';
+export const serverIp: string = 'http://10.92.0.231';
 
 const Tab = createBottomTabNavigator();
 
