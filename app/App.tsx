@@ -15,6 +15,8 @@ export interface ScreenProps {
 	route: RouteProp<any>;
 }
 
+export const serverIp = 'http://10.92.0.231';
+
 const Tab = createBottomTabNavigator();
 
 function validateSettings(): boolean {
@@ -22,8 +24,14 @@ function validateSettings(): boolean {
 	return LocalStorage.getSettingsValue('authKey').localeCompare('null') === 0;
 }
 
-class AppRender extends Component {
+export class AppRender extends Component {
+	public static instance: AppRender;
+
+	public static onLogOut() {
+		AppRender.instance.forceUpdate();
+	}
 	render() {
+		AppRender.instance = this;
 		if (validateSettings()) {
 			return <Login onLoggedIn={() => this.forceUpdate()} />;
 		}
@@ -84,7 +92,6 @@ class AppRender extends Component {
 						<Tab.Screen
 							name="Home"
 							component={Home}
-							initialParams={{ onLogOut: () => this.forceUpdate() }}
 							options={{
 								headerShown: false,
 								tabBarLabel: 'Home',

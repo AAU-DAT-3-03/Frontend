@@ -3,11 +3,11 @@ import { Button, Drawer, IconButton, Modal, Portal, Switch, Text } from 'react-n
 import { StyleSheet, View } from 'react-native';
 import { Colors, getCurrentTheme } from '../../../themes/ThemeManager';
 import LocalStorage from '../../../utility/LocalStorage';
+import { AppRender } from '../../../../App';
 
 interface MenuProps {
 	visible: boolean;
 	onDismiss: () => void;
-	onLogOut: () => void;
 }
 
 class Menu extends Component<MenuProps> {
@@ -49,7 +49,7 @@ class Menu extends Component<MenuProps> {
 								textColor={'white'}
 								onPress={() => {
 									LocalStorage.setSettingsValue('authKey', 'null');
-									this.props.onLogOut();
+									AppRender.onLogOut();
 								}}
 							>
 								Log out

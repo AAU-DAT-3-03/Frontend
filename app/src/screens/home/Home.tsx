@@ -31,11 +31,7 @@ class Home extends Component<any, HomeState> {
 		return (
 			<Appbar>
 				<Appbar.Action icon={'menu'} onPress={() => this.setState({ menuVisible: true })} />
-				<Menu
-					onLogOut={() => this.props.route.params.onLogOut()}
-					visible={this.state.menuVisible}
-					onDismiss={() => this.setState({ menuVisible: false })}
-				/>
+				<Menu visible={this.state.menuVisible} onDismiss={() => this.setState({ menuVisible: false })} />
 			</Appbar>
 		);
 	}
