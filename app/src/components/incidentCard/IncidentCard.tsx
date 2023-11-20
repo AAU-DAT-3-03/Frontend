@@ -78,7 +78,7 @@ class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 			borderBottomWidth: this.props.collapsed ? 0 : 0.5,
 			borderBottomColor: getCurrentTheme().colors.onSurface,
 			paddingBottom: 16,
-			paddingHorizontal: 8
+			paddingHorizontal: 12
 		};
 
 		let icon: string = this.props.collapsed ? 'menu-down' : 'menu-up';

@@ -9,6 +9,7 @@ import { IncidentGenerator } from './IncidentGenerator';
 import Incident from '../incident/Incident';
 import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
+import incident from '../incident/Incident';
 
 let incidents: IncidentType[] = IncidentGenerator.generateIncidentList(2);
 
@@ -37,27 +38,22 @@ class Home extends Component<any, HomeState> {
 						width: '100%',
 						paddingHorizontal: 0,
 						margin: 0,
-						justifyContent: 'flex-start',
+						justifyContent: 'flex-end',
 						flexDirection: 'row',
 						alignItems: 'center',
 						backgroundColor: getCurrentTheme().colors.surface
 					}}
 				>
 					<IconButton
-						style={{ margin: 0, position: 'absolute', right: 4 }}
+						style={{ margin: 0, position: 'absolute' }}
 						icon={'cog'}
 						onPress={() => this.setState({ menuVisible: true })}
 					/>
-					<Menu
-						visible={this.state.filterVisible}
-						onDismiss={() => this.setState({ filterVisible: false })}
-						anchor={<IconButton icon={'menu'} onPress={() => this.setState({ filterVisible: true })} />}
-					>
-						<Menu.Item onPress={() => {}} title="Item 1" />
-						<Menu.Item onPress={() => {}} title="Item 2" />
-						<Divider />
-						<Menu.Item onPress={() => {}} title="Item 3" />
-					</Menu>
+					<IconButton
+						style={{ position: 'absolute', left: 0 }}
+						icon={'menu'}
+						onPress={() => this.setState({ filterVisible: true })}
+					/>
 				</Appbar.Header>
 
 				<SettingsMenu visible={this.state.menuVisible} onDismiss={() => this.setState({ menuVisible: false })} />
@@ -115,7 +111,9 @@ class Home extends Component<any, HomeState> {
 				{this.state.loading ? (
 					<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
 				) : (
-					<Text variant={'titleLarge'}>No active incidents</Text>
+					<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.elevation.level2 }}>
+						No active incidents
+					</Text>
 				)}
 			</View>
 		);
