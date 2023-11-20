@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import { Appbar, Text } from 'react-native-paper';
+import { Appbar, Divider, IconButton, Menu, SegmentedButtons, Text, ToggleButton } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import IncidentCard, { IncidentType } from '../../components/incidentCard/IncidentCard';
-import Menu from './components/Menu';
+import SettingsMenu from './components/SettingsMenu';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { IncidentGenerator } from './IncidentGenerator';
@@ -18,20 +18,49 @@ interface HomeState {
 	menuVisible: boolean;
 	incidents: IncidentType[] | undefined;
 	loading: boolean;
+	filterVisible: boolean;
 }
 
 class Home extends Component<any, HomeState> {
 	state: HomeState = {
 		menuVisible: false,
 		incidents: undefined,
-		loading: true
+		loading: true,
+		filterVisible: false
 	};
 
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
-				<Appbar.Action icon={'menu'} onPress={() => this.setState({ menuVisible: true })} />
-				<Menu visible={this.state.menuVisible} onDismiss={() => this.setState({ menuVisible: false })} />
+				<Appbar.Header
+					style={{
+						width: '100%',
+						paddingHorizontal: 0,
+						margin: 0,
+						justifyContent: 'flex-start',
+						flexDirection: 'row',
+						alignItems: 'center',
+						backgroundColor: getCurrentTheme().colors.surface
+					}}
+				>
+					<IconButton
+						style={{ margin: 0, position: 'absolute', right: 4 }}
+						icon={'cog'}
+						onPress={() => this.setState({ menuVisible: true })}
+					/>
+					<Menu
+						visible={this.state.filterVisible}
+						onDismiss={() => this.setState({ filterVisible: false })}
+						anchor={<IconButton icon={'menu'} onPress={() => this.setState({ filterVisible: true })} />}
+					>
+						<Menu.Item onPress={() => {}} title="Item 1" />
+						<Menu.Item onPress={() => {}} title="Item 2" />
+						<Divider />
+						<Menu.Item onPress={() => {}} title="Item 3" />
+					</Menu>
+				</Appbar.Header>
+
+				<SettingsMenu visible={this.state.menuVisible} onDismiss={() => this.setState({ menuVisible: false })} />
 			</Appbar>
 		);
 	}

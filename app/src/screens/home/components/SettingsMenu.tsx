@@ -9,7 +9,7 @@ interface MenuProps {
 	onDismiss: () => void;
 }
 
-class Menu extends Component<MenuProps> {
+class SettingsMenu extends Component<MenuProps> {
 	state = {
 		notification: false
 	};
@@ -57,7 +57,7 @@ class Menu extends Component<MenuProps> {
 const MenuStyle = () => {
 	return StyleSheet.create({
 		modal: {
-			width: '45%',
+			width: '100%',
 			height: '100%',
 			left: 0,
 			top: 0
@@ -93,4 +93,4 @@ const MenuStyle = () => {
 	});
 };
 
-export default Menu;
+export default SettingsMenu;
