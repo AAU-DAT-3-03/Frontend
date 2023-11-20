@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ContentContainer from '../../components/ContentContainer';
-import { Button, Text, TextInput } from 'react-native-paper';
-import { StyleSheet, View } from 'react-native';
+import { Button, Text } from 'react-native-paper';
+import { StyleSheet, TextInput, View } from 'react-native';
 import { Colors, getCurrentTheme } from '../../themes/ThemeManager';
 import LocalStorage from '../../utility/LocalStorage';
 import Networking from '../../utility/Networking';
@@ -55,7 +55,6 @@ class Login extends Component<LoginProps> {
 				<View style={loginStyle().logo}>
 					<NeticLogo />
 				</View>
-
 				<View style={loginStyle().wrapper}>
 					<View style={loginStyle().containerCard}>
 						<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.onSurface, alignSelf: 'center' }}>
@@ -63,27 +62,33 @@ class Login extends Component<LoginProps> {
 						</Text>
 						{this.state.error ? <Text style={{ color: Colors.error, alignSelf: 'center' }}>Credentials not valid</Text> : null}
 						<TextInput
-							style={{ backgroundColor: getCurrentTheme().colors.background }}
-							textColor={getCurrentTheme().colors.onSurface}
-							error={this.state.error}
+							placeholder={'Email'}
+							style={{
+								backgroundColor: getCurrentTheme().colors.background,
+								color: getCurrentTheme().colors.onSurface,
+								paddingHorizontal: 8
+							}}
+							underlineColorAndroid={this.state.error ? Colors.error : getCurrentTheme().colors.secondary}
 							onChangeText={(text: string) => {
 								this.setState({ email: text });
 							}}
 							inputMode={'email'}
 							textContentType={'emailAddress'}
-							label={'Email'}
 						/>
 						<TextInput
-							style={{ backgroundColor: getCurrentTheme().colors.background }}
-							textColor={getCurrentTheme().colors.onSurface}
-							error={this.state.error}
+							placeholder={'Password'}
+							style={{
+								backgroundColor: getCurrentTheme().colors.background,
+								color: getCurrentTheme().colors.onSurface,
+								paddingHorizontal: 8
+							}}
+							underlineColorAndroid={this.state.error ? Colors.error : getCurrentTheme().colors.secondary}
 							onChangeText={(text: string) => {
 								this.setState({ password: text });
 							}}
 							inputMode={'text'}
 							secureTextEntry={true}
 							textContentType={'password'}
-							label={'Password'}
 						/>
 						<Button
 							buttonColor={getCurrentTheme().colors.secondary}
