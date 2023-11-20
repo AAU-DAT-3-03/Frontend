@@ -4,6 +4,9 @@ import ContentContainer from '../../components/ContentContainer';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 
 class Home extends Component {
+	handleNoteCardChange = (text: string) => {
+		console.log('changed text:', text);
+	};
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
