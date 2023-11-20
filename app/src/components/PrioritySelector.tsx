@@ -2,23 +2,29 @@ import React, { Component } from 'react';
 import { SegmentedButtons } from 'react-native-paper';
 
 interface PrioritySelectorProps {
-	onPress: (value: number) => void;
+	onPress: (value: number | undefined) => void;
+	state: number | undefined;
 }
 interface PrioritySelectorState {
-	state: string;
+	state: number | undefined;
 }
 class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelectorState> {
 	state: PrioritySelectorState = {
-		state: '4'
+		state: 4
 	};
+
+	constructor(props: PrioritySelectorProps) {
+		super(props);
+		this.state.state = props.state;
+	}
 
 	render(): React.JSX.Element {
 		return (
 			<SegmentedButtons
-				value={this.state.state}
+				value={`${this.state.state}`}
 				density={'small'}
 				onValueChange={(value) => {
-					this.setState({ state: value });
+					this.setState({ state: parseInt(value) });
 					this.props.onPress(parseInt(value, 10));
 				}}
 				buttons={[

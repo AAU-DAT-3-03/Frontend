@@ -11,7 +11,7 @@ import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
 import incident from '../incident/Incident';
 
-let incidents: IncidentType[] = IncidentGenerator.generateIncidentList(2);
+export let incidents: IncidentType[] = IncidentGenerator.generateIncidentList(2);
 
 const Stack = createStackNavigator();
 
@@ -75,7 +75,7 @@ class Home extends Component<any, HomeState> {
 				incidents = this.sortIncidents(incidents.concat(IncidentGenerator.generateIncident()));
 				this.setState({ loading: false, incidents: incidents });
 				resolve(true);
-			}, 3000);
+			}, 1);
 		});
 		return await promise;
 	}
@@ -129,12 +129,12 @@ class Home extends Component<any, HomeState> {
 							incident={value}
 							onClickIncident={(id) =>
 								navigation.navigate('Incident', {
-									alarm: `${id}`
+									alarm: id
 								})
 							}
 							onClickAlarm={(id) =>
 								navigation.navigate('Alarm', {
-									alarm: `${id}`
+									alarm: id
 								})
 							}
 						/>

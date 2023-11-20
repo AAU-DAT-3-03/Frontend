@@ -3,10 +3,10 @@ import { AppRegistry } from 'react-native';
 import { CommonActions, NavigationContainer, NavigationProp, RouteProp } from '@react-navigation/native';
 import 'react-native-gesture-handler';
 import Home from './src/screens/home/Home';
-import Services from './src/screens/Services/Services';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomNavigation, Icon, PaperProvider } from 'react-native-paper';
 import History from './src/screens/history/History';
+import Companies from './src/screens/Services/Companies';
 
 export interface ScreenProps {
 	navigation: NavigationProp<any>;
@@ -61,7 +61,7 @@ function App(): React.JSX.Element {
 				>
 					<Tab.Screen
 						name="Overview"
-						component={Services}
+						component={Companies}
 						options={{
 							headerShown: false,
 							tabBarLabel: 'Overview',

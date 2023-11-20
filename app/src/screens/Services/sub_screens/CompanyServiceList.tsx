@@ -3,10 +3,6 @@ import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../../components/ContentContainer';
 import { ScreenProps } from '../../../../App';
 
-interface CompanyServiceListProps {
-	company: string;
-}
-
 interface CompanyServiceLisState {
 	company: string;
 }
