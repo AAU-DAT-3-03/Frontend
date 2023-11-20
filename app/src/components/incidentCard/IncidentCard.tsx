@@ -16,7 +16,8 @@ type Alarm = {
 	id: number;
 };
 
-export type Incident = {
+export type IncidentType = {
+	id: number;
 	company: string;
 	caseNr: number;
 	priority: number;
@@ -77,7 +78,7 @@ class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 			borderBottomWidth: this.props.collapsed ? 0 : 0.5,
 			borderBottomColor: getCurrentTheme().colors.onSurface,
 			paddingBottom: 16,
-			paddingHorizontal: 8
+			paddingHorizontal: 12
 		};
 
 		let icon: string = this.props.collapsed ? 'menu-down' : 'menu-up';
@@ -166,7 +167,7 @@ class IncidentCardList extends Component<IncidentCardListProps> {
 }
 
 interface IncidentCardProps {
-	incident: Incident;
+	incident: IncidentType;
 	onClickIncident: (id: number) => void;
 	onClickAlarm: (id: number) => void;
 }
@@ -192,7 +193,7 @@ class IncidentCard extends Component<IncidentCardProps, IncidentCardState> {
 						case={this.props.incident.caseNr}
 						users={this.props.incident.users}
 						status={this.props.incident.state}
-						onClickIncident={() => this.props.onClickIncident(this.props.incident.caseNr)}
+						onClickIncident={() => this.props.onClickIncident(this.props.incident.id)}
 					/>
 					<View style={incidentCardStyle().list}>
 						{this.state.collapsed ? null : (

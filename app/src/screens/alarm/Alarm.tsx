@@ -1,31 +1,31 @@
 import React, { Component } from 'react';
-import {Appbar, Text} from 'react-native-paper';
-import ContentContainer from "../../components/ContentContainer";
-
-interface AlarmProps {
-	alarm: string
-}
+import { Appbar, Text } from 'react-native-paper';
+import ContentContainer from '../../components/ContentContainer';
+import { ScreenProps } from '../../../App';
 
 interface AlarmState {
-	alarm: string
+	alarm: string;
 }
 
-
-class Alarm extends Component<AlarmProps, AlarmState> {
+class Alarm extends Component<ScreenProps, AlarmState> {
 	state: AlarmState = {
-		alarm: "Not defined"
-	}
+		alarm: 'Not defined'
+	};
 
-	constructor(props: AlarmProps) {
+	constructor(props: ScreenProps) {
 		super(props);
-		this.state.alarm = props.alarm;
+		this.state.alarm = props.route.params?.alarm;
 	}
 
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
-				<Appbar.BackAction onPress={() => {}}/>
-				<Appbar.Content title={this.state.alarm}/>
+				<Appbar.BackAction
+					onPress={() => {
+						this.props.navigation.goBack();
+					}}
+				/>
+				<Appbar.Content title={this.state.alarm} />
 			</Appbar>
 		);
 	}
@@ -33,7 +33,7 @@ class Alarm extends Component<AlarmProps, AlarmState> {
 	render(): React.JSX.Element {
 		return (
 			<ContentContainer appBar={this.AppBar()}>
-				<Text variant={"displayLarge"}>test</Text>
+				<Text variant={'displayLarge'}>{this.state.alarm}</Text>
 			</ContentContainer>
 		);
 	}
