@@ -1,29 +1,31 @@
 import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
-
-interface IncidentProps {
-	alarm: string;
-}
+import { ScreenProps } from '../../../App';
 
 interface IncidentState {
 	alarm: string;
 }
 
-class Incident extends Component<IncidentProps, IncidentState> {
+class Incident extends Component<ScreenProps, IncidentState> {
 	state: IncidentState = {
 		alarm: 'Not defined'
 	};
 
-	constructor(props: IncidentProps) {
+	constructor(props: ScreenProps) {
 		super(props);
-		this.state.alarm = props.alarm;
+		console.log(props);
+		this.state.alarm = props.route.params?.alarm;
 	}
 
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
-				<Appbar.BackAction onPress={() => {}} />
+				<Appbar.BackAction
+					onPress={() => {
+						this.props.navigation.goBack();
+					}}
+				/>
 				<Appbar.Content title={this.state.alarm} />
 			</Appbar>
 		);
@@ -32,7 +34,7 @@ class Incident extends Component<IncidentProps, IncidentState> {
 	render(): React.JSX.Element {
 		return (
 			<ContentContainer appBar={this.AppBar()}>
-				<Text variant={'displayLarge'}>test</Text>
+				<Text variant={'displayLarge'}>{this.state.alarm}</Text>
 			</ContentContainer>
 		);
 	}
