@@ -4,12 +4,12 @@ import ContentContainer from '../../../components/ContentContainer';
 import { ScreenProps } from '../../../../App';
 
 interface CompanyServiceLisState {
-	company: string;
+	company: number;
 }
 
 class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> {
 	state: CompanyServiceLisState = {
-		company: 'Not defined'
+		company: -1
 	};
 
 	constructor(props: ScreenProps) {
@@ -25,10 +25,11 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 						this.props.navigation.goBack();
 					}}
 				/>
-				<Appbar.Content title={this.state.company} />
+				<Appbar.Content title={`${this.state.company}`} />
 			</Appbar>
 		);
 	}
+
 	render(): React.JSX.Element {
 		return (
 			<>
