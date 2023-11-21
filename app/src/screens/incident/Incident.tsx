@@ -130,7 +130,8 @@ const IncidentScreenStylesheet = StyleSheet.create({
 	header: {
 		justifyContent: 'space-evenly',
 		flexDirection: 'row',
-		width: '100%'
+		width: '100%',
+		alignItems: 'center'
 	},
 	card: {
 		borderRadius: 16,
