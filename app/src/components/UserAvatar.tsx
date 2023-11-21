@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
-import { Icon, Text, TouchableRipple } from 'react-native-paper';
+import { Card, Icon, Text, TouchableRipple } from 'react-native-paper';
 import Color from 'color';
 import { User } from './AddUser';
 

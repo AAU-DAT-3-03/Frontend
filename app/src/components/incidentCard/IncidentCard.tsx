@@ -143,13 +143,12 @@ class IncidentCardListItem extends Component<IncidentCardListItemProps> {
 		);
 	}
 }
-
 interface IncidentCardListProps {
 	alarms: Alarm[];
 	onClickAlarm: (id: number) => void;
 }
 
-class IncidentCardList extends Component<IncidentCardListProps> {
+export class IncidentCardList extends Component<IncidentCardListProps> {
 	render(): React.JSX.Element {
 		return (
 			<View style={{ borderBottomRightRadius: 16, borderBottomLeftRadius: 16, overflow: 'hidden' }}>
@@ -239,5 +238,4 @@ const incidentCardStyle = () => {
 		}
 	});
 };
-
 export default IncidentCard;

@@ -163,7 +163,7 @@ const eventLogStyleSheet = () => {
 			width: '100%',
 			textAlign: 'center',
 			paddingBottom: 8,
-			borderBottomWidth: 1,
+			borderBottomWidth: 0.3,
 			borderBottomColor: mainColor
 		},
 		logHeader: {

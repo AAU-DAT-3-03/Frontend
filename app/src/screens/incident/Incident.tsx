@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import { Appbar, Text } from 'react-native-paper';
+import { Appbar, Card, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import { ScreenProps } from '../../../App';
 import { incidents } from '../home/Home';
 import { IncidentType } from '../../components/incidentCard/IncidentCard';
-import { IncidentGenerator } from '../home/IncidentGenerator';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import PrioritySelector from '../../components/PrioritySelector';
 import EventLogCard from '../../components/EventLogCard';
@@ -12,6 +11,9 @@ import NoteCard from '../../components/NoteCard';
 import AddUser from '../../components/AddUser';
 import { users } from '../home/IncidentGenerator';
 import FABResolved from '../../components/FABResolved';
+import ContainerCard from '../../components/ContainerCard';
+import { IncidentCardList } from '../../components/incidentCard/IncidentCard';
+import { getCurrentTheme } from '../../themes/ThemeManager';
 
 interface IncidentState {
 	incidentId: number;
@@ -52,6 +54,20 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		return await promise;
 	}
 
+	private alarmLoader() {
+		const { incidentData } = this.state;
+
+		const alarmViews = [];
+		for (let index = 0; index < incidentData.alarms.length; index++) {
+			const alarm = incidentData.alarms[index];
+
+			alarmViews.push(<Text> {alarm.alarmError} </Text>);
+			console.log(alarmViews[index]);
+		}
+
+		return alarmViews;
+	}
+
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
@@ -62,7 +78,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 				/>
 				<Appbar.Header style={IncidentScreenStylesheet.header}>
 					{this.state.loading ? null : (
-						<Text>
+						<Text variant={'titleLarge'}>
 							{this.state.incidentData?.company} #{this.state.incidentData?.caseNr}
 						</Text>
 					)}
@@ -74,14 +90,18 @@ class Incident extends Component<ScreenProps, IncidentState> {
 	private incidentsRender(): React.JSX.Element {
 		return (
 			<View style={IncidentScreenStylesheet.incidentContainer}>
-				<Text variant={'displayLarge'}>{this.state.incidentId}</Text>
-				<Text variant={'displayLarge'}>{this.state.incidentData?.company}</Text>
 				<AddUser users={this.state.incidentData?.users} type={'Assigned'} usersAll={users} removable={true} />
 				<PrioritySelector state={this.state.incidentData?.priority} onPress={(value) => console.log(value)} />
 				<AddUser users={this.state.incidentData?.users} type={'Called'} usersAll={users} removable={false} />
 				<NoteCard noteInfo={'bla bla bla'} onChange={(text) => console.log(text)} />
 				<EventLogCard eventLog={[{ dateTime: Date.now(), user: 'Bent', message: 'Updated incident note' }]} />
 				<FABResolved />
+				<Card style={IncidentScreenStylesheet.card}>
+					<Text variant={'titleMedium'} style={IncidentScreenStylesheet.text}>
+						Alarms
+					</Text>
+					<IncidentCardList alarms={this.state.incidentData?.alarms} onClickAlarm={(id) => console.log(id)} />
+				</Card>
 			</View>
 		);
 	}
@@ -110,6 +130,14 @@ const IncidentScreenStylesheet = StyleSheet.create({
 		flexDirection: 'row',
 		width: '100%',
 		paddingLeft: 35
+	},
+	card: {
+		borderRadius: 16,
+		paddingTop: 15,
+		backgroundColor: getCurrentTheme().colors.elevation.level4
+	},
+	text: {
+		alignSelf: 'center'
 	}
 });
 
