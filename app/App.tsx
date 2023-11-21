@@ -3,6 +3,7 @@ import { AppRegistry } from 'react-native';
 import { CommonActions, NavigationContainer, NavigationProp, RouteProp } from '@react-navigation/native';
 import 'react-native-gesture-handler';
 import Home from './src/screens/home/Home';
+import Companies from './src/screens/Services/Companies';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomNavigation, Icon, PaperProvider } from 'react-native-paper';
 import History from './src/screens/history/History';

@@ -36,7 +36,7 @@ const userAvatarStyle = StyleSheet.create({
 		height: 28
 	},
 	contentText: {
-		color: getCurrentTheme().colors.onPrimary
+		color: getCurrentTheme().colors.primaryContainer
 	}
 });
 

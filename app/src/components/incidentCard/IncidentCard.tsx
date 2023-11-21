@@ -24,6 +24,8 @@ export type IncidentType = {
 	state: IncidentState;
 	users?: User[];
 	alarms: Alarm[];
+	date: Date;
+	called?: User[];
 };
 
 interface IncidentCardHeaderProps {
