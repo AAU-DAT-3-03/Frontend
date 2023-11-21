@@ -1,5 +1,6 @@
-package com.app;
+package com.test;
 
+import com.wix.reactnativenotifications.RNNotificationsPackage;
 import android.app.Application;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
