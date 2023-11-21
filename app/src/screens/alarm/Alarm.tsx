@@ -8,6 +8,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ScreenProps } from '../../../App';
 import Incident from '../incident/Incident';
 import { Alarm as AlarmData } from '../../components/incidentCard/IncidentCard';
+import { getCurrentTheme } from '../../themes/ThemeManager';
 
 const Stack = createStackNavigator();
 interface AlarmState extends AlarmData {
@@ -71,7 +72,9 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 		return (
 			<ContentContainer appBar={this.AppBar()}>
 				{this.state.loading ? (
-					<ActivityIndicator />
+					<View style={container.activity}>
+						<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
+					</View>
 				) : (
 					<View style={container.padding}>
 						<InformationCard errorType={this.state.alarmError} errorInfo={this.state.alarmLog} />
@@ -101,6 +104,13 @@ const container = StyleSheet.create({
 		flexDirection: 'column',
 		gap: 16,
 		padding: 16
+	},
+	activity: {
+		height: '100%',
+		width: '100%',
+		flexDirection: 'column',
+		alignItems: 'center',
+		justifyContent: 'center'
 	}
 });
 
