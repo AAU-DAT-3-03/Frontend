@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Appbar, Searchbar } from 'react-native-paper';
+import { Searchbar } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import CompanyCard from '../../components/CompanyCard';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -48,7 +48,7 @@ class Companies extends Component<any, CompanyState> {
 
 	private AppBar(): React.JSX.Element {
 		return (
-			<Appbar style={styles.app}>
+			<>
 				<Searchbar
 					style={styles.bar}
 					placeholder={'Search'}
@@ -57,7 +57,7 @@ class Companies extends Component<any, CompanyState> {
 					value={this.state.query}
 					onChange={(e) => this.setState({ query: e.nativeEvent.text })}
 				/>
-			</Appbar>
+			</>
 		);
 	}
 
@@ -128,8 +128,7 @@ const styles = StyleSheet.create({
 	bar: {
 		margin: 8,
 		alignItems: 'center'
-	},
-	app: {}
+	}
 });
 
 export default Companies;

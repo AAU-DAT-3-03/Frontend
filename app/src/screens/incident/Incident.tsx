@@ -69,13 +69,13 @@ class Incident extends Component<ScreenProps, IncidentState> {
 
 	private AppBar(): React.JSX.Element {
 		return (
-			<Appbar>
+			<>
 				<Appbar.BackAction
 					onPress={() => {
 						this.props.navigation.goBack();
 					}}
 				/>
-				<Appbar.Header>
+				<View>
 					{this.state.loading ? null : (
 						<View style={IncidentScreenStylesheet.header}>
 							<Text variant={'titleLarge'}>
@@ -84,8 +84,8 @@ class Incident extends Component<ScreenProps, IncidentState> {
 							<Text>{this.formatTimer(this.state.timer)}</Text>
 						</View>
 					)}
-				</Appbar.Header>
-			</Appbar>
+				</View>
+			</>
 		);
 	}
 

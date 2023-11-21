@@ -56,14 +56,14 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 
 	private AppBar(): React.JSX.Element {
 		return (
-			<Appbar>
+			<>
 				<Appbar.BackAction
 					onPress={() => {
 						this.props.navigation.goBack();
 					}}
 				/>
-				<Appbar.Content title={`${this.state.alarmError}`} />
-			</Appbar>
+				<Appbar.Content title={`${this.state.alarm}`} />
+			</>
 		);
 	}
 

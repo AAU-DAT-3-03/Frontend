@@ -21,7 +21,7 @@ export const DarkTheme: MD3Theme = {
 		onErrorContainer: 'rgb(65, 0, 2)',
 		background: 'rgb(27, 27, 36)',
 		onBackground: 'rgb(228, 225, 230)',
-		surface: 'rgb(35, 35, 50)',
+		surface: 'rgb(40, 40, 49)',
 		onSurface: 'rgb(228, 225, 230)',
 		surfaceVariant: 'rgb(69, 70, 86)',
 		onSurfaceVariant: 'rgb(198, 197, 208)',

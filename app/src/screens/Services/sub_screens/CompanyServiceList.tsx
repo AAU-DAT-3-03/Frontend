@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../../components/ContentContainer';
 import { ScreenProps } from '../../../../App';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 interface CompanyServiceLisState {
 	company: string;
@@ -23,18 +23,18 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 
 	private AppBar(): React.JSX.Element {
 		return (
-			<Appbar>
+			<>
 				<Appbar.BackAction
 					onPress={() => {
 						this.props.navigation.goBack();
 					}}
 				/>
-				<Appbar.Header mode={'center-aligned'}>
+				<View>
 					<Text style={cslStyle().headerText} variant={'titleLarge'}>
 						{this.state.company}
 					</Text>
-				</Appbar.Header>
-			</Appbar>
+				</View>
+			</>
 		);
 	}
 	render(): React.JSX.Element {
