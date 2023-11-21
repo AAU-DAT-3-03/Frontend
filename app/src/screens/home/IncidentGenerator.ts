@@ -35,9 +35,20 @@ export class IncidentGenerator {
 			alarms.push(this.generateAlarm());
 		}
 
-		let userList: User[] = [];
-		for (let i: number = 0; i < randomInt(1, 5); i++) {
-			userList.push(users[randomInt(0, users.length - 1)]);
+		let userList;
+		if (randomInt(0, 1) === 1) {
+			userList = [];
+			for (let i: number = 0; i < randomInt(1, 5); i++) {
+				userList.push(users[randomInt(0, users.length - 1)]);
+			}
+		}
+
+		let userCalledList;
+		if (randomInt(0, 1) === 1) {
+			userCalledList = [];
+			for (let i: number = 0; i < randomInt(1, 5); i++) {
+				userCalledList.push(users[randomInt(0, users.length - 1)]);
+			}
 		}
 
 		let incident: IncidentType = {
@@ -46,6 +57,7 @@ export class IncidentGenerator {
 			alarms: alarms,
 			caseNr: randomInt(0, 10000),
 			company: companies[randomInt(0, companies.length - 1)],
+			called: userCalledList,
 			users: userList,
 			priority: randomInt(1, 4)
 		};
