@@ -179,7 +179,7 @@ class Home extends Component<any, HomeState> {
 								}
 								onClickAlarm={(id) =>
 									navigation.navigate('Alarm', {
-										alarm: id
+										id: id
 									})
 								}
 							/>
