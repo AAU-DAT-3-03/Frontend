@@ -9,7 +9,6 @@ import { IncidentGenerator } from './IncidentGenerator';
 import Incident from '../incident/Incident';
 import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationProp } from '@react-navigation/native';
 import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
 
@@ -180,7 +179,7 @@ class Home extends Component<any, HomeState> {
 								}
 								onClickAlarm={(id) =>
 									navigation.navigate('Alarm', {
-										alarm: `${id}`
+										id: id
 									})
 								}
 							/>

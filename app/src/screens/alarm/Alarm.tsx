@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import { Appbar } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
+import { createStackNavigator } from '@react-navigation/stack';
 import InformationCard from '../../components/InformationCard';
 import NoteCard from '../../components/NoteCard';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ScreenProps } from '../../../App';
+import Incident from '../incident/Incident';
 
+const Stack = createStackNavigator();
 interface AlarmData {
 	alarm: string;
 	alarmError: string;
@@ -13,15 +17,12 @@ interface AlarmData {
 	service: string;
 }
 
-interface AlarmProps {
-	id: number;
-}
-
 interface AlarmState extends AlarmData {
 	loading: boolean;
 }
 
-async function getAlarmData(id: number) {
+async function getAlarmData(id: number | undefined) {
+	if (id === undefined) return undefined;
 	let promise: Promise<AlarmData> = new Promise((resolve): void => {
 		setTimeout(() => {
 			let alarmdata: AlarmData = {
@@ -32,12 +33,12 @@ async function getAlarmData(id: number) {
 				service: 'gurli gris'
 			};
 			resolve(alarmdata);
-		}, 3);
+		}, 1500);
 	});
 	return await promise;
 }
 
-class Alarm extends Component<AlarmProps, AlarmState> {
+class Alarm extends Component<ScreenProps, AlarmState> {
 	state: AlarmState = {
 		alarm: 'Loading',
 		alarmError: '',
@@ -48,7 +49,8 @@ class Alarm extends Component<AlarmProps, AlarmState> {
 	};
 
 	componentDidMount() {
-		getAlarmData(this.props.id).then((value) =>
+		getAlarmData(this.props.route.params?.id).then((value) => {
+			if (value === undefined) return;
 			this.setState({
 				alarm: value.alarm,
 				alarmError: value.alarmError,
@@ -56,31 +58,48 @@ class Alarm extends Component<AlarmProps, AlarmState> {
 				alarmNote: value.alarmNote,
 				service: value.service,
 				loading: false
-			})
-		);
+			});
+		});
 	}
 
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
-				<Appbar.BackAction onPress={() => {}} />
+				<Appbar.BackAction
+					onPress={() => {
+						this.props.navigation.goBack();
+					}}
+				/>
 				<Appbar.Content title={this.state.alarm} />
 			</Appbar>
 		);
 	}
 
-	render(): React.JSX.Element {
+	private alarmRender() {
 		return (
 			<ContentContainer appBar={this.AppBar()}>
 				{this.state.loading ? (
-					<ActivityIndicator></ActivityIndicator>
+					<ActivityIndicator />
 				) : (
 					<View style={container.padding}>
-						<InformationCard errorType={this.state.alarm} errorInfo={this.state.alarmLog}></InformationCard>
-						<NoteCard noteInfo={this.state.alarmNote} onChange={() => {}}></NoteCard>
+						<InformationCard errorType={this.state.alarm} errorInfo={this.state.alarmLog} />
+						<NoteCard noteInfo={this.state.alarmNote} onChange={() => {}} />
 					</View>
 				)}
 			</ContentContainer>
+		);
+	}
+
+	render(): React.JSX.Element {
+		return (
+			<Stack.Navigator initialRouteName={'ServiceRender'}>
+				<Stack.Screen options={{ headerShown: false }} name="alarmRender">
+					{() => this.alarmRender()}
+				</Stack.Screen>
+				<Stack.Screen options={{ headerShown: false }} name="incident">
+					{(props: ScreenProps) => <Incident {...props} />}
+				</Stack.Screen>
+			</Stack.Navigator>
 		);
 	}
 }
