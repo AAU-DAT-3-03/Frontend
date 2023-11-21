@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Appbar, IconButton, Menu, Text } from 'react-native-paper';
+import { IconButton, Menu, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import IncidentCard, { IncidentType } from '../../components/incidentCard/IncidentCard';
 import SettingsMenu from './components/SettingsMenu';
@@ -56,16 +56,15 @@ class Home extends Component<any, HomeState> {
 
 	private AppBar(): React.JSX.Element {
 		return (
-			<Appbar style={{ backgroundColor: getCurrentTheme().colors.surface }}>
-				<Appbar.Header
+			<>
+				<View
 					style={{
 						width: '100%',
 						paddingHorizontal: 0,
 						margin: 0,
 						justifyContent: 'flex-end',
 						flexDirection: 'row',
-						alignItems: 'center',
-						backgroundColor: getCurrentTheme().colors.surface
+						alignItems: 'center'
 					}}
 				>
 					<IconButton
@@ -101,10 +100,10 @@ class Home extends Component<any, HomeState> {
 							onPress={() => this.setState({ filter: Filter.ASSIGNED, filterVisible: false })}
 						/>
 					</Menu>
-				</Appbar.Header>
+				</View>
 
 				<SettingsMenu visible={this.state.menuVisible} onDismiss={() => this.setState({ menuVisible: false })} />
-			</Appbar>
+			</>
 		);
 	}
 
