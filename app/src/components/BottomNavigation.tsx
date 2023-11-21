@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { BottomNavigation } from 'react-native-paper';
 import Home from '../screens/home/Home';
-import Services from "../screens/Services/Services";
-import History from "../screens/history/History";
+import Companies from '../screens/Services/Companies';
+import History from '../screens/history/History';
 
 interface BNBState {
 	index: number;
@@ -25,9 +25,9 @@ class BottomNavigationBar extends Component<any, BNBState> {
 
 	render(): React.JSX.Element {
 		const renderScene = BottomNavigation.SceneMap({
-			overview: () => <Services/>,
-			home: () => <Home/>,
-			history: () => <History/>
+			overview: () => <Companies />,
+			home: () => <Home />,
+			history: () => <History />
 		});
 
 		return (

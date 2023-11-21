@@ -24,6 +24,8 @@ export type IncidentType = {
 	state: IncidentState;
 	users?: User[];
 	alarms: Alarm[];
+	date: Date;
+	called?: User[];
 };
 
 interface IncidentCardHeaderProps {
@@ -78,7 +80,7 @@ class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 			borderBottomWidth: this.props.collapsed ? 0 : 0.5,
 			borderBottomColor: getCurrentTheme().colors.onSurface,
 			paddingBottom: 16,
-			paddingHorizontal: 8
+			paddingHorizontal: 12
 		};
 
 		let icon: string = this.props.collapsed ? 'menu-down' : 'menu-up';
@@ -143,13 +145,12 @@ class IncidentCardListItem extends Component<IncidentCardListItemProps> {
 		);
 	}
 }
-
 interface IncidentCardListProps {
 	alarms: Alarm[];
 	onClickAlarm: (id: number) => void;
 }
 
-class IncidentCardList extends Component<IncidentCardListProps> {
+export class IncidentCardList extends Component<IncidentCardListProps> {
 	render(): React.JSX.Element {
 		return (
 			<View style={{ borderBottomRightRadius: 16, borderBottomLeftRadius: 16, overflow: 'hidden' }}>
@@ -239,5 +240,4 @@ const incidentCardStyle = () => {
 		}
 	});
 };
-
 export default IncidentCard;

@@ -21,7 +21,7 @@ npm start
       * Active alarms (on press go to index 5)
         * Show status (acknowledged, assigned, fixed)
         * Show members assigned to alarm
-2. Services
+2. Companies
    * Overview of companies with indicator of current alarms
      * Ref. index 4
    * Compact mode switch
@@ -60,6 +60,7 @@ cd android
 ./gradlew wrapper --gradle-version=8.0.1 --distribution-type=bin
 cd ..
 npm cache clear --force
+yarn upgrade --pattern react-native
 ```
 
 ### Icons
