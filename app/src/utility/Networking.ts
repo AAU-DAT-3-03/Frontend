@@ -1,4 +1,4 @@
-import * as console from 'console';
+import LocalStorage from './LocalStorage';
 
 enum Method {
 	GET = 'GET',
@@ -12,9 +12,10 @@ type RequestHeaders = { key: string; value: string | string[] }[];
 type NetworkOptions = {
 	body?: null | string | object;
 	headers?: RequestHeaders;
+	sendAuthKey?: false;
 };
 
-type NetworkCallback = (value: object) => void;
+type NetworkCallback = (value: void | [Object, Response]) => void | PromiseLike<void>;
 
 type FetchSettings = {
 	method: string;
@@ -91,6 +92,10 @@ class Networking {
 			body: options?.body ? JSON.stringify(options.body) : null
 		};
 
+		if (options?.sendAuthKey === undefined) {
+			this.setHeader('Cookie', LocalStorage.getSettingsValue('authKey'));
+		}
+
 		if (options?.headers) {
 			// Add all headers from options to the pre-existing list
 			options.headers.forEach((value) => this.setHeader(value.key, value.value));
@@ -107,17 +112,20 @@ class Networking {
 	 * @param {NetworkOptions} options - Fetch options for request
 	 * @private
 	 */
-	private async fetch(url: string, method: Method, options?: NetworkOptions): Promise<Object> {
+	private async fetch(url: string, method: Method, options?: NetworkOptions): Promise<[Object, Response] | void> {
 		let settings = this.createFetchSettings(method, options);
 
 		return fetch(url, settings)
-			.then((value: Response) => {
+			.then(async (value: Response): Promise<[string, Response]> => {
 				// First get the response body as a string
-				return value.text();
+				let text: string = await value.text();
+				return [text, value];
 			})
-			.then((value: string) => {
+			.then((value: [string, Response]): [Object, Response] => {
 				// Try to convert the body as string to a JSON object
-				return JSON.parse(value);
+				let data: Object = JSON.parse(value[0]);
+				let response: Response = value[1];
+				return [data, response];
 			})
 			.catch((reason) => console.error(reason));
 	}
