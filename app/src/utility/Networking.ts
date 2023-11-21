@@ -1,3 +1,5 @@
+import LocalStorage from './LocalStorage';
+
 enum Method {
 	GET = 'GET',
 	POST = 'POST',
@@ -10,9 +12,10 @@ type RequestHeaders = { key: string; value: string | string[] }[];
 type NetworkOptions = {
 	body?: null | string | object;
 	headers?: RequestHeaders;
+	sendAuthKey?: false;
 };
 
-type NetworkCallback = (value: object) => void;
+type NetworkCallback = (value: void | [Object, Response]) => void | PromiseLike<void>;
 
 type FetchSettings = {
 	method: string;
@@ -86,14 +89,18 @@ class Networking {
 	private createFetchSettings(method: Method, options?: NetworkOptions): FetchSettings {
 		let settings: FetchSettings = {
 			method: method,
-			body: JSON.stringify(options?.body)
+			body: options?.body ? JSON.stringify(options.body) : null
 		};
+
+		if (options?.sendAuthKey === undefined) {
+			this.setHeader('Cookie', LocalStorage.getSettingsValue('authKey'));
+		}
 
 		if (options?.headers) {
 			// Add all headers from options to the pre-existing list
 			options.headers.forEach((value) => this.setHeader(value.key, value.value));
+			settings.headers = this.headers;
 		}
-		settings.headers = this.headers;
 
 		return settings;
 	}
@@ -105,32 +112,22 @@ class Networking {
 	 * @param {NetworkOptions} options - Fetch options for request
 	 * @private
 	 */
-	private fetch(url: string, method: Method, options?: NetworkOptions): Promise<Object> {
+	private async fetch(url: string, method: Method, options?: NetworkOptions): Promise<[Object, Response] | void> {
 		let settings = this.createFetchSettings(method, options);
-		console.log(settings.body);
-		return (
-			fetch(url, {
-				method: settings.method,
-				headers: settings.headers,
-				body: settings.body
+
+		return fetch(url, settings)
+			.then(async (value: Response): Promise<[string, Response]> => {
+				// First get the response body as a string
+				let text: string = await value.text();
+				return [text, value];
 			})
-				.then((response: Response): Promise<string> => {
-					return response.text();
-				})
-				//Check the created json
-				.then((value: string): Object => {
-					if (value) {
-						if (value.includes('<!DOCTYPE html>')) {
-							console.log(value);
-							return JSON.parse(`{"error" : "${value.toString()}"}`);
-						}
-						return JSON.parse(value);
-					} else {
-						//Throw an error if the response could not be converted to json
-						throw new Error('Value is void');
-					}
-				})
-		);
+			.then((value: [string, Response]): [Object, Response] => {
+				// Try to convert the body as string to a JSON object
+				let data: Object = JSON.parse(value[0]);
+				let response: Response = value[1];
+				return [data, response];
+			})
+			.catch((reason) => console.error(reason));
 	}
 }
 

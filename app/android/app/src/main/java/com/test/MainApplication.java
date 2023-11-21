@@ -1,4 +1,4 @@
-package com.app;
+package com.test;
 
 import com.wix.reactnativenotifications.RNNotificationsPackage;
 import android.app.Application;

@@ -21,7 +21,7 @@ npm start
       * Active alarms (on press go to index 5)
         * Show status (acknowledged, assigned, fixed)
         * Show members assigned to alarm
-2. Services
+2. Companies
    * Overview of companies with indicator of current alarms
      * Ref. index 4
    * Compact mode switch
@@ -48,6 +48,20 @@ npm start
 ### Components
 [Paper components](https://callstack.github.io/react-native-paper/docs/components/ActivityIndicator)\
 [React Native Components](https://reactnative.dev/docs/components-and-apis)
+
+## If it don't work
+Android sdk 33.0.0, Android tiramisu emulatior
+Use webstorms.\
+Use following commands
+```
+cd app
+cd android
+./gradlew clean
+./gradlew wrapper --gradle-version=8.0.1 --distribution-type=bin
+cd ..
+npm cache clear --force
+yarn upgrade --pattern react-native
+```
 
 ### Icons
 [All icons can be seen here, only MaterialCommunityIcons are available](https://oblador.github.io/react-native-vector-icons/)
