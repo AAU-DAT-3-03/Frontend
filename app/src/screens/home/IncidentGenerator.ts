@@ -28,8 +28,9 @@ export class IncidentGenerator {
 		};
 	}
 
-	public static generateIncident(): IncidentType {
+	public static generateIncident(onlyResolved?: boolean): IncidentType {
 		let state: IncidentState = randomInt(0, 1) === 1 ? 'error' : 'acknowledged';
+		if (onlyResolved === true) state = 'resolved';
 		let alarms: Alarm[] = [];
 		for (let i = 0; i < randomInt(1, 5); i++) {
 			alarms.push(this.generateAlarm());
@@ -59,15 +60,16 @@ export class IncidentGenerator {
 			company: companies[randomInt(0, companies.length - 1)],
 			called: userCalledList,
 			users: userList,
-			priority: randomInt(1, 4)
+			priority: randomInt(1, 4),
+			date: new Date(Date.now() - randomInt(0, 1000000))
 		};
 		return incident;
 	}
 
-	public static generateIncidentList(amount: number): IncidentType[] {
+	public static generateIncidentList(amount: number, onlyResolved?: boolean): IncidentType[] {
 		let incidents: IncidentType[] = [];
 		for (let i: number = 0; i < amount; i++) {
-			incidents.push(this.generateIncident());
+			incidents.push(this.generateIncident(onlyResolved));
 		}
 		return incidents;
 	}
