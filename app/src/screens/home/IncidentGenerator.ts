@@ -1,7 +1,6 @@
 import { IncidentType } from '../../components/incidentCard/IncidentCard';
 import { IncidentState } from '../../components/StatusIcon';
 import { User } from '../../components/AddUser';
-import Incident from '../incident/Incident';
 
 export function randomInt(min: number, max: number): number {
 	return Math.floor(Math.random() * (max - min + 1) + min);

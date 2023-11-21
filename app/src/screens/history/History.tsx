@@ -125,7 +125,7 @@ class History extends Component<any, HistoryState> {
 							}
 							onClickAlarm={(id) =>
 								navigation.navigate('Alarm', {
-									alarm: id
+									id: id
 								})
 							}
 						/>
