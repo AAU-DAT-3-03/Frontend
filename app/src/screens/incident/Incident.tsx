@@ -3,15 +3,15 @@ import { Appbar, Card, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import { ScreenProps } from '../../../App';
 import { IncidentType } from '../../components/incidentCard/IncidentCard';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import PrioritySelector from '../../components/PrioritySelector';
 import EventLogCard from '../../components/EventLogCard';
 import NoteCard from '../../components/NoteCard';
 import AddUser from '../../components/AddUser';
-import { incidents, users } from '../home/IncidentGenerator';
 import FABResolved from '../../components/FABResolved';
 import { IncidentCardList } from '../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../themes/ThemeManager';
+import { MockDataGenerator, users } from '../../utility/MockDataGenerator';
 
 interface IncidentState {
 	incidentId: number;
@@ -35,7 +35,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 	}
 
 	private getIncidentData() {
-		let incident = incidents.filter((value) => value.id === this.state.incidentId);
+		let incident = MockDataGenerator.getAllIncidents().filter((value) => value.id === this.state.incidentId);
 		if (incident.length < 1) {
 			console.log('No incident found with that id');
 			return;
@@ -94,22 +94,26 @@ class Incident extends Component<ScreenProps, IncidentState> {
 			return <Text>Error loading data</Text>;
 		}
 		return (
-			<View style={IncidentScreenStylesheet.incidentContainer}>
-				<AddUser users={this.state.incidentData?.users} type={'Assigned'} usersAll={users} removable={true} />
-				<PrioritySelector state={this.state.incidentData?.priority} onPress={(value) => console.log(value)} />
-				<AddUser users={this.state.incidentData?.users} type={'Called'} usersAll={users} removable={false} />
-				<NoteCard noteInfo={'bla bla bla'} onChange={(text) => console.log(text)} />
-				<EventLogCard eventLog={[{ dateTime: Date.now(), user: 'Bent', message: 'Updated incident note' }]} />
+			<View style={{ width: '100%', height: '100%' }}>
 				<FABResolved />
-				<Card style={IncidentScreenStylesheet.card}>
-					<Text variant={'titleMedium'} style={IncidentScreenStylesheet.text}>
-						Alarms
-					</Text>
-					<IncidentCardList
-						alarms={this.state.incidentData?.alarms}
-						onClickAlarm={(id) => this.props.navigation.navigate('Alarm', { alarm: id })}
-					/>
-				</Card>
+				<ScrollView showsVerticalScrollIndicator={false}>
+					<View style={IncidentScreenStylesheet.incidentContainer}>
+						<AddUser users={this.state.incidentData?.assignedUsers} type={'Assigned'} usersAll={users} removable={true} />
+						<PrioritySelector state={this.state.incidentData?.priority} onPress={(value) => console.log(value)} />
+						<AddUser users={this.state.incidentData?.assignedUsers} type={'Called'} usersAll={users} removable={false} />
+						<NoteCard noteInfo={'bla bla bla'} onChange={(text) => console.log(text)} />
+						<EventLogCard eventLog={[{ dateTime: Date.now(), user: 'Bent', message: 'Updated incident note' }]} />
+						<Card style={IncidentScreenStylesheet.card}>
+							<Text variant={'titleMedium'} style={IncidentScreenStylesheet.text}>
+								Alarms
+							</Text>
+							<IncidentCardList
+								alarms={this.state.incidentData?.alarms}
+								onClickAlarm={(id) => this.props.navigation.navigate('Alarm', { id: id })}
+							/>
+						</Card>
+					</View>
+				</ScrollView>
 			</View>
 		);
 	}

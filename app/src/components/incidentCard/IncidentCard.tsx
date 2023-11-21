@@ -7,21 +7,31 @@ import { getCurrentTheme } from '../../themes/ThemeManager';
 import ContainerCard from '../ContainerCard';
 import { User } from '../AddUser';
 
-type Alarm = {
+export type Alarm = {
 	alarmError: string;
+	alarmLog: string;
+	alarmNote: string;
+	service: string;
 	id: number;
 };
 
 export type IncidentType = {
 	id: number;
+	companyId: number;
 	company: string;
-	caseNr: number;
 	priority: number;
-	state: IncidentState;
-	users?: User[];
+	caseNr: number;
+	incidentNote: string;
+	startTime: number;
 	alarms: Alarm[];
-	date: Date;
-	called?: User[];
+	assignedUsers?: User[];
+	calledUsers?: User[];
+	eventLog: {
+		dateTime: number;
+		user: string;
+		message: string;
+	}[];
+	state: IncidentState;
 };
 
 interface IncidentCardHeaderProps {
@@ -188,7 +198,7 @@ class IncidentCard extends Component<IncidentCardProps, IncidentCardState> {
 						onClickButton={() => this.setState({ collapsed: !this.state.collapsed })}
 						company={this.props.incident.company}
 						case={this.props.incident.caseNr}
-						users={this.props.incident.users}
+						users={this.props.incident.assignedUsers}
 						status={this.props.incident.state}
 						onClickIncident={() => this.props.onClickIncident(this.props.incident.id)}
 					/>
