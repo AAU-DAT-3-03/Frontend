@@ -5,12 +5,12 @@ import IncidentCard, { IncidentType } from '../../components/incidentCard/Incide
 import SettingsMenu from './components/SettingsMenu';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
-import { IncidentGenerator, incidents, setIncidents } from './IncidentGenerator';
 import Incident from '../incident/Incident';
 import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
+import { MockDataGenerator } from '../../utility/MockDataGenerator';
 
 const Stack = createStackNavigator();
 
@@ -118,9 +118,7 @@ class Home extends Component<any, HomeState> {
 	private async getIncidentData(): Promise<boolean> {
 		let promise: Promise<boolean> = new Promise((resolve): void => {
 			setTimeout(() => {
-				let incidentsSorted = this.sortIncidents(
-					setIncidents(incidents.concat(IncidentGenerator.generateIncident())).filter((value) => value.state !== 'resolved')
-				);
+				let incidentsSorted = this.sortIncidents(MockDataGenerator.getAllIncidents().filter((value) => value.state !== 'resolved'));
 				this.setState({ loading: false, incidents: incidentsSorted });
 				resolve(true);
 			}, 1);
@@ -153,7 +151,7 @@ class Home extends Component<any, HomeState> {
 	}
 
 	private incidentsRender(navigation: any, filter: Filter): React.JSX.Element {
-		let phoneNr: number = parseInt(LocalStorage.getSettingsValue('phone'));
+		let phoneNr: number = parseInt(LocalStorage.getSettingsValue('phone'), 10);
 		return (
 			<View style={HomeStyle().incidentContainer}>
 				{this.state.incidents
@@ -161,10 +159,14 @@ class Home extends Component<any, HomeState> {
 						if (filter === Filter.NONE) return true;
 						if (filter === Filter.CALLED) {
 							return (
-								incident.called !== undefined && incident.called?.filter((value) => value.phoneNr === phoneNr).length > 0
+								incident.calledUsers !== undefined &&
+								incident.calledUsers?.filter((value) => value.phoneNr === phoneNr).length > 0
 							);
 						}
-						return incident.users !== undefined && incident.users.filter((user) => user.phoneNr === phoneNr).length > 0;
+						return (
+							incident.assignedUsers !== undefined &&
+							incident.assignedUsers.filter((user) => user.phoneNr === phoneNr).length > 0
+						);
 					})
 					.map((value, index) => {
 						return (
@@ -197,6 +199,7 @@ class Home extends Component<any, HomeState> {
 	}
 
 	private onRefresh(finished: () => void): void {
+		MockDataGenerator.generateIncident();
 		this.getIncidentData().then(() => finished());
 	}
 

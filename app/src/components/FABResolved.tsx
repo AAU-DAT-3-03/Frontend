@@ -48,13 +48,9 @@ class ResolvedConfirm extends Component<ResolvedProps> {
 							>
 								<View style={buttonStyle}>
 									{!this.props.resolvedActive ? (
-										<ActivityIndicator
-											size={24}
-											animating={true}
-											color={getCurrentTheme().colors.inverseSurface}
-										></ActivityIndicator>
+										<ActivityIndicator size={24} animating={true} color={getCurrentTheme().colors.inverseSurface} />
 									) : (
-										<Icon size={24} source={'check'}></Icon>
+										<Icon size={24} source={'check'} />
 									)}
 									<Text style={styles.text} variant={'bodyLarge'}>
 										Resolve
@@ -91,7 +87,7 @@ class FABResolved extends Component {
 
 	render(): React.JSX.Element {
 		return (
-			<Portal>
+			<>
 				<FAB
 					style={styles.fabbutton}
 					elevation={0}
@@ -120,19 +116,20 @@ class FABResolved extends Component {
 						});
 					}}
 				/>
-			</Portal>
+			</>
 		);
 	}
 }
 
 const styles = StyleSheet.create({
 	fabbutton: {
-		top: '82%',
-		right: 8,
+		bottom: 16,
+		right: 16,
 		position: 'absolute',
 		overflow: 'hidden',
 		borderRadius: 30,
-		backgroundColor: Colors.allGood
+		backgroundColor: Colors.allGood,
+		zIndex: 10000
 	},
 	fab: {
 		backgroundColor: getCurrentTheme().colors.onTertiary,
