@@ -1,5 +1,6 @@
 import React, { Component, ReactNode } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
+import { getCurrentTheme } from '../themes/ThemeManager';
 
 /**
  * If no appbar is  desired simply don't pass anything
@@ -50,8 +51,10 @@ class ContentContainer extends Component<ContentContainerProps, ContentContainer
 
 	render(): React.JSX.Element {
 		return (
-			<View style={{ flexDirection: 'column', height: '100%' }}>
-				{this.props.appBar ?? null}
+			<View style={{ flexDirection: 'column', height: '100%', backgroundColor: getCurrentTheme().colors.background }}>
+				{this.props.appBar === null ? null : (
+					<View style={{ margin: 0, padding: 0, backgroundColor: getCurrentTheme().colors.background }}>{this.props.appBar}</View>
+				)}
 				<ScrollView style={{ flexGrow: 2, overflow: 'hidden' }} refreshControl={this.getRefreshControl()}>
 					{this.props.children ?? null}
 				</ScrollView>

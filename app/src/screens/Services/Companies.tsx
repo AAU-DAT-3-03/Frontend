@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 
-class Services extends Component {
+class Companies extends Component {
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
-				<Appbar.Content title={'Services'} />
+				<Appbar.Content title={'Companies'} />
 			</Appbar>
 		);
 	}
@@ -19,4 +19,4 @@ class Services extends Component {
 	}
 }
 
-export default Services;
+export default Companies;
