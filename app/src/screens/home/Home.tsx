@@ -13,7 +13,7 @@ import { NavigationProp } from '@react-navigation/native';
 import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
 
-let incidents: IncidentType[] = IncidentGenerator.generateIncidentList(2);
+export let incidents: IncidentType[] = IncidentGenerator.generateIncidentList(2);
 
 const Stack = createStackNavigator();
 
@@ -125,7 +125,7 @@ class Home extends Component<any, HomeState> {
 				incidents = this.sortIncidents(incidents.concat(IncidentGenerator.generateIncident()));
 				this.setState({ loading: false, incidents: incidents });
 				resolve(true);
-			}, 3000);
+			}, 1);
 		});
 		return await promise;
 	}

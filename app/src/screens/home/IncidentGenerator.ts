@@ -1,5 +1,6 @@
 import { IncidentType } from '../../components/incidentCard/IncidentCard';
 import { IncidentState } from '../../components/StatusIcon';
+import { User } from '../../components/AddUser';
 
 function randomInt(min: number, max: number): number {
 	return Math.floor(Math.random() * (max - min + 1) + min);
@@ -88,45 +89,43 @@ const alarmText: string[] = [
 	'Network error'
 ];
 
-type User = { name: string; phoneNr: number };
-
-const users: User[] = [
-	{ name: 'Mette', phoneNr: 12345678 },
-	{ name: 'Kirsten', phoneNr: 12345678 },
-	{ name: 'Hanne', phoneNr: 12345678 },
-	{ name: 'Anna', phoneNr: 12345678 },
-	{ name: 'Helle', phoneNr: 12345678 },
-	{ name: 'Susanne', phoneNr: 12345678 },
-	{ name: 'Maria', phoneNr: 12345678 },
-	{ name: 'Lene', phoneNr: 12345678 },
-	{ name: 'Marianne', phoneNr: 12345678 },
-	{ name: 'Camilla', phoneNr: 12345678 },
-	{ name: 'Lone', phoneNr: 12345678 },
-	{ name: 'Louise', phoneNr: 12345678 },
-	{ name: 'Pia', phoneNr: 12345678 },
-	{ name: 'Charlotte', phoneNr: 12345678 },
-	{ name: 'Tina', phoneNr: 12345678 },
-	{ name: 'Gitte', phoneNr: 12345678 },
-	{ name: 'Jette', phoneNr: 12345678 },
-	{ name: 'Bente', phoneNr: 12345678 },
-	{ name: 'Julie', phoneNr: 12345678 },
-	{ name: 'Michael', phoneNr: 12345678 },
-	{ name: 'Lars', phoneNr: 12345678 },
-	{ name: 'Jens', phoneNr: 12345678 },
-	{ name: 'Thomas', phoneNr: 12345678 },
-	{ name: 'Henrik', phoneNr: 12345678 },
-	{ name: 'Søren', phoneNr: 12345678 },
-	{ name: 'Christian', phoneNr: 12345678 },
-	{ name: 'Martin', phoneNr: 12345678 },
-	{ name: 'Jan', phoneNr: 12345678 },
-	{ name: 'Morten', phoneNr: 12345678 },
-	{ name: 'Jesper', phoneNr: 12345678 },
-	{ name: 'Anders', phoneNr: 12345678 },
-	{ name: 'Niels', phoneNr: 12345678 },
-	{ name: 'Mads', phoneNr: 12345678 },
-	{ name: 'Rasmus', phoneNr: 12345678 },
-	{ name: 'Per', phoneNr: 12345678 },
-	{ name: 'Mikkel', phoneNr: 12345678 },
-	{ name: 'Hans', phoneNr: 12345678 },
-	{ name: 'Kim', phoneNr: 12345678 }
+export const users: User[] = [
+	{ name: 'Mette', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Kirsten', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Hanne', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Anna', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Helle', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Susanne', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Maria', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Lene', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Marianne', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Camilla', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Lone', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Louise', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Pia', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Charlotte', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Tina', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Gitte', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Jette', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Bente', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Julie', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Michael', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Lars', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Jens', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Thomas', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Henrik', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Søren', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Christian', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Martin', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Jan', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Morten', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Jesper', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Anders', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Niels', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Mads', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Rasmus', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Per', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Mikkel', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Hans', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Kim', phoneNr: 1234567, team: 'Database' }
 ];

@@ -36,7 +36,7 @@ class NoteCard extends Component<NoteCardProps, NoteCardState> {
 			<Card style={noteCardStylesheet.card}>
 				<ContainerCard.Header>
 					<View style={noteCardStylesheet.header}>
-						<Text>Incident Note</Text>
+						<Text variant={'titleMedium'}>Incident Note</Text>
 						<TouchableRipple
 							style={noteCardStylesheet.icon}
 							rippleColor={Color(getCurrentTheme().colors.onSurface).alpha(0.3).toString()}
@@ -125,7 +125,9 @@ const noteCardStylesheet = StyleSheet.create({
 		marginTop: 5
 	},
 	card: {
-		shadowColor: 'transparent'
+		shadowColor: 'transparent',
+		paddingTop: 6,
+		backgroundColor: getCurrentTheme().colors.elevation.level2
 	}
 });
 export default NoteCard;

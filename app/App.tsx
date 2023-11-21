@@ -7,6 +7,7 @@ import Companies from './src/screens/Services/Companies';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomNavigation, Icon, PaperProvider } from 'react-native-paper';
 import History from './src/screens/history/History';
+import Companies from './src/screens/Services/Companies';
 
 export interface ScreenProps {
 	navigation: NavigationProp<any>;
