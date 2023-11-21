@@ -5,11 +5,7 @@ import StatusIcon, { IncidentState } from '../StatusIcon';
 import UserAvatar from './UserAvatar';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import ContainerCard from '../ContainerCard';
-
-type User = {
-	name: string;
-	phoneNr: number;
-};
+import { User } from '../AddUser';
 
 type Alarm = {
 	alarmError: string;

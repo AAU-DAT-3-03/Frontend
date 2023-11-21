@@ -8,13 +8,11 @@ import { NavigationProp } from '@react-navigation/native';
 import { ScreenProps } from '../../../App';
 import SearchBarDateSelector, { Period } from '../../components/SearchBarDateSelector';
 import IncidentCard, { IncidentType } from '../../components/incidentCard/IncidentCard';
-import { IncidentGenerator } from '../home/IncidentGenerator';
+import { IncidentGenerator, incidents, setIncidents } from '../home/IncidentGenerator';
 import { compareIncident } from '../home/Home';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { compareDatesEqual, getToday } from '../../components/TimePicker/DateHelper';
-
-let incidents: IncidentType[] = IncidentGenerator.generateIncidentList(2, true);
 
 const Stack = createStackNavigator();
 
@@ -98,8 +96,10 @@ class History extends Component<any, HistoryState> {
 	private async getIncidentData(period: Period): Promise<boolean> {
 		let promise: Promise<boolean> = new Promise((resolve): void => {
 			setTimeout(() => {
-				incidents = this.sortIncidents(incidents.concat(IncidentGenerator.generateIncident(true)));
-				this.setState({ loading: false, incidents: incidents, filteredIncidents: incidents });
+				let filteredIncidents = this.sortIncidents(
+					setIncidents(incidents.concat(IncidentGenerator.generateIncident(true))).filter((value) => value.state === 'resolved')
+				);
+				this.setState({ loading: false, incidents: filteredIncidents, filteredIncidents: filteredIncidents });
 				resolve(true);
 			}, 3000);
 		});
@@ -120,12 +120,12 @@ class History extends Component<any, HistoryState> {
 							incident={value}
 							onClickIncident={(id) =>
 								navigation.navigate('Incident', {
-									alarm: `${id}`
+									id: id
 								})
 							}
 							onClickAlarm={(id) =>
 								navigation.navigate('Alarm', {
-									alarm: `${id}`
+									alarm: id
 								})
 							}
 						/>
