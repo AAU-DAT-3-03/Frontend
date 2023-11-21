@@ -45,7 +45,7 @@ class AssignUser extends Component<AssignUserProps> {
 				<Modal style={styles.container} visible={this.props.visible} onDismiss={() => this.props.onDismiss(undefined)}>
 					<View style={styles.view}>
 						<Searchbar
-							placeholder={'User'}
+							placeholder={'Search User'}
 							mode={'view'}
 							icon={'account'}
 							showDivider={true}
@@ -184,7 +184,6 @@ const addUserStyle = StyleSheet.create({
 		flex: 1,
 		flexDirection: 'row',
 		flexWrap: 'wrap',
-		justifyContent: 'flex-start',
 		gap: 8
 	}
 });

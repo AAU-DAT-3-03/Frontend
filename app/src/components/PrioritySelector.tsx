@@ -9,19 +9,20 @@ interface PrioritySelectorProps {
 	state: number | undefined;
 }
 interface PrioritySelectorState {
-	state: number | undefined;
+	selectedValue: number | undefined;
 }
 class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelectorState> {
 	state: PrioritySelectorState = {
-		state: 4
+		selectedValue: this.props.state
 	};
 
-	constructor(props: PrioritySelectorProps) {
-		super(props);
-		this.state.state = props.state;
-	}
+	//constructor(props: PrioritySelectorProps) {
+	//super(props);
+	//	this.state.state = props.state;
+	//}
 
 	render(): React.JSX.Element {
+		const { selectedValue } = this.state;
 		return (
 			<ContainerCard>
 				<Card.Content style={PriorityStylesheet.card}>
@@ -29,17 +30,18 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 						Priority
 					</Text>
 					<SegmentedButtons
-						value={`${this.state.state}`}
+						value={`${selectedValue}`}
 						density={'small'}
 						onValueChange={(value) => {
-							this.setState({ state: parseInt(value) });
-							this.props.onPress(parseInt(value, 10));
+							const intValue = parseInt(value, 10);
+							this.setState({ selectedValue: intValue });
+							this.props.onPress(intValue);
 						}}
 						buttons={[
-							{ value: '1', label: 'P1' },
-							{ value: '2', label: 'P2' },
-							{ value: '3', label: 'P3' },
-							{ value: '4', label: 'P4' }
+							{ value: '1', label: 'P1', disabled: selectedValue === 1 },
+							{ value: '2', label: 'P2', disabled: selectedValue === 2 },
+							{ value: '3', label: 'P3', disabled: selectedValue === 3 },
+							{ value: '4', label: 'P4', disabled: selectedValue === 4 }
 						]}
 					/>
 				</Card.Content>
