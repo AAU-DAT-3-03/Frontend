@@ -5,9 +5,10 @@ import CompanyCard from '../../components/CompanyCard';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationProp } from '@react-navigation/native';
 import CompanyServiceList from './sub_screens/CompanyServiceList';
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from 'react-native';
 import { ScreenProps } from '../../../App';
 import { Company, MockDataGenerator } from '../../utility/MockDataGenerator';
+import { getCurrentTheme } from '../../themes/ThemeManager';
 
 const Stack = createStackNavigator();
 
@@ -48,7 +49,7 @@ class Companies extends Component<any, CompanyState> {
 
 	private AppBar(): React.JSX.Element {
 		return (
-			<Appbar style={styles.app}>
+			<Appbar>
 				<Searchbar
 					style={styles.bar}
 					placeholder={'Search'}
@@ -71,7 +72,9 @@ class Companies extends Component<any, CompanyState> {
 		return (
 			<ContentContainer appBar={this.AppBar()}>
 				{this.state.loading ? (
-					<ActivityIndicator />
+					<View style={styles.activity}>
+						<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
+					</View>
 				) : (
 					<ScrollView contentContainerStyle={styles.contentContainer} style={styles.view} horizontal={true}>
 						<FlatList
@@ -129,7 +132,13 @@ const styles = StyleSheet.create({
 		margin: 8,
 		alignItems: 'center'
 	},
-	app: {}
+	activity: {
+		height: '100%',
+		width: '100%',
+		flexDirection: 'column',
+		alignItems: 'center',
+		justifyContent: 'center'
+	}
 });
 
 export default Companies;

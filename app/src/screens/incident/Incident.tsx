@@ -126,7 +126,13 @@ class Incident extends Component<ScreenProps, IncidentState> {
 	render(): React.JSX.Element {
 		return (
 			<ContentContainer appBar={this.AppBar()}>
-				{this.state.loading ? <ActivityIndicator /> : this.incidentsRender()}
+				{this.state.loading ? (
+					<View style={IncidentScreenStylesheet.activity}>
+						<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
+					</View>
+				) : (
+					this.incidentsRender()
+				)}
 			</ContentContainer>
 		);
 	}
@@ -152,6 +158,13 @@ const IncidentScreenStylesheet = StyleSheet.create({
 	text: {
 		alignSelf: 'center',
 		paddingBottom: 8
+	},
+	activity: {
+		height: '100%',
+		width: '100%',
+		flexDirection: 'column',
+		alignItems: 'center',
+		justifyContent: 'center'
 	}
 });
 
