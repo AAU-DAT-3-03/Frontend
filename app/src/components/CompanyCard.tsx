@@ -50,14 +50,15 @@ class CompanyCard extends Component<CompanyCardProps, CompanyCardState> {
 
 	render(): React.JSX.Element {
 		return (
-			<Card style={cardStyle().card}>
+			<Card style={cardStyle().card} elevation={0}>
 				<TouchableRipple
-					borderless={false}
+					style={{ borderRadius: cardStyle().cardContent.borderRadius }}
+					borderless={true}
 					onPress={() => this.props.onPress(this.props.company)}
 					rippleColor={Color(getCurrentTheme().colors.onSurface).alpha(0.3).toString()}
 				>
 					<Card.Content style={cardStyle().cardContent}>
-						<Title style={{ color: getCurrentTheme().colors.onSurface, flex: 6 }}>{this.props.company}</Title>
+						<Title style={cardStyle().beer}>{this.props.company}</Title>
 						{this.state.state === Status.ACKNOWLEDGED ? this.acknowledgeIconRender() : null}
 						{this.state.state === Status.ERROR ? this.ErrorIconRender() : null}
 					</Card.Content>
@@ -70,6 +71,7 @@ class CompanyCard extends Component<CompanyCardProps, CompanyCardState> {
 const cardStyle = () => {
 	return StyleSheet.create({
 		cardContent: {
+			borderRadius: 16,
 			flexDirection: 'row',
 			justifyContent: 'space-evenly',
 			alignItems: 'center',
@@ -81,7 +83,7 @@ const cardStyle = () => {
 		card: {
 			marginBottom: 8,
 			marginTop: 8,
-			backgroundColor: getCurrentTheme().colors.surface,
+			backgroundColor: getCurrentTheme().colors.elevation.level2,
 			height: Dimensions.get('screen').height / 17
 		},
 		error: {
@@ -99,6 +101,10 @@ const cardStyle = () => {
 			borderTopRightRadius: 10,
 			borderBottomRightRadius: 10,
 			marginRight: 0.4
+		},
+		beer: {
+			color: getCurrentTheme().colors.onSurface,
+			flex: 6
 		}
 	});
 };
