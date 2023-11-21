@@ -7,16 +7,9 @@ import NoteCard from '../../components/NoteCard';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ScreenProps } from '../../../App';
 import Incident from '../incident/Incident';
+import { Alarm as AlarmData } from '../../components/incidentCard/IncidentCard';
 
 const Stack = createStackNavigator();
-interface AlarmData {
-	alarm: string;
-	alarmError: string;
-	alarmLog: string;
-	alarmNote: string;
-	service: string;
-}
-
 interface AlarmState extends AlarmData {
 	loading: boolean;
 }
@@ -25,14 +18,14 @@ async function getAlarmData(id: number | undefined) {
 	if (id === undefined) return undefined;
 	let promise: Promise<AlarmData> = new Promise((resolve): void => {
 		setTimeout(() => {
-			let alarmdata: AlarmData = {
-				alarm: 'BOOBA',
+			let alarmData: AlarmData = {
 				alarmError: 'errror 404',
 				alarmLog: 'shit not good',
 				alarmNote: 'fix det habibi',
-				service: 'gurli gris'
+				service: 'gurli gris',
+				id: 0
 			};
-			resolve(alarmdata);
+			resolve(alarmData);
 		}, 1500);
 	});
 	return await promise;
@@ -40,19 +33,18 @@ async function getAlarmData(id: number | undefined) {
 
 class Alarm extends Component<ScreenProps, AlarmState> {
 	state: AlarmState = {
-		alarm: 'Loading',
 		alarmError: '',
 		alarmLog: '',
 		alarmNote: 'string',
 		service: '',
-		loading: true
+		loading: true,
+		id: -1
 	};
 
 	componentDidMount() {
 		getAlarmData(this.props.route.params?.id).then((value) => {
 			if (value === undefined) return;
 			this.setState({
-				alarm: value.alarm,
 				alarmError: value.alarmError,
 				alarmLog: value.alarmLog,
 				alarmNote: value.alarmNote,
@@ -70,7 +62,7 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 						this.props.navigation.goBack();
 					}}
 				/>
-				<Appbar.Content title={`${this.state.alarm}`} />
+				<Appbar.Content title={`${this.state.alarmError}`} />
 			</Appbar>
 		);
 	}
@@ -82,7 +74,7 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 					<ActivityIndicator />
 				) : (
 					<View style={container.padding}>
-						<InformationCard errorType={this.state.alarm} errorInfo={this.state.alarmLog} />
+						<InformationCard errorType={this.state.alarmError} errorInfo={this.state.alarmLog} />
 						<NoteCard noteInfo={this.state.alarmNote} onChange={() => {}} />
 					</View>
 				)}

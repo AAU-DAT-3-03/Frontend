@@ -9,6 +9,7 @@ import History from './src/screens/history/History';
 import Companies from './src/screens/Services/Companies';
 import LocalStorage from './src/utility/LocalStorage';
 import Login from './src/screens/login/Login';
+import { MockDataGenerator } from './src/utility/MockDataGenerator';
 
 export let serverIp = '';
 
@@ -29,6 +30,14 @@ export class AppRender extends Component {
 
 	public static onLogOut(): void {
 		AppRender.main.forceUpdate();
+	}
+
+	/**
+	 * @todo delete this
+	 */
+	componentDidMount() {
+		MockDataGenerator.generateIncidentList(10);
+		MockDataGenerator.generateIncidentList(5, true);
 	}
 
 	render() {
