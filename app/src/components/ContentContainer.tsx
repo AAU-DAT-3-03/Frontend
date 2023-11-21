@@ -1,5 +1,5 @@
 import React, { Component, ReactNode } from 'react';
-import { RefreshControl, ScrollView, View } from 'react-native';
+import { Appearance, RefreshControl, ScrollView, View } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
 
 /**
@@ -23,6 +23,9 @@ class ContentContainer extends Component<ContentContainerProps, ContentContainer
 
 	constructor(props: ContentContainerProps) {
 		super(props);
+		Appearance.addChangeListener(() => {
+			this.forceUpdate();
+		});
 	}
 
 	private refreshFinished(): void {

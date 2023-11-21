@@ -3,6 +3,7 @@ import { Button, Drawer, IconButton, Modal, Portal, Switch, Text, TextInput } fr
 import { StyleSheet, View } from 'react-native';
 import { Colors, getCurrentTheme } from '../../../themes/ThemeManager';
 import LocalStorage from '../../../utility/LocalStorage';
+import { AppRender } from '../../../../App';
 
 interface MenuProps {
 	visible: boolean;
@@ -71,7 +72,14 @@ class SettingsMenu extends Component<MenuProps> {
 							</Drawer.Section>
 						</View>
 						<View style={MenuStyle().logOut}>
-							<Button buttonColor={Colors.error} textColor={'white'}>
+							<Button
+								buttonColor={Colors.error}
+								textColor={'white'}
+								onPress={() => {
+									LocalStorage.setSettingsValue('authKey', 'null');
+									AppRender.onLogOut();
+								}}
+							>
 								Log out
 							</Button>
 						</View>
