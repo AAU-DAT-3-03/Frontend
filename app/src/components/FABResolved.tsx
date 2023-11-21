@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { FAB, Icon, IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
-import { getCurrentTheme } from '../themes/ThemeManager';
+import { Colors, getCurrentTheme } from '../themes/ThemeManager';
 
 interface ResolvedProps {
 	onResolve: () => void;
@@ -95,7 +95,6 @@ class FABResolved extends Component {
 				<FAB
 					style={styles.fabbutton}
 					elevation={0}
-					variant={'tertiary'}
 					icon="check-bold"
 					onPress={() => this.resolvedTimeout()}
 					rippleColor={getCurrentTheme().colors.primary}
@@ -132,7 +131,8 @@ const styles = StyleSheet.create({
 		right: 8,
 		position: 'absolute',
 		overflow: 'hidden',
-		borderRadius: 30
+		borderRadius: 30,
+		backgroundColor: Colors.allGood
 	},
 	fab: {
 		backgroundColor: getCurrentTheme().colors.onTertiary,
