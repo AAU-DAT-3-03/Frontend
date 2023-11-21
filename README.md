@@ -60,6 +60,7 @@ cd android
 ./gradlew wrapper --gradle-version=8.0.1 --distribution-type=bin
 cd ..
 npm cache clear --force
+yarn upgrade --pattern react-native
 ```
 
 ### Icons

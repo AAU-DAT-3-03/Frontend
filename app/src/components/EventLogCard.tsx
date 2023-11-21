@@ -35,10 +35,18 @@ class EventLogCardContent extends Component<EventLogContentProps> {
 		this.state.expandable = this.state.indexSplice < this.props.eventLog.message.length;
 	}
 
+	private formatNumber(number: number): string {
+		let time: string = `${number}`;
+		if (number < 10) {
+			time = `0${number}`;
+		}
+		return time;
+	}
+
 	private header(): React.JSX.Element {
 		let date: Date = new Date(this.props.eventLog.dateTime);
-		let formattedDate: string = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-		let formattedTime: string = `${date.getHours()}:${date.getMinutes()}`;
+		let formattedDate: string = `${this.formatNumber(date.getDate())}/${this.formatNumber(date.getMonth() + 1)}/${date.getFullYear()}`;
+		let formattedTime: string = `${this.formatNumber(date.getHours())}:${this.formatNumber(date.getMinutes())}`;
 		return (
 			<View style={eventLogStyleSheet().logHeader}>
 				<View style={eventLogStyleSheet().avatarContainer}>
@@ -163,7 +171,7 @@ const eventLogStyleSheet = () => {
 			width: '100%',
 			textAlign: 'center',
 			paddingBottom: 8,
-			borderBottomWidth: 1,
+			borderBottomWidth: 0.3,
 			borderBottomColor: mainColor
 		},
 		logHeader: {

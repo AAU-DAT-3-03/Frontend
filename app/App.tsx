@@ -3,10 +3,11 @@ import {AppRegistry} from 'react-native';
 import {CommonActions, NavigationContainer, NavigationProp, RouteProp} from '@react-navigation/native';
 import 'react-native-gesture-handler';
 import Home from './src/screens/home/Home';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {BottomNavigation, Icon, PaperProvider} from 'react-native-paper';
+import Companies from './src/screens/Services/Companies';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { BottomNavigation, Icon, PaperProvider } from 'react-native-paper';
 import History from './src/screens/history/History';
-import Companies from './src/screens/Services/Companies'
+import Companies from './src/screens/Services/Companies';
 
 export interface ScreenProps {
     navigation: NavigationProp<any>;
@@ -49,53 +50,52 @@ function App(): React.JSX.Element {
                                 if (options.tabBarIcon) {
                                     return options.tabBarIcon({focused, color, size: 24});
                                 }
-
-                                return null;
-                            }}
-                            getLabelText={({route}) => {
-                                const {options} = descriptors[route.key];
-                                return options.tabBarLabel?.toString();
-                            }}
-                        />
-                    )}
-                >
-                    <Tab.Screen
-                        name="Overview"
-                        component={Companies}
-                        options={{
-                            headerShown: false,
-                            tabBarLabel: 'Overview',
-                            tabBarIcon: ({color, size}) => {
-                                return <Icon source="view-list" size={size} color={color}/>;
-                            }
-                        }}
-                    />
-                    <Tab.Screen
-                        name="Home"
-                        component={Home}
-                        options={{
-                            headerShown: false,
-                            tabBarLabel: 'Home',
-                            tabBarIcon: ({color, size}) => {
-                                return <Icon source="home" size={size} color={color}/>;
-                            }
-                        }}
-                    />
-                    <Tab.Screen
-                        name="History"
-                        component={History}
-                        options={{
-                            headerShown: false,
-                            tabBarLabel: 'History',
-                            tabBarIcon: ({color, size}) => {
-                                return <Icon source="history" size={size} color={color}/>;
-                            }
-                        }}
-                    />
-                </Tab.Navigator>
-            </NavigationContainer>
-        </PaperProvider>
-    );
+								return null;
+							}}
+							getLabelText={({ route }) => {
+								const { options } = descriptors[route.key];
+								return options.tabBarLabel?.toString();
+							}}
+						/>
+					)}
+				>
+					<Tab.Screen
+						name="Overview"
+						component={Companies}
+						options={{
+							headerShown: false,
+							tabBarLabel: 'Overview',
+							tabBarIcon: ({ color, size }) => {
+								return <Icon source="view-list" size={size} color={color} />;
+							}
+						}}
+					/>
+					<Tab.Screen
+						name="Home"
+						component={Home}
+						options={{
+							headerShown: false,
+							tabBarLabel: 'Home',
+							tabBarIcon: ({ color, size }) => {
+								return <Icon source="home" size={size} color={color} />;
+							}
+						}}
+					/>
+					<Tab.Screen
+						name="History"
+						component={History}
+						options={{
+							headerShown: false,
+							tabBarLabel: 'History',
+							tabBarIcon: ({ color, size }) => {
+								return <Icon source="history" size={size} color={color} />;
+							}
+						}}
+					/>
+				</Tab.Navigator>
+			</NavigationContainer>
+		</PaperProvider>
+	);
 }
 
 export default App;

@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { Button, Drawer, IconButton, Modal, Portal, Switch, Text } from 'react-native-paper';
+import { Button, Drawer, IconButton, Modal, Portal, Switch, Text, TextInput } from 'react-native-paper';
 import { StyleSheet, View } from 'react-native';
 import { Colors, getCurrentTheme } from '../../../themes/ThemeManager';
 import LocalStorage from '../../../utility/LocalStorage';
+import { AppRender } from '../../../../App';
 
 interface MenuProps {
 	visible: boolean;
@@ -11,13 +12,15 @@ interface MenuProps {
 
 class SettingsMenu extends Component<MenuProps> {
 	state = {
-		notification: false
+		notification: false,
+		phoneNr: ''
 	};
 
 	constructor(props: MenuProps) {
 		super(props);
 		if (LocalStorage.getSettingsValue('notification') === 'null') LocalStorage.setSettingsValue('notification', 'true');
 		this.state.notification = LocalStorage.getSettingsValue('notification') === 'true' ? true : false;
+		this.state.phoneNr = LocalStorage.getSettingsValue('phoneNr');
 	}
 
 	render(): React.JSX.Element {
@@ -40,10 +43,43 @@ class SettingsMenu extends Component<MenuProps> {
 										}}
 									/>
 								</View>
+								<View style={MenuStyle().row}>
+									<Text>Phone Nr.</Text>
+									<TextInput
+										style={{ flexGrow: 2, backgroundColor: undefined }}
+										onKeyPress={(e) => {
+											if (this.state.phoneNr === null) {
+												this.state.phoneNr = '';
+											}
+											let text: string = e.nativeEvent.key;
+											if (text === 'Backspace') {
+												return;
+											}
+											let number: number = parseInt(text);
+											if (isNaN(number) || this.state.phoneNr.length > 7) {
+												e.preventDefault();
+												return;
+											}
+										}}
+										onChangeText={(text) => {
+											this.setState({ phoneNr: text });
+											LocalStorage.setSettingsValue('phone', text);
+										}}
+										inputMode={'numeric'}
+										value={isNaN(parseInt(this.state.phoneNr)) ? '' : `${this.state.phoneNr}`}
+									/>
+								</View>
 							</Drawer.Section>
 						</View>
 						<View style={MenuStyle().logOut}>
-							<Button buttonColor={Colors.error} textColor={'white'}>
+							<Button
+								buttonColor={Colors.error}
+								textColor={'white'}
+								onPress={() => {
+									LocalStorage.setSettingsValue('authKey', 'null');
+									AppRender.onLogOut();
+								}}
+							>
 								Log out
 							</Button>
 						</View>

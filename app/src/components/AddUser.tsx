@@ -114,7 +114,9 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 		return (
 			<Card style={addUserStyle.card}>
 				<Card.Content style={addUserStyle.cardContent}>
-					<Text style={{ color: getCurrentTheme().colors.onSurface }}>{this.props.type}</Text>
+					<Text variant={'titleSmall'} style={{ color: getCurrentTheme().colors.onSurface }}>
+						{this.props.type}
+					</Text>
 					<View style={addUserStyle.users}>
 						{this.state.users?.map((user: User, key: number) => {
 							return (
@@ -169,14 +171,11 @@ const addUserStyle = StyleSheet.create({
 	cardContent: {
 		flexDirection: 'row',
 		justifyContent: 'space-evenly',
-		gap: 8,
-		alignItems: 'center',
-		padding: 8
+		gap: 16,
+		alignItems: 'center'
 	},
 	card: {
-		backgroundColor: getCurrentTheme().colors.surface,
-		borderWidth: 1,
-		borderColor: 'grey',
+		backgroundColor: getCurrentTheme().colors.elevation.level2,
 		height: 'auto',
 		width: '100%'
 	},
