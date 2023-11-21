@@ -1,34 +1,34 @@
-
 import { IncidentType } from '../../components/incidentCard/IncidentCard';
 import { IncidentState } from '../../components/StatusIcon';
 import { User } from '../../components/AddUser';
+import Incident from '../incident/Incident';
 
 export function randomInt(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1) + min);
+	return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 export class IncidentGenerator {
-    static alarmId: number = 0;
-    static incidentId: number = 0;
+	static alarmId: number = 0;
+	static incidentId: number = 0;
 
-    private static nextIncidentId(): number {
-        let id = IncidentGenerator.incidentId;
-        IncidentGenerator.incidentId += 1;
-        return id;
-    }
+	private static nextIncidentId(): number {
+		let id = IncidentGenerator.incidentId;
+		IncidentGenerator.incidentId += 1;
+		return id;
+	}
 
-    private static nextAlarmId(): number {
-        let id: number = IncidentGenerator.alarmId;
-        IncidentGenerator.alarmId += 1;
-        return id;
-    }
+	private static nextAlarmId(): number {
+		let id: number = IncidentGenerator.alarmId;
+		IncidentGenerator.alarmId += 1;
+		return id;
+	}
 
-    private static generateAlarm(): Alarm {
-        return {
-            alarmError: alarmText[randomInt(0, alarmText.length - 1)],
-            id: this.nextAlarmId()
-        };
-    }
+	private static generateAlarm(): Alarm {
+		return {
+			alarmError: alarmText[randomInt(0, alarmText.length - 1)],
+			id: this.nextAlarmId()
+		};
+	}
 
 	public static generateIncident(onlyResolved?: boolean): IncidentType {
 		let state: IncidentState = randomInt(0, 1) === 1 ? 'error' : 'acknowledged';
@@ -38,7 +38,7 @@ export class IncidentGenerator {
 			alarms.push(this.generateAlarm());
 		}
 
-		let userList;
+		let userList: User[] | undefined = undefined;
 		if (randomInt(0, 1) === 1) {
 			userList = [];
 			for (let i: number = 0; i < randomInt(1, 5); i++) {
@@ -46,7 +46,7 @@ export class IncidentGenerator {
 			}
 		}
 
-		let userCalledList;
+		let userCalledList: User[] | undefined = undefined;
 		if (randomInt(0, 1) === 1) {
 			userCalledList = [];
 			for (let i: number = 0; i < randomInt(1, 5); i++) {
@@ -82,12 +82,12 @@ export const companies: string[] = ['Jysk', 'Min Læge', 'Fut', 'Spar Nord', 'Tr
 type Alarm = { alarmError: string; id: number };
 
 const alarmText: string[] = [
-    'Crashed 4 times',
-    'OOM Killed',
-    'Restarted',
-    'Pod unreachable',
-    'Whopsie doopsie the server had an upsie',
-    'Network error'
+	'Crashed 4 times',
+	'OOM Killed',
+	'Restarted',
+	'Pod unreachable',
+	'Whopsie doopsie the server had an upsie',
+	'Network error'
 ];
 
 export const users: User[] = [
@@ -130,3 +130,10 @@ export const users: User[] = [
 	{ name: 'Hans', phoneNr: 12345678, team: 'Database' },
 	{ name: 'Kim', phoneNr: 1234567, team: 'Database' }
 ];
+
+export let incidents: IncidentType[] = IncidentGenerator.generateIncidentList(2);
+
+export function setIncidents(newIncidentsList: IncidentType[]) {
+	incidents = newIncidentsList;
+	return incidents;
+}

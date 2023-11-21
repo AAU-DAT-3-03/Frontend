@@ -5,15 +5,12 @@ import IncidentCard, { IncidentType } from '../../components/incidentCard/Incide
 import SettingsMenu from './components/SettingsMenu';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
-import { IncidentGenerator } from './IncidentGenerator';
+import { IncidentGenerator, incidents, setIncidents } from './IncidentGenerator';
 import Incident from '../incident/Incident';
 import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationProp } from '@react-navigation/native';
 import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
-
-export let incidents: IncidentType[] = IncidentGenerator.generateIncidentList(2);
 
 const Stack = createStackNavigator();
 
@@ -112,18 +109,20 @@ class Home extends Component<any, HomeState> {
 	}
 
 	componentDidMount() {
-		this.getIncidentDate();
+		this.getIncidentData();
 	}
 
 	/**
 	 * @todo Get data from server instead
 	 * @private
 	 */
-	private async getIncidentDate(): Promise<boolean> {
+	private async getIncidentData(): Promise<boolean> {
 		let promise: Promise<boolean> = new Promise((resolve): void => {
 			setTimeout(() => {
-				incidents = this.sortIncidents(incidents.concat(IncidentGenerator.generateIncident()));
-				this.setState({ loading: false, incidents: incidents });
+				let incidentsSorted = this.sortIncidents(
+					setIncidents(incidents.concat(IncidentGenerator.generateIncident())).filter((value) => value.state !== 'resolved')
+				);
+				this.setState({ loading: false, incidents: incidentsSorted });
 				resolve(true);
 			}, 1);
 		});
@@ -175,12 +174,12 @@ class Home extends Component<any, HomeState> {
 								incident={value}
 								onClickIncident={(id) =>
 									navigation.navigate('Incident', {
-										alarm: `${id}`
+										id: id
 									})
 								}
 								onClickAlarm={(id) =>
 									navigation.navigate('Alarm', {
-										alarm: `${id}`
+										alarm: id
 									})
 								}
 							/>
@@ -199,7 +198,7 @@ class Home extends Component<any, HomeState> {
 	}
 
 	private onRefresh(finished: () => void): void {
-		this.getIncidentDate().then(() => finished());
+		this.getIncidentData().then(() => finished());
 	}
 
 	render(): React.JSX.Element {

@@ -25,7 +25,7 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 						this.props.navigation.goBack();
 					}}
 				/>
-				<Appbar.Content title={this.state.alarm} />
+				<Appbar.Content title={`${this.state.alarm}`} />
 			</Appbar>
 		);
 	}

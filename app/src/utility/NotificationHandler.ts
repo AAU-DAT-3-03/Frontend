@@ -103,13 +103,15 @@ class NotificationHandler {
 				network.setHeader('Content-Type', 'application/json');
 
 				// Send token to server
-				network.post('http://10.0.2.2:8888', { body: { key: event.deviceToken } }, (value: Object) => {
-					let success: RegisterSuccess = JSON.parse(JSON.stringify(value));
-					Logger.info('Token register to local server: ' + success.success ? 'true' : 'false');
-					NotificationHandler.registered = success.success;
+				network.post('http://10.0.2.2:8888', { body: { key: event.deviceToken } }, (value: void | [Object, Response]) => {
+					if (value) {
+						let success: RegisterSuccess = JSON.parse(JSON.stringify(value[0]));
+						Logger.info('Token register to local server: ' + success.success ? 'true' : 'false');
+						NotificationHandler.registered = success.success;
 
-					// Finish promise
-					resolve(true);
+						// Finish promise
+						resolve(true);
+					}
 				});
 			});
 		});

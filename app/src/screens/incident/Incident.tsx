@@ -2,14 +2,13 @@ import React, { Component } from 'react';
 import { Appbar, Card, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import { ScreenProps } from '../../../App';
-import { incidents } from '../home/Home';
 import { IncidentType } from '../../components/incidentCard/IncidentCard';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import PrioritySelector from '../../components/PrioritySelector';
 import EventLogCard from '../../components/EventLogCard';
 import NoteCard from '../../components/NoteCard';
 import AddUser from '../../components/AddUser';
-import { users } from '../home/IncidentGenerator';
+import { incidents, users } from '../home/IncidentGenerator';
 import FABResolved from '../../components/FABResolved';
 import { IncidentCardList } from '../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../themes/ThemeManager';
@@ -32,12 +31,13 @@ class Incident extends Component<ScreenProps, IncidentState> {
 	constructor(props: ScreenProps) {
 		super(props);
 		console.log(props.route.params);
-		this.state.incidentId = props.route.params?.alarm;
+		this.state.incidentId = props.route.params?.id;
 	}
 
 	private getIncidentData() {
 		let incident = incidents.filter((value) => value.id === this.state.incidentId);
 		if (incident.length < 1) {
+			console.log('No incident found with that id');
 			return;
 		} else {
 			this.setState({ incidentData: incident.pop() });
@@ -90,6 +90,9 @@ class Incident extends Component<ScreenProps, IncidentState> {
 	}
 
 	private incidentsRender(): React.JSX.Element {
+		if (this.state.incidentData === undefined) {
+			return <Text>Error loading data</Text>;
+		}
 		return (
 			<View style={IncidentScreenStylesheet.incidentContainer}>
 				<AddUser users={this.state.incidentData?.users} type={'Assigned'} usersAll={users} removable={true} />
@@ -102,7 +105,10 @@ class Incident extends Component<ScreenProps, IncidentState> {
 					<Text variant={'titleMedium'} style={IncidentScreenStylesheet.text}>
 						Alarms
 					</Text>
-					<IncidentCardList alarms={this.state.incidentData?.alarms} onClickAlarm={(id) => console.log(id)} />
+					<IncidentCardList
+						alarms={this.state.incidentData?.alarms}
+						onClickAlarm={(id) => this.props.navigation.navigate('Alarm', { alarm: id })}
+					/>
 				</Card>
 			</View>
 		);
