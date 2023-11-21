@@ -11,7 +11,6 @@ import NoteCard from '../../components/NoteCard';
 import AddUser from '../../components/AddUser';
 import { users } from '../home/IncidentGenerator';
 import FABResolved from '../../components/FABResolved';
-import ContainerCard from '../../components/ContainerCard';
 import { IncidentCardList } from '../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 
@@ -19,13 +18,15 @@ interface IncidentState {
 	incidentId: number;
 	incidentData: IncidentType | undefined;
 	loading: boolean;
+	timer: number;
 }
 
 class Incident extends Component<ScreenProps, IncidentState> {
 	state: IncidentState = {
 		incidentId: -1,
 		incidentData: undefined,
-		loading: true
+		loading: true,
+		timer: 0
 	};
 
 	constructor(props: ScreenProps) {
@@ -54,20 +55,17 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		return await promise;
 	}
 
-	private alarmLoader() {
-		const { incidentData } = this.state;
-
-		const alarmViews = [];
-		for (let index = 0; index < incidentData.alarms.length; index++) {
-			const alarm = incidentData.alarms[index];
-
-			alarmViews.push(<Text> {alarm.alarmError} </Text>);
-			console.log(alarmViews[index]);
-		}
-
-		return alarmViews;
+	private timer() {
+		setInterval(() => {
+			this.setState({ timer: this.state.timer + 1 });
+		}, 60000);
 	}
 
+	private formatTimer(timer: number): string {
+		const hours = Math.floor(timer / 60);
+		const minutes = timer % 60;
+		return `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m`;
+	}
 	private AppBar(): React.JSX.Element {
 		return (
 			<Appbar>
@@ -76,11 +74,14 @@ class Incident extends Component<ScreenProps, IncidentState> {
 						this.props.navigation.goBack();
 					}}
 				/>
-				<Appbar.Header style={IncidentScreenStylesheet.header}>
+				<Appbar.Header>
 					{this.state.loading ? null : (
-						<Text variant={'titleLarge'}>
-							{this.state.incidentData?.company} #{this.state.incidentData?.caseNr}
-						</Text>
+						<View style={IncidentScreenStylesheet.header}>
+							<Text variant={'titleLarge'}>
+								{this.state.incidentData?.company} #{this.state.incidentData?.caseNr}
+							</Text>
+							<Text>{this.formatTimer(this.state.timer)}</Text>
+						</View>
 					)}
 				</Appbar.Header>
 			</Appbar>
@@ -108,6 +109,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 
 	componentDidMount() {
 		this.loadIncidentData();
+		this.timer();
 	}
 
 	render(): React.JSX.Element {
@@ -126,18 +128,18 @@ const IncidentScreenStylesheet = StyleSheet.create({
 		gap: 16
 	},
 	header: {
-		justifyContent: 'center',
+		justifyContent: 'space-evenly',
 		flexDirection: 'row',
-		width: '100%',
-		paddingLeft: 35
+		width: '100%'
 	},
 	card: {
 		borderRadius: 16,
 		paddingTop: 15,
-		backgroundColor: getCurrentTheme().colors.elevation.level4
+		backgroundColor: getCurrentTheme().colors.elevation.level2
 	},
 	text: {
-		alignSelf: 'center'
+		alignSelf: 'center',
+		paddingBottom: 8
 	}
 });
 
