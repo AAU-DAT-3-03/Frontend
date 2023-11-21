@@ -1,6 +1,7 @@
 import React, { Component, ReactNode } from 'react';
 import { Appearance, RefreshControl, ScrollView, View } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
+import { Appbar } from 'react-native-paper';
 
 /**
  * If no appbar is  desired simply don't pass anything
@@ -34,7 +35,6 @@ class ContentContainer extends Component<ContentContainerProps, ContentContainer
 
 	/**
 	 * Calls the passed onRefresh
-	 * @param onRefresh
 	 * @private
 	 */
 	private onRefresh(): void {
@@ -56,7 +56,7 @@ class ContentContainer extends Component<ContentContainerProps, ContentContainer
 		return (
 			<View style={{ flexDirection: 'column', height: '100%', backgroundColor: getCurrentTheme().colors.background }}>
 				{this.props.appBar === null ? null : (
-					<View style={{ margin: 0, padding: 0, backgroundColor: getCurrentTheme().colors.background }}>{this.props.appBar}</View>
+					<Appbar style={{ backgroundColor: getCurrentTheme().colors.surface }}>{this.props.appBar}</Appbar>
 				)}
 				<ScrollView style={{ flexGrow: 2, overflow: 'hidden' }} refreshControl={this.getRefreshControl()}>
 					{this.props.children ?? null}

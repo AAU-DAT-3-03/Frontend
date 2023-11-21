@@ -35,8 +35,8 @@ class History extends Component<any, HistoryState> {
 
 	private AppBar(): React.JSX.Element {
 		return (
-			<Appbar>
-				<Appbar.Header>
+			<>
+				<Appbar.Header style={{ backgroundColor: getCurrentTheme().colors.surface }}>
 					<SearchBarDateSelector
 						onChange={(query: string, period: Period) => {
 							if (this.state.query !== query.toLowerCase()) {
@@ -52,7 +52,7 @@ class History extends Component<any, HistoryState> {
 						}}
 					/>
 				</Appbar.Header>
-			</Appbar>
+			</>
 		);
 	}
 

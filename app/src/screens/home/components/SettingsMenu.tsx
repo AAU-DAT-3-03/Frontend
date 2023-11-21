@@ -19,8 +19,9 @@ class SettingsMenu extends Component<MenuProps> {
 	constructor(props: MenuProps) {
 		super(props);
 		if (LocalStorage.getSettingsValue('notification') === 'null') LocalStorage.setSettingsValue('notification', 'true');
-		this.state.notification = LocalStorage.getSettingsValue('notification') === 'true' ? true : false;
+		this.state.notification = LocalStorage.getSettingsValue('notification') === 'true';
 		this.state.phoneNr = LocalStorage.getSettingsValue('phoneNr');
+		console.log(this.state.phoneNr);
 	}
 
 	render(): React.JSX.Element {
@@ -55,7 +56,7 @@ class SettingsMenu extends Component<MenuProps> {
 											if (text === 'Backspace') {
 												return;
 											}
-											let number: number = parseInt(text);
+											let number: number = parseInt(text, 10);
 											if (isNaN(number) || this.state.phoneNr.length > 7) {
 												e.preventDefault();
 												return;
@@ -63,10 +64,10 @@ class SettingsMenu extends Component<MenuProps> {
 										}}
 										onChangeText={(text) => {
 											this.setState({ phoneNr: text });
-											LocalStorage.setSettingsValue('phone', text);
+											LocalStorage.setSettingsValue('phoneNr', text);
 										}}
 										inputMode={'numeric'}
-										value={isNaN(parseInt(this.state.phoneNr)) ? '' : `${this.state.phoneNr}`}
+										value={this.state.phoneNr}
 									/>
 								</View>
 							</Drawer.Section>
