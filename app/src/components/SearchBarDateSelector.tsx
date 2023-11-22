@@ -61,6 +61,7 @@ class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, Search
 					placeholder={this.props.placeholder ?? 'Search'}
 					onChangeText={(query: string) => this.onChangeSearch(query)}
 					value={this.state.query}
+					onClearIconPress={() => this.onChangeSearch('')}
 				/>
 				<TimePicker
 					visible={this.state.timePickerVisible}
