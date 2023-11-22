@@ -53,7 +53,7 @@ const userAvatarStyle = StyleSheet.create({
 		backgroundColor: getCurrentTheme().colors.primary
 	},
 	contentText: {
-		color: getCurrentTheme().colors.onPrimary,
+		color: 'white',
 		verticalAlign: 'middle'
 	},
 	badge: {

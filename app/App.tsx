@@ -36,8 +36,8 @@ export class AppRender extends Component {
 	 * @todo delete this
 	 */
 	componentDidMount() {
-		MockDataGenerator.generateIncidentList(10);
-		MockDataGenerator.generateIncidentList(5, true);
+		MockDataGenerator.generateIncidentList(4);
+		MockDataGenerator.generateIncidentList(2, true);
 	}
 
 	render() {

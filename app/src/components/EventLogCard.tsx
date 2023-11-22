@@ -50,7 +50,7 @@ class EventLogCardContent extends Component<EventLogContentProps> {
 		return (
 			<View style={eventLogStyleSheet().logHeader}>
 				<View style={eventLogStyleSheet().avatarContainer}>
-					<Icon size={18} source={'account'} color={getCurrentTheme().colors.onPrimary} />
+					<Icon size={18} source={'account'} color={'white'} />
 					<Text style={eventLogStyleSheet().avatarText}>{this.props.eventLog.user}</Text>
 				</View>
 				<Text variant={'titleSmall'} style={{ verticalAlign: 'middle' }}>
@@ -141,7 +141,7 @@ const eventLogStyleSheet = () => {
 		avatarText: {
 			height: '100%',
 			verticalAlign: 'top',
-			color: getCurrentTheme().colors.onPrimary
+			color: 'white'
 		},
 		card: {
 			padding: 0

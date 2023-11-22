@@ -152,7 +152,7 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 							this.setState({ assignVisible: false });
 						}}
 						users={this.props.usersAll}
-					></AssignUser>
+					/>
 				</Card.Content>
 			</Card>
 		);
