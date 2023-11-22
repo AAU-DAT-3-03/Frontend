@@ -1,19 +1,13 @@
-import { Alarm, IncidentType } from '../components/incidentCard/IncidentCard';
+import { Alarm, EventLog, IncidentType } from '../components/incidentCard/IncidentCard';
 import { IncidentState } from '../components/StatusIcon';
 import { User } from '../components/AddUser';
+import mergeIncident from '../components/MergeIncident';
 
 export function randomInt(min: number, max: number): number {
 	return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-const alarmText: string[] = [
-	'Crashed 4 times',
-	'OOM Killed',
-	'Restarted',
-	'Pod unreachable',
-	'Whopsie doopsie the server had an upsie',
-	'Network error'
-];
+const alarmText: string[] = ['Crashed 4 times', 'OOM Killed', 'Restarted', 'Pod unreachable', 'Network error'];
 
 export type UpdateIncidentData = {
 	priority?: number;
@@ -24,11 +18,153 @@ export type UpdateIncidentData = {
 	state?: IncidentState;
 };
 
+export type Company = {
+	company: string;
+	id: number;
+	state: string;
+};
+
+const companies: string[] = ['Jysk', 'Min Læge', 'Fut', 'Spar Nord', 'TrendHim', 'Norli', 'Opendo'];
+
+export const users: User[] = [
+	{ name: 'Bent', phoneNr: 87654321, team: 'Kubernetes' },
+	{ name: 'Mette', phoneNr: 12345678, team: 'Kubernetes' },
+	{ name: 'Kirsten', phoneNr: 12345678, team: 'Kubernetes' },
+	{ name: 'Hanne', phoneNr: 12345678, team: 'Service Desk' },
+	{ name: 'Anna', phoneNr: 12345678, team: 'Maintenance' },
+	{ name: 'Helle', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Susanne', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Maria', phoneNr: 12345678, team: 'Kubernetes' },
+	{ name: 'Lene', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Marianne', phoneNr: 12345678, team: 'Maintenance' },
+	{ name: 'Camilla', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Lone', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Louise', phoneNr: 12345678, team: 'Service Desk' },
+	{ name: 'Pia', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Charlotte', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Tina', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Gitte', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Jette', phoneNr: 12345678, team: 'Maintenance' },
+	{ name: 'Bente', phoneNr: 12345678, team: 'Service Desk' },
+	{ name: 'Julie', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Michael', phoneNr: 12345678, team: 'Kubernetes' },
+	{ name: 'Lars', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Jens', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Thomas', phoneNr: 12345678, team: 'Kubernetes' },
+	{ name: 'Henrik', phoneNr: 12345678, team: 'Maintenance' },
+	{ name: 'Søren', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Christian', phoneNr: 12345678, team: 'Service Desk' },
+	{ name: 'Martin', phoneNr: 12345678, team: 'Kubernetes' },
+	{ name: 'Jan', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Morten', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Jesper', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Anders', phoneNr: 12345678, team: 'Maintenance' },
+	{ name: 'Niels', phoneNr: 12345678, team: 'Kubernetes' },
+	{ name: 'Mads', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Rasmus', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Per', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Mikkel', phoneNr: 12345678, team: 'Kubernetes' },
+	{ name: 'Hans', phoneNr: 12345678, team: 'Database' },
+	{ name: 'Kim', phoneNr: 1234567, team: 'Service Desk' }
+];
+
 export class MockDataGenerator {
-	static alarms: { [id: number]: { alarm: Alarm; incidentId: number } } = {};
-	static incidents: { [id: number]: IncidentType } = {};
-	static alarmId: number = 0;
-	static incidentId: number = 0;
+	static alarms: { [id: number]: { alarm: Alarm; incidentId: number } } = {
+		0: {
+			incidentId: 0,
+			alarm: {
+				alarmLog: 'Jysk database 5 has crashed 4 times in the last 60 minutes',
+				id: 0,
+				alarmError: alarmText[0],
+				alarmNote: '',
+				service: 'Jysk-DB-5'
+			}
+		},
+		1: {
+			incidentId: 1,
+			alarm: {
+				alarmLog: "Pod hasn't been reachable for 5 minutes",
+				id: 1,
+				alarmError: alarmText[3],
+				alarmNote: '',
+				service: 'TH-WMS-1'
+			}
+		}
+	};
+	static incidents: { [id: number]: IncidentType } = {
+		0: {
+			id: 0,
+			companyId: 0,
+			company: 'Jysk',
+			state: 'error',
+			assignedUsers: [],
+			incidentNote: '',
+			startTime: Date.now() - 60000 * 5,
+			eventLog: [
+				{ user: users[3].name, dateTime: Date.now() - 60000 * 3, message: `Called ${users[12].name}` },
+				{ user: users[0].name, dateTime: Date.now() - 60000 * 2, message: `Called ${users[0].name}` }
+			],
+			priority: 4,
+			caseNr: 126,
+			alarms: [MockDataGenerator.alarms[0].alarm],
+			calledUsers: [users[12], users[0]]
+		},
+		1: {
+			id: 1,
+			companyId: 4,
+			company: 'TrendHim',
+			state: 'acknowledged',
+			assignedUsers: [users[0]],
+			incidentNote: '',
+			startTime: Date.now() - 60000 * 20,
+			eventLog: [
+				{ user: users[3].name, dateTime: Date.now() - 60000 * 10, message: `Assigned ${users[0].name}` },
+				{ user: users[3].name, dateTime: Date.now() - 60000 * 13, message: `Called ${users[10].name}` },
+				{ user: users[3].name, dateTime: Date.now() - 60000 * 14, message: `Called ${users[0].name}` }
+			],
+			priority: 4,
+			caseNr: 76,
+			alarms: [MockDataGenerator.alarms[1].alarm],
+			calledUsers: [users[0], users[10]]
+		}
+	};
+	static alarmId: number = 2;
+	static incidentId: number = 2;
+
+	private static concatArrays<T>(a1: T[], a2: T[]): T[] {
+		let temp: T[] = a1.concat(a2);
+		let set: Set<T> = new Set(temp);
+		return Array.from(set);
+	}
+
+	public static mergeIncidents(mainId: number, mergingId: number, user: string): void {
+		let main: IncidentType = MockDataGenerator.getIncident(mainId);
+		let merging: IncidentType = MockDataGenerator.getIncident(mergingId);
+
+		if (main.companyId !== merging.companyId) return;
+		if (main.state === 'resolved' || merging.state === 'resolved') return;
+
+		if (main.priority < merging.priority) main.priority = merging.priority;
+		if (main.state === 'error' && merging.state === 'acknowledged') main.state = 'acknowledged';
+		if (main.startTime < merging.startTime) main.startTime = merging.startTime;
+		if (main.incidentNote === '' && merging.incidentNote !== '') main.incidentNote = merging.incidentNote;
+
+		main.assignedUsers = MockDataGenerator.concatArrays(main.assignedUsers, merging.assignedUsers);
+		main.calledUsers = MockDataGenerator.concatArrays(main.calledUsers, merging.calledUsers);
+		main.alarms = MockDataGenerator.concatArrays(main.alarms, merging.alarms);
+		main.eventLog = main.eventLog.concat(merging.eventLog).sort((a, b) => {
+			if (a.dateTime < b.dateTime) return 1;
+			return -1;
+		});
+		main.eventLog.push({
+			user: user,
+			dateTime: Date.now(),
+			message: `Merged incident ${main.caseNr} with incident ${merging.caseNr}`
+		});
+
+		MockDataGenerator.incidents[mainId] = main;
+		delete MockDataGenerator.incidents[mergingId];
+	}
 
 	public static getAllIncidents(): IncidentType[] {
 		let incidents: IncidentType[] = [];
@@ -94,7 +230,7 @@ export class MockDataGenerator {
 			if (test === 0) {
 				if (incident.state === 'error') incident.state = 'acknowledged';
 				incident.assignedUsers?.push(data.assignUser);
-				incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Assigned user ${data.assignUser.name}` });
+				incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Assigned ${data.assignUser.name}` });
 			}
 		}
 		if (data.unAssignUser) {
@@ -128,7 +264,7 @@ export class MockDataGenerator {
 				incident.eventLog?.push({
 					user: user,
 					dateTime: Date.now(),
-					message: `Called user: ${data.calledUser.name}`
+					message: `Called ${data.calledUser.name}`
 				});
 			}
 		}
@@ -162,6 +298,10 @@ export class MockDataGenerator {
 	public static generateIncident(onlyResolved?: boolean): IncidentType {
 		let state: IncidentState = randomInt(0, 1) === 1 ? 'error' : 'acknowledged';
 		let id: number = this.nextIncidentId();
+		let soc: User = users[randomInt(0, 5)];
+		let startTime: number = new Date(Date.now() - randomInt(150000, 1000000)).getTime();
+		let priority: number = randomInt(1, 4);
+		let eventLog: EventLog[] = [{ user: soc.name, dateTime: startTime + 60000, message: `Changed priority to ${priority}` }];
 		if (onlyResolved === true) state = 'resolved';
 		let alarms: Alarm[] = [];
 		for (let i: number = 0; i < randomInt(1, 5); i++) {
@@ -174,7 +314,9 @@ export class MockDataGenerator {
 		if (state === 'acknowledged' || state === 'resolved') {
 			userList = [];
 			for (let i: number = 0; i < randomInt(1, 5); i++) {
-				userList.push(users[randomInt(0, users.length - 1)]);
+				let user: User = users[randomInt(0, users.length - 1)];
+				userList.push(user);
+				eventLog.push({ user: soc.name, dateTime: startTime + 60000 * i * 3, message: `Assigned ${user.name}` });
 			}
 		}
 
@@ -182,7 +324,9 @@ export class MockDataGenerator {
 		if (randomInt(0, 1) === 1) {
 			userCalledList = [];
 			for (let i: number = 0; i < randomInt(1, 5); i++) {
+				let user: User = users[randomInt(0, users.length - 1)];
 				userCalledList.push(users[randomInt(0, users.length - 1)]);
+				eventLog.push({ user: soc.name, dateTime: startTime + 60000 * i * 1, message: `Called ${user.name}` });
 			}
 		}
 
@@ -196,9 +340,9 @@ export class MockDataGenerator {
 			company: companies[companyId],
 			calledUsers: userCalledList,
 			assignedUsers: userList,
-			priority: randomInt(1, 4),
-			startTime: new Date(Date.now() - randomInt(0, 1000000)).getTime(),
-			eventLog: [],
+			priority: priority,
+			startTime: startTime,
+			eventLog: eventLog,
 			incidentNote: '',
 			companyId: companyId
 		};
@@ -239,52 +383,3 @@ export class MockDataGenerator {
 		return companiesData;
 	}
 }
-
-export type Company = {
-	company: string;
-	id: number;
-	state: string;
-};
-
-const companies: string[] = ['Jysk', 'Min Læge', 'Fut', 'Spar Nord', 'TrendHim', 'Norli', 'Opendo'];
-
-export const users: User[] = [
-	{ name: 'Mette', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Kirsten', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Hanne', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Anna', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Helle', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Susanne', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Maria', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Lene', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Marianne', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Camilla', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Lone', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Louise', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Pia', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Charlotte', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Tina', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Gitte', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Jette', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Bente', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Julie', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Michael', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Lars', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Jens', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Thomas', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Henrik', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Søren', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Christian', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Martin', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Jan', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Morten', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Jesper', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Anders', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Niels', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Mads', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Rasmus', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Per', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Mikkel', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Hans', phoneNr: 12345678, team: 'Database' },
-	{ name: 'Kim', phoneNr: 1234567, team: 'Database' }
-];

@@ -10,7 +10,7 @@ import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
-import { MockDataGenerator } from '../../utility/MockDataGenerator';
+import { MockDataGenerator, users } from '../../utility/MockDataGenerator';
 
 const Stack = createStackNavigator();
 
@@ -165,7 +165,8 @@ class Home extends Component<any, HomeState> {
 	}
 
 	private incidentsRender(navigation: any, filter: Filter): React.JSX.Element {
-		let phoneNr: number = parseInt(LocalStorage.getSettingsValue('phone'), 10);
+		let phoneNr: string = LocalStorage.getSettingsValue('phoneNr');
+		let username: string = LocalStorage.getSettingsValue('username');
 		return (
 			<View style={HomeStyle().incidentContainer}>
 				{this.state.incidents
@@ -174,12 +175,16 @@ class Home extends Component<any, HomeState> {
 						if (filter === Filter.CALLED) {
 							return (
 								incident.calledUsers !== undefined &&
-								incident.calledUsers?.filter((value) => value.phoneNr === phoneNr).length > 0
+								incident.calledUsers?.filter(
+									(value) => value.phoneNr.toString() === phoneNr && value.name.toLowerCase() === username.toLowerCase()
+								).length > 0
 							);
 						}
 						return (
 							incident.assignedUsers !== undefined &&
-							incident.assignedUsers.filter((user) => user.phoneNr === phoneNr).length > 0
+							incident.assignedUsers.filter((user) => {
+								return user.phoneNr.toString() === phoneNr && user.name.toLowerCase() === username.toLowerCase();
+							}).length > 0
 						);
 					})
 					.filter((incident) => {

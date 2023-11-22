@@ -25,7 +25,7 @@ async function getCompanyData() {
 	let promise: Promise<Company[]> = new Promise((resolve): void => {
 		setTimeout(() => {
 			resolve(MockDataGenerator.getCompanies());
-		}, 1500);
+		}, 100);
 	});
 	return await promise;
 }

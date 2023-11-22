@@ -24,8 +24,8 @@ class ContainerCard extends Component<CardProps> {
 		header: false,
 		content: false
 	};
-	static Header: (props: CardProps) => React.JSX.Element = (props: CardProps) => <Header>{props.children}</Header>;
-	static Content: (props: CardProps) => React.JSX.Element = (props: CardProps) => <Content>{props.children}</Content>;
+	static Header: (props: CardProps) => React.JSX.Element = (props: CardProps) => <Header style={props.style}>{props.children}</Header>;
+	static Content: (props: CardProps) => React.JSX.Element = (props: CardProps) => <Content style={props.style}>{props.children}</Content>;
 
 	render(): React.JSX.Element {
 		let style: StyleProp<ViewStyle>;
