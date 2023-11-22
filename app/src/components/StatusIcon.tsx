@@ -3,7 +3,7 @@ import { Icon } from 'react-native-paper';
 import { View } from 'react-native';
 import { Colors } from '../themes/ThemeManager';
 
-export type IncidentState = 'acknowledged' | 'error' | 'resolved' | 'none';
+export type IncidentState = 'none' | 'acknowledged' | 'error' | 'resolved';
 
 interface StatusIconProps {
 	status: IncidentState;
