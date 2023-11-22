@@ -13,7 +13,8 @@ interface MenuProps {
 class SettingsMenu extends Component<MenuProps> {
 	state = {
 		notification: false,
-		phoneNr: ''
+		phoneNr: '',
+		username: ''
 	};
 
 	constructor(props: MenuProps) {
@@ -21,6 +22,7 @@ class SettingsMenu extends Component<MenuProps> {
 		if (LocalStorage.getSettingsValue('notification') === 'null') LocalStorage.setSettingsValue('notification', 'true');
 		this.state.notification = LocalStorage.getSettingsValue('notification') === 'true';
 		this.state.phoneNr = LocalStorage.getSettingsValue('phoneNr');
+		this.state.username = LocalStorage.getSettingsValue('username');
 		console.log(this.state.phoneNr);
 	}
 
@@ -68,6 +70,18 @@ class SettingsMenu extends Component<MenuProps> {
 										}}
 										inputMode={'numeric'}
 										value={this.state.phoneNr}
+									/>
+								</View>
+								<View style={MenuStyle().row}>
+									<Text>Name</Text>
+									<TextInput
+										style={{ flexGrow: 2, backgroundColor: undefined }}
+										onChangeText={(text) => {
+											this.setState({ username: text });
+											LocalStorage.setSettingsValue('username', text);
+										}}
+										inputMode={'text'}
+										value={this.state.username}
 									/>
 								</View>
 							</Drawer.Section>

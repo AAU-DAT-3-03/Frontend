@@ -25,7 +25,7 @@ async function getCompanyData() {
 	let promise: Promise<Company[]> = new Promise((resolve): void => {
 		setTimeout(() => {
 			resolve(MockDataGenerator.getCompanies());
-		}, 1500);
+		}, 100);
 	});
 	return await promise;
 }
@@ -62,9 +62,10 @@ class Companies extends Component<any, CompanyState> {
 		);
 	}
 
-	private onPress(company: number, navigation: NavigationProp<any>): void {
+	private onPress(company: string, id: number, navigation: NavigationProp<any>): void {
 		navigation.navigate('ServiceList', {
-			company: company
+			company: company,
+			id: id
 		});
 	}
 
@@ -86,15 +87,17 @@ class Companies extends Component<any, CompanyState> {
 										value.state.includes(this.state.query.toLowerCase())
 								)
 								.sort((a, b) => {
-									if (a.state > b.state) return -1;
-									if (a.state < b.state) return 1;
+									if (a.state === 'acknowledged' && b.state === 'error') return 1;
+									if (a.state === 'error' && b.state === 'acknowledged') return -1;
+									if (a.state === 'none' && b.state !== 'none') return 1;
+									if (a.state !== 'none' && b.state === 'none') return -1;
 									return 0;
 								})}
 							renderItem={(info) => (
 								<CompanyCard
 									company={info.item.company}
 									state={stateList.indexOf(info.item.state)}
-									onPress={() => this.onPress(info.item.id ?? -1, navigation)}
+									onPress={() => this.onPress(info.item.company, info.item.id ?? -1, navigation)}
 								/>
 							)}
 						/>
