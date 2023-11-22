@@ -20,12 +20,13 @@ async function getAlarmData(id: number) {
 	let promise: Promise<AlarmData> = new Promise((resolve): void => {
 		setTimeout(() => {
 			resolve(MockDataGenerator.getAlarm(id));
-		}, 1500);
+		}, 100);
 	});
 	return await promise;
 }
 
 class Alarm extends Component<ScreenProps, AlarmState> {
+	private userName: string = 'Bent';
 	state: AlarmState = {
 		alarmError: 'Loading',
 		alarmLog: '',
@@ -36,7 +37,16 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 	};
 
 	componentDidMount() {
-		getAlarmData(this.props.route.params?.id).then((value) => {
+		this.getData();
+	}
+
+	constructor(props: ScreenProps) {
+		super(props);
+		this.state.id = this.props.route.params?.id;
+	}
+
+	private async getData() {
+		await getAlarmData(this.props.route.params?.id).then((value) => {
 			this.setState({
 				alarmError: value.alarmError,
 				alarmLog: value.alarmLog,
@@ -70,7 +80,14 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 				) : (
 					<View style={container.padding}>
 						<InformationCard errorType={this.state.alarmError} errorInfo={this.state.alarmLog} />
-						<NoteCard noteInfo={this.state.alarmNote} onChange={() => {}} />
+						<NoteCard
+							editable={true}
+							noteInfo={this.state.alarmNote}
+							onChange={(text: string) => {
+								MockDataGenerator.updateAlarm(this.state.id, this.userName, { alarmNote: text });
+								this.getData().then(() => this.forceUpdate());
+							}}
+						/>
 					</View>
 				)}
 			</ContentContainer>
