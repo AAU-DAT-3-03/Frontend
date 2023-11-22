@@ -15,6 +15,12 @@ export type Alarm = {
 	id: number;
 };
 
+export type EventLog = {
+	dateTime: number;
+	user: string;
+	message: string;
+};
+
 export type IncidentType = {
 	id: number;
 	companyId: number;
@@ -26,17 +32,13 @@ export type IncidentType = {
 	alarms: Alarm[];
 	assignedUsers: User[];
 	calledUsers: User[];
-	eventLog: {
-		dateTime: number;
-		user: string;
-		message: string;
-	}[];
+	eventLog: EventLog[];
 	state: IncidentState;
 };
 
 interface IncidentCardHeaderProps {
 	collapsed: boolean;
-	onClickButton: () => void;
+	onClickButton?: () => void;
 	onClickIncident: () => void;
 	company: string;
 	case: number;
@@ -77,17 +79,20 @@ class UserList extends Component<UserListProps> {
 	}
 }
 
-class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
+export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 	state = {
 		usersVisible: false
 	};
 	render(): React.JSX.Element {
-		let outerContainer = {
-			borderBottomWidth: this.props.collapsed ? 0 : 0.5,
-			borderBottomColor: getCurrentTheme().colors.onSurface,
-			paddingBottom: 16,
-			paddingHorizontal: 12
-		};
+		let outerContainer = {};
+		if (this.props.onClickButton !== undefined) {
+			outerContainer = {
+				borderBottomWidth: this.props.collapsed ? 0 : 0.5,
+				borderBottomColor: getCurrentTheme().colors.onSurface,
+				paddingBottom: 16,
+				paddingHorizontal: 12
+			};
+		}
 
 		let icon: string = this.props.collapsed ? 'menu-down' : 'menu-up';
 		return (
@@ -123,9 +128,16 @@ class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 									/>
 								)}
 							</View>
-							<View>
-								<IconButton icon={icon} onPress={() => this.props.onClickButton()} />
-							</View>
+							{this.props.onClickButton !== undefined ? (
+								<View>
+									<IconButton
+										icon={icon}
+										onPress={() => {
+											if (this.props.onClickButton !== undefined) this.props.onClickButton();
+										}}
+									/>
+								</View>
+							) : null}
 						</View>
 					</View>
 				</TouchableRipple>

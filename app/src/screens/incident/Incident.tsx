@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Appbar, Text } from 'react-native-paper';
+import { Appbar, Button, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import { ScreenProps } from '../../../App';
 import { IncidentType } from '../../components/incidentCard/IncidentCard';
@@ -15,6 +15,7 @@ import { MockDataGenerator, UpdateIncidentData, users } from '../../utility/Mock
 import ContainerCard from '../../components/ContainerCard';
 import Home from '../home/Home';
 import History from '../history/History';
+import MergeIncident from '../../components/MergeIncident';
 
 interface IncidentState {
 	incidentId: number;
@@ -77,6 +78,8 @@ class Incident extends Component<ScreenProps, IncidentState> {
 			<>
 				<Appbar.BackAction
 					onPress={() => {
+						if (Home.instance !== undefined) Home.instance.refresh();
+						if (History.instance !== undefined) History.instance.refresh();
 						this.props.navigation.goBack();
 					}}
 				/>
@@ -115,8 +118,6 @@ class Incident extends Component<ScreenProps, IncidentState> {
 					<FABResolved
 						onResolve={() => {
 							this.updateIncidentData({ state: 'resolved' });
-							Home.instance.refresh();
-							History.instance.refresh();
 						}}
 					/>
 				) : null}
@@ -158,9 +159,17 @@ class Incident extends Component<ScreenProps, IncidentState> {
 							</ContainerCard.Content>
 						</ContainerCard>
 						<NoteCard
+							editable={editable}
 							noteInfo={this.state.incidentData?.incidentNote}
 							onChange={(text) => this.updateIncidentData({ incidentNote: text })}
 						/>
+						{editable ? (
+							<MergeIncident
+								user={this.userName}
+								id={this.state.incidentId}
+								onMerge={() => this.loadIncidentData().then(() => this.forceUpdate())}
+							/>
+						) : null}
 						<EventLogCard eventLog={this.state.incidentData?.eventLog} />
 					</View>
 				</ScrollView>

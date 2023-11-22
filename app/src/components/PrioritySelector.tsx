@@ -16,7 +16,7 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 	state: PrioritySelectorState = {
 		selectedValue: this.props.state
 	};
-  
+
 	render(): React.JSX.Element {
 		const { selectedValue } = this.state;
 		return (
@@ -53,7 +53,8 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 const changeButtonStyle = (buttonValue: number, selectedValue: number | undefined) => {
 	const selected = buttonValue === selectedValue;
 	return {
-		backgroundColor: selected ? getCurrentTheme().colors.inversePrimary : getCurrentTheme().colors.primaryContainer,
+		backgroundColor: selected ? getCurrentTheme().colors.primary : getCurrentTheme().colors.background,
+		color: 'white',
 		borderWidth: 0,
 		borderColor: 'transparent'
 	};
