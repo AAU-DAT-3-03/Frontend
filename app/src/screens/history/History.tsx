@@ -32,6 +32,11 @@ class History extends Component<any, HistoryState> {
 		query: '',
 		period: { start: getToday(-30), end: getToday() }
 	};
+	static instance: History;
+	constructor(props: any) {
+		super(props);
+		History.instance = this;
+	}
 
 	private AppBar(): React.JSX.Element {
 		return (
@@ -88,6 +93,10 @@ class History extends Component<any, HistoryState> {
 		});
 	}
 
+	public refresh(): void {
+		this.getIncidentData(this.state.period);
+	}
+
 	/**
 	 * @todo Get data from server instead with a period
 	 * @private
@@ -100,7 +109,7 @@ class History extends Component<any, HistoryState> {
 				);
 				this.setState({ loading: false, incidents: filteredIncidents, filteredIncidents: filteredIncidents });
 				resolve(true);
-			}, 3000);
+			}, 100);
 		});
 		return await promise;
 	}

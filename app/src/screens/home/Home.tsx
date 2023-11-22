@@ -10,7 +10,7 @@ import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
-import { MockDataGenerator, users } from '../../utility/MockDataGenerator';
+import { MockDataGenerator } from '../../utility/MockDataGenerator';
 
 const Stack = createStackNavigator();
 
@@ -47,6 +47,8 @@ interface HomeState {
 }
 
 class Home extends Component<any, HomeState> {
+	static instance: Home;
+
 	state: HomeState = {
 		menuVisible: false,
 		incidents: undefined,
@@ -55,6 +57,11 @@ class Home extends Component<any, HomeState> {
 		filter: 0,
 		query: ''
 	};
+
+	constructor(props: any) {
+		super(props);
+		Home.instance = this;
+	}
 
 	private AppBar(): React.JSX.Element {
 		return (
@@ -114,6 +121,10 @@ class Home extends Component<any, HomeState> {
 		this.getIncidentData();
 	}
 
+	public refresh(): void {
+		this.getIncidentData();
+	}
+
 	/**
 	 * @todo Get data from server instead
 	 * @private
@@ -124,7 +135,7 @@ class Home extends Component<any, HomeState> {
 				let incidentsSorted = this.sortIncidents(MockDataGenerator.getAllIncidents().filter((value) => value.state !== 'resolved'));
 				this.setState({ loading: false, incidents: incidentsSorted });
 				resolve(true);
-			}, 1);
+			}, 100);
 		});
 		return await promise;
 	}

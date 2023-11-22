@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Card, Icon, IconButton, MD3Theme, Text, TouchableRipple } from 'react-native-paper';
+import { Icon, IconButton, MD3Theme, Text, TouchableRipple } from 'react-native-paper';
 import { getCurrentTheme } from '../themes/ThemeManager';
 import { StyleSheet, View } from 'react-native';
 import Color from 'color';
@@ -111,9 +111,19 @@ class EventLogCard extends Component<EventLogProps> {
 					</Text>
 				</ContainerCard.Header>
 				<ContainerCard.Content style={eventLogStyleSheet().card}>
-					{this.props.eventLog.map((log: EventLog, key: number) => {
-						return <EventLogCardContent key={key} eventLog={log} />;
-					})}
+					{this.props.eventLog.length < 1 ? (
+						<View style={eventLogStyleSheet().eventLogText}>
+							<Text>No changes has been made</Text>
+						</View>
+					) : null}
+					{this.props.eventLog
+						.sort((a, b) => {
+							if (a.dateTime < b.dateTime) return 1;
+							return -1;
+						})
+						.map((log: EventLog, key: number) => {
+							return <EventLogCardContent key={key} eventLog={log} />;
+						})}
 				</ContainerCard.Content>
 			</ContainerCard>
 		);
@@ -123,6 +133,7 @@ class EventLogCard extends Component<EventLogProps> {
 const mainColor: string = getCurrentTheme().colors.onSurface;
 const eventLogStyleSheet = () => {
 	return StyleSheet.create({
+		eventLogText: { width: '100%', flexDirection: 'row', justifyContent: 'center', marginTop: 16 },
 		avatarIcon: {
 			position: 'absolute',
 			right: 0,

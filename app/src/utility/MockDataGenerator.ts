@@ -15,6 +15,15 @@ const alarmText: string[] = [
 	'Network error'
 ];
 
+export type UpdateIncidentData = {
+	priority?: number;
+	incidentNote?: string;
+	assignUser?: User;
+	unAssignUser?: User;
+	calledUser?: User;
+	state?: IncidentState;
+};
+
 export class MockDataGenerator {
 	static alarms: { [id: number]: { alarm: Alarm; incidentId: number } } = {};
 	static incidents: { [id: number]: IncidentType } = {};
@@ -58,19 +67,13 @@ export class MockDataGenerator {
 		MockDataGenerator.alarms[id].alarm = alarm;
 	}
 
-	public static updateIncident(
-		id: number,
-		user: string,
-		data: {
-			priority?: number;
-			incidentNote?: string;
-			assignUser?: User;
-			unAssignUser?: User;
-			calledUser?: User;
-			state?: IncidentState;
-		}
-	): void {
+	public static updateIncident(id: number, user: string, data: UpdateIncidentData): void {
 		let incident: IncidentType = MockDataGenerator.incidents[id];
+		if (incident.state === 'resolved') return;
+		if (data.state) {
+			incident.state = data.state;
+			incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Changed state to ${data.state}` });
+		}
 		if (data.priority) {
 			incident.priority = data.priority;
 			incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Changed priority to ${data.priority}` });
@@ -83,29 +86,51 @@ export class MockDataGenerator {
 			});
 			incident.incidentNote = data.incidentNote;
 		}
-		if (data.assignUser) {
-			incident.assignedUsers?.push(data.assignUser);
-			incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Assigned user ${data.assignUser}` });
+		if (data.assignUser !== undefined) {
+			let test = incident.assignedUsers.filter(
+				(value) =>
+					value.name === data.assignUser?.name && value.team === data.assignUser.team && value.phoneNr === data.assignUser.phoneNr
+			).length;
+			if (test === 0) {
+				if (incident.state === 'error') incident.state = 'acknowledged';
+				incident.assignedUsers?.push(data.assignUser);
+				incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Assigned user ${data.assignUser.name}` });
+			}
 		}
-		if (data.unAssignUser)
+		if (data.unAssignUser) {
 			incident.assignedUsers = incident.assignedUsers?.filter((userCurrent: User): boolean => {
 				if (
-					userCurrent.name !== data.unAssignUser?.name &&
-					userCurrent.team !== data.unAssignUser?.team &&
-					userCurrent.phoneNr !== data.unAssignUser?.phoneNr
+					userCurrent.name === data.unAssignUser?.name &&
+					userCurrent.team === data.unAssignUser?.team &&
+					userCurrent.phoneNr === data.unAssignUser?.phoneNr
 				) {
-					incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Removed user: ${userCurrent.name}` });
+					incident.eventLog?.push({
+						user: user,
+						dateTime: Date.now(),
+						message: `Removed user: ${userCurrent.name}`
+					});
 					return false;
 				}
 				return true;
 			});
-		if (data.calledUser) {
-			incident.calledUsers?.push(data.calledUser);
-			incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Called user: ${data.calledUser.name}` });
+			if (incident.state === 'acknowledged' && incident.assignedUsers?.length === 0) incident.state = 'error';
 		}
-		if (data.state) {
-			incident.state = data.state;
-			incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Changed state to ${data.state}` });
+		if (data.calledUser) {
+			if (
+				incident.calledUsers.filter(
+					(value) =>
+						value.name === data.calledUser?.name &&
+						value.team === data.calledUser.team &&
+						value.phoneNr === data.calledUser.phoneNr
+				).length === 0
+			) {
+				incident.calledUsers?.push(data.calledUser);
+				incident.eventLog?.push({
+					user: user,
+					dateTime: Date.now(),
+					message: `Called user: ${data.calledUser.name}`
+				});
+			}
 		}
 
 		MockDataGenerator.incidents[id] = incident;
@@ -145,7 +170,7 @@ export class MockDataGenerator {
 			alarms.push(alarm);
 		}
 
-		let userList: User[] | undefined;
+		let userList: User[] = [];
 		if (state === 'acknowledged' || state === 'resolved') {
 			userList = [];
 			for (let i: number = 0; i < randomInt(1, 5); i++) {
@@ -153,7 +178,7 @@ export class MockDataGenerator {
 			}
 		}
 
-		let userCalledList: User[] | undefined;
+		let userCalledList: User[] = [];
 		if (randomInt(0, 1) === 1) {
 			userCalledList = [];
 			for (let i: number = 0; i < randomInt(1, 5); i++) {

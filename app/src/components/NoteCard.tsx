@@ -8,6 +8,7 @@ import ContainerCard from './ContainerCard';
 interface NoteCardProps {
 	noteInfo: string;
 	onChange: (text: string) => void;
+	editable?: boolean;
 }
 interface NoteEditorProps {
 	noteInfo: string;
@@ -37,16 +38,18 @@ class NoteCard extends Component<NoteCardProps, NoteCardState> {
 				<ContainerCard.Header>
 					<View style={noteCardStylesheet.header}>
 						<Text variant={'titleMedium'}>Incident Note</Text>
-						<TouchableRipple
-							style={noteCardStylesheet.icon}
-							rippleColor={Color(getCurrentTheme().colors.onSurface).alpha(0.3).toString()}
-							borderless={true}
-							onPress={() => {
-								this.setState({ editorActive: true });
-							}}
-						>
-							<Icon source={'pencil'} size={22} />
-						</TouchableRipple>
+						{this.props.editable === true ? (
+							<TouchableRipple
+								style={noteCardStylesheet.icon}
+								rippleColor={Color(getCurrentTheme().colors.onSurface).alpha(0.3).toString()}
+								borderless={true}
+								onPress={() => {
+									this.setState({ editorActive: true });
+								}}
+							>
+								<Icon source={'pencil'} size={22} />
+							</TouchableRipple>
+						) : null}
 					</View>
 				</ContainerCard.Header>
 				{this.state.editorActive === true ? (
@@ -56,9 +59,9 @@ class NoteCard extends Component<NoteCardProps, NoteCardState> {
 							this.setState({ text: text, editorActive: false });
 							this.props.onChange(text);
 						}}
-					></NoteEditor>
+					/>
 				) : (
-					<Text style={noteCardStylesheet.text}>{this.state.text}</Text>
+					<Text style={noteCardStylesheet.text}>{this.state.text === '' ? 'Note is currently empty' : this.state.text}</Text>
 				)}
 			</Card>
 		);
