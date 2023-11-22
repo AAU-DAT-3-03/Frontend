@@ -7,6 +7,7 @@ import ContainerCard from './ContainerCard';
 interface PrioritySelectorProps {
 	onPress: (value: number | undefined) => void;
 	state: number | undefined;
+	editable?: boolean;
 }
 interface PrioritySelectorState {
 	selectedValue: number | undefined;
@@ -15,12 +16,7 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 	state: PrioritySelectorState = {
 		selectedValue: this.props.state
 	};
-
-	//constructor(props: PrioritySelectorProps) {
-	//super(props);
-	//	this.state.state = props.state;
-	//}
-
+  
 	render(): React.JSX.Element {
 		const { selectedValue } = this.state;
 		return (
@@ -29,6 +25,7 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 					<Text variant={'titleMedium'} style={PriorityStylesheet.title}>
 						Priority
 					</Text>
+					{this.props.editable === true ? (
 					<SegmentedButtons
 						value={`${selectedValue}`}
 						density={'small'}
@@ -44,6 +41,9 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 							{ value: '4', label: 'P4', disabled: selectedValue === 4, style: changeButtonStyle(4, selectedValue) }
 						]}
 					/>
+					) : (
+						<Text>P{this.props.state}</Text>
+					)}
 				</Card.Content>
 			</ContainerCard>
 		);

@@ -51,11 +51,11 @@ class Login extends Component<LoginProps> {
 
 	render(): React.JSX.Element {
 		return (
-			<ContentContainer>
-				<View style={loginStyle().logo}>
-					<NeticLogo />
-				</View>
+			<ContentContainer appBar={undefined}>
 				<View style={loginStyle().wrapper}>
+					<View style={loginStyle().logo}>
+						<NeticLogo />
+					</View>
 					<View style={loginStyle().containerCard}>
 						<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.onSurface, alignSelf: 'center' }}>
 							Login
@@ -68,7 +68,7 @@ class Login extends Component<LoginProps> {
 								color: getCurrentTheme().colors.onSurface,
 								paddingHorizontal: 8
 							}}
-							underlineColorAndroid={this.state.error ? Colors.error : getCurrentTheme().colors.secondary}
+							underlineColorAndroid={Colors.error}
 							onChangeText={(text: string) => {
 								this.setState({ email: text });
 							}}
@@ -82,7 +82,7 @@ class Login extends Component<LoginProps> {
 								color: getCurrentTheme().colors.onSurface,
 								paddingHorizontal: 8
 							}}
-							underlineColorAndroid={this.state.error ? Colors.error : getCurrentTheme().colors.secondary}
+							underlineColorAndroid={Colors.error}
 							onChangeText={(text: string) => {
 								this.setState({ password: text });
 							}}
@@ -91,7 +91,7 @@ class Login extends Component<LoginProps> {
 							textContentType={'password'}
 						/>
 						<Button
-							buttonColor={getCurrentTheme().colors.secondary}
+							buttonColor={Colors.error}
 							textColor={getCurrentTheme().colors.onSurface}
 							onPress={() => this.handleLogin()}
 						>
@@ -107,27 +107,26 @@ class Login extends Component<LoginProps> {
 const loginStyle = () => {
 	return StyleSheet.create({
 		logo: {
-			padding: 120,
-			position: 'absolute',
-			top: 0,
-			left: 0,
-			width: '100%',
-			height: '40%',
-			flexDirection: 'column',
+			margin: 0,
+			width: '50%',
+			aspectRatio: 1,
 			alignItems: 'center',
 			justifyContent: 'center'
 		},
 		wrapper: {
-			flexDirection: 'row',
+			gap: 1,
+			padding: 32,
+			paddingVertical: 128,
+			flexDirection: 'column',
 			height: '100%',
 			width: '100%',
-			alignItems: 'center',
-			padding: 32
+			alignItems: 'center'
 		},
 		containerCard: {
+			margin: 0,
 			borderRadius: 16,
 			width: '100%',
-			backgroundColor: getCurrentTheme().colors.surface,
+			backgroundColor: getCurrentTheme().colors.background,
 			padding: 32,
 			flexDirection: 'column',
 			justifyContent: 'center',

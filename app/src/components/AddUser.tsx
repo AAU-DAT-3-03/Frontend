@@ -93,8 +93,11 @@ export type User = {
 interface AddUserProps {
 	type: string;
 	usersAll: User[];
-	users?: User[];
+	users: User[];
 	removable: boolean;
+	onRemove?: (user: User) => void;
+	onAdd?: (user: User) => void;
+	editable: boolean;
 }
 
 interface AddUserState {
@@ -107,14 +110,10 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 
 	constructor(props: AddUserProps) {
 		super(props);
-		this.state.users = props.users ?? this.state.users;
 	}
 
 	private onDeleteUser(user: User): void {
-		let users: User[] = this.state.users.filter((value: User) => {
-			return !(value.name === user.name && value.phoneNr === user.phoneNr);
-		});
-		this.setState({ users: users });
+		if (this.props.onRemove !== undefined) this.props.onRemove(user);
 	}
 
 	render(): React.JSX.Element {
@@ -125,7 +124,7 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 						{this.props.type}
 					</Text>
 					<View style={addUserStyle.users}>
-						{this.state.users?.map((user: User, key: number) => {
+						{this.props.users?.map((user: User, key: number) => {
 							return (
 								<UserAvatar
 									team={user.team}
@@ -133,7 +132,7 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 									name={user.name}
 									phoneNr={user.phoneNr}
 									onDelete={
-										this.props.removable
+										this.props.removable && this.props.editable
 											? (user: User) => {
 													this.onDeleteUser(user);
 											  }
@@ -144,22 +143,26 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 						})}
 					</View>
 
-					<IconButton
-						icon="plus-circle"
-						iconColor={getCurrentTheme().colors.primary}
-						size={30}
-						onPress={() => this.setState({ assignVisible: true })}
-						style={{}}
-					/>
-					<AssignUser
-						removable={this.props.removable}
-						visible={this.state.assignVisible}
-						onDismiss={(user: User | undefined): void => {
-							if (user !== undefined) this.addUser(user);
-							this.setState({ assignVisible: false });
-						}}
-						users={this.props.usersAll}
-					/>
+					{this.props.editable ? (
+						<>
+							<IconButton
+								icon="plus-circle"
+								iconColor={getCurrentTheme().colors.primary}
+								size={30}
+								onPress={() => this.setState({ assignVisible: true })}
+								style={{}}
+							/>
+							<AssignUser
+								removable={this.props.removable}
+								visible={this.state.assignVisible}
+								onDismiss={(user: User | undefined): void => {
+									if (user !== undefined) this.addUser(user);
+									this.setState({ assignVisible: false });
+								}}
+								users={this.props.usersAll}
+							/>
+						</>
+					) : null}
 				</Card.Content>
 			</Card>
 		);
@@ -170,7 +173,7 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 			return value.name === user.name && value.phoneNr === user.phoneNr;
 		});
 		if (users.length > 0) return;
-		this.state.users.push(user);
+		if (this.props.onAdd !== undefined) this.props.onAdd(user);
 	}
 }
 

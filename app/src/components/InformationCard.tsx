@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { Card, Text } from 'react-native-paper';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
 import ContainerCard from './ContainerCard';
 
@@ -13,22 +13,22 @@ class InformationCard extends Component<InformationCardProps> {
 	render(): React.JSX.Element {
 		let textStyle = { ...informationStylesheet.logTitle, borderTopColor: getCurrentTheme().colors.onSurface };
 		return (
-			<Card>
+			<ContainerCard>
 				<ContainerCard.Header>
-					<Card.Title
-						titleStyle={{ textAlign: 'center' }}
-						title={'Information'}
-						subtitleStyle={{ textAlign: 'center' }}
-						subtitle={this.props.errorType}
-					/>
+					<View style={informationStylesheet.header}>
+						<Text variant={'titleLarge'}>Information</Text>
+						<Text variant={'titleSmall'}>{this.props.errorType}</Text>
+					</View>
 				</ContainerCard.Header>
-				<Card.Content>
-					<Text variant={'bodyLarge'} style={textStyle}>
-						Log
-					</Text>
-					<Text>{this.props.errorInfo}</Text>
-				</Card.Content>
-			</Card>
+				<ContainerCard.Content>
+					<View style={{ paddingHorizontal: 16 }}>
+						<Text variant={'bodyLarge'} style={textStyle}>
+							Log
+						</Text>
+						<Text>{this.props.errorInfo}</Text>
+					</View>
+				</ContainerCard.Content>
+			</ContainerCard>
 		);
 	}
 }
@@ -37,6 +37,12 @@ const informationStylesheet = StyleSheet.create({
 	logTitle: {
 		textAlign: 'center',
 		paddingTop: 10
+	},
+	header: {
+		width: '100%',
+		flexDirection: 'column',
+		alignItems: 'center',
+		paddingBottom: 8
 	}
 });
 export default InformationCard;

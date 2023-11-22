@@ -24,8 +24,8 @@ export type IncidentType = {
 	incidentNote: string;
 	startTime: number;
 	alarms: Alarm[];
-	assignedUsers?: User[];
-	calledUsers?: User[];
+	assignedUsers: User[];
+	calledUsers: User[];
 	eventLog: {
 		dateTime: number;
 		user: string;
@@ -40,7 +40,7 @@ interface IncidentCardHeaderProps {
 	onClickIncident: () => void;
 	company: string;
 	case: number;
-	users?: User[];
+	users: User[];
 	status: IncidentState;
 	priority: number;
 }
@@ -112,7 +112,7 @@ class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 						</View>
 						<View style={incidentCardStyle().headerSection}>
 							<View>
-								{this.props.users === undefined ? null : (
+								{this.props.users?.length === 0 ? null : (
 									<UserAvatar
 										onPress={() => {
 											this.setState({ usersVisible: true });

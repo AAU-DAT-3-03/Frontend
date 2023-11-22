@@ -41,8 +41,7 @@ class ResolvedConfirm extends Component<ResolvedProps> {
 								style={{ borderRadius: buttonStyle.borderRadius }}
 								disabled={!this.props.resolvedActive}
 								onPress={() => {
-									console.log('Pressed');
-									this.props.onDismiss();
+									this.props.onResolve();
 								}}
 								borderless={true}
 							>
@@ -65,7 +64,10 @@ class ResolvedConfirm extends Component<ResolvedProps> {
 	}
 }
 
-class FABResolved extends Component {
+interface FABResolvedProps {
+	onResolve: () => void;
+}
+class FABResolved extends Component<FABResolvedProps> {
 	state = { assignVisible: false, resolvedActive: false, timer: 5 };
 	timeout: NodeJS.Timeout | undefined;
 	interval: NodeJS.Timeout | undefined;
@@ -97,7 +99,10 @@ class FABResolved extends Component {
 				/>
 
 				<ResolvedConfirm
-					onResolve={() => {}}
+					onResolve={() => {
+						this.props.onResolve();
+						this.setState({ resolvedActive: false });
+					}}
 					timer={this.state.timer}
 					visible={this.state.assignVisible}
 					resolvedActive={this.state.resolvedActive}
