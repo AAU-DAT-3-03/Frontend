@@ -11,7 +11,7 @@ import { Company, MockDataGenerator } from '../../utility/MockDataGenerator';
 
 const Stack = createStackNavigator();
 
-let stateList = ['none', 'error', 'acknowledged'];
+let stateList = ['none', 'acknowledged', 'error'];
 
 interface CompanyState {
 	query: any;
@@ -83,8 +83,8 @@ class Companies extends Component<any, CompanyState> {
 										value.state.includes(this.state.query.toLowerCase())
 								)
 								.sort((a, b) => {
-									if (a.state > b.state) return 1;
-									if (a.state < b.state) return -1;
+									if (a.state > b.state) return -1;
+									if (a.state < b.state) return 1;
 									return 0;
 								})}
 							renderItem={(info) => (
