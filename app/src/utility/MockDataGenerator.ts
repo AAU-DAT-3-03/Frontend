@@ -1,13 +1,22 @@
 import { Alarm, EventLog, IncidentType } from '../components/incidentCard/IncidentCard';
 import { IncidentState } from '../components/StatusIcon';
 import { User } from '../components/AddUser';
-import mergeIncident from '../components/MergeIncident';
 
 export function randomInt(min: number, max: number): number {
 	return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-const alarmText: string[] = ['Crashed 4 times', 'OOM Killed', 'Restarted', 'Pod unreachable', 'Network error'];
+const alarmText: string[] = [
+	'Crashed 4 times',
+	'OOM Killed',
+	'Restarted',
+	'Pod unreachable',
+	'Network error',
+	'Internal Server Error',
+	'Gateway Timeout',
+	'Insufficient Storage',
+	'Service Unavailable'
+];
 
 export type UpdateIncidentData = {
 	priority?: number;

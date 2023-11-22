@@ -51,6 +51,7 @@ class Companies extends Component<any, CompanyState> {
 		return (
 			<>
 				<Searchbar
+					onClearIconPress={() => this.setState({ query: '' })}
 					style={styles.bar}
 					placeholder={'Search'}
 					mode={'bar'}
