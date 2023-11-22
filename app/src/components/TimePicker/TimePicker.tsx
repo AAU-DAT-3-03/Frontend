@@ -400,6 +400,7 @@ class TimePicker extends Component<TimePickerProps, TimePickerState> {
 					androidVariant={'nativeAndroid'}
 					mode={'date'}
 					maximumDate={new Date(Date.now())}
+					minimumDate={new Date('2002-01-01T01:00:00')}
 					date={date}
 					onDateChange={(date) => this.dayButtonOnPress([date.getDate(), date.getMonth() + 1, date.getFullYear()])}
 				/>
