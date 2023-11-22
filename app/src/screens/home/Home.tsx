@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { IconButton, Menu, Text } from 'react-native-paper';
+import { IconButton, Menu, Searchbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import IncidentCard, { IncidentType } from '../../components/incidentCard/IncidentCard';
 import SettingsMenu from './components/SettingsMenu';
@@ -10,7 +10,7 @@ import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
-import { MockDataGenerator } from '../../utility/MockDataGenerator';
+import { MockDataGenerator, users } from '../../utility/MockDataGenerator';
 
 const Stack = createStackNavigator();
 
@@ -43,6 +43,7 @@ interface HomeState {
 	loading: boolean;
 	filterVisible: boolean;
 	filter: Filter;
+	query: string;
 }
 
 class Home extends Component<any, HomeState> {
@@ -51,7 +52,8 @@ class Home extends Component<any, HomeState> {
 		incidents: undefined,
 		loading: true,
 		filterVisible: false,
-		filter: 0
+		filter: 0,
+		query: ''
 	};
 
 	private AppBar(): React.JSX.Element {
@@ -67,16 +69,17 @@ class Home extends Component<any, HomeState> {
 						alignItems: 'center'
 					}}
 				>
-					<IconButton
-						style={{ margin: 0, position: 'absolute' }}
-						icon={'cog'}
-						onPress={() => this.setState({ menuVisible: true })}
-					/>
-					<IconButton
-						style={{ position: 'absolute', left: 0 }}
+					<Searchbar
+						style={{ flexShrink: 2 }}
+						onIconPress={() => this.setState({ filterVisible: true })}
 						icon={'menu'}
-						onPress={() => this.setState({ filterVisible: true })}
+						traileringIcon={'magnify'}
+						placeholder={'Search'}
+						onChangeText={(query: string) => this.setState({ query: query })}
+						value={this.state.query}
+						onClearIconPress={() => this.setState({ query: '' })}
 					/>
+					<IconButton icon={'cog'} onPress={() => this.setState({ menuVisible: true })} />
 					<Menu
 						anchor={{ x: 0, y: 64 }}
 						visible={this.state.filterVisible}
@@ -167,6 +170,30 @@ class Home extends Component<any, HomeState> {
 							incident.assignedUsers !== undefined &&
 							incident.assignedUsers.filter((user) => user.phoneNr === phoneNr).length > 0
 						);
+					})
+					.filter((incident) => {
+						if (this.state.query !== '') {
+							let query: string = this.state.query.toLowerCase();
+							if (incident.company.toLowerCase().includes(query)) return true;
+							if (incident.caseNr.toString(10).includes(query)) return true;
+							if (
+								incident.calledUsers !== undefined &&
+								incident.calledUsers.filter(
+									(user) => user.name.toLowerCase().includes(query) || user.team.toLowerCase().includes(query)
+								).length > 0
+							)
+								return true;
+							if (
+								incident.assignedUsers !== undefined &&
+								incident.assignedUsers.filter(
+									(user) => user.name.toLowerCase().includes(query) || user.team.toLowerCase().includes(query)
+								).length > 0
+							)
+								return true;
+							if (incident.priority.toString(10).includes(query)) return true;
+							return false;
+						}
+						return true;
 					})
 					.map((value, index) => {
 						return (
