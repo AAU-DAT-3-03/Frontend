@@ -4,6 +4,8 @@ import { getCurrentTheme } from '../themes/ThemeManager';
 import { StyleSheet, View } from 'react-native';
 import Color from 'color';
 import ContainerCard from './ContainerCard';
+import CardContent from 'react-native-paper/lib/typescript/components/Card/CardContent';
+import { white } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 type EventLog = {
 	dateTime: number;
@@ -53,11 +55,8 @@ class EventLogCardContent extends Component<EventLogContentProps> {
 					<Icon size={18} source={'account'} color={'white'} />
 					<Text style={eventLogStyleSheet().avatarText}>{this.props.eventLog.user}</Text>
 				</View>
-				<Text variant={'titleSmall'} style={{ verticalAlign: 'middle' }}>
-					{formattedDate}
-				</Text>
-				<Text variant={'titleSmall'} style={{ verticalAlign: 'middle' }}>
-					{formattedTime}
+				<Text variant={'titleSmall'}>
+					{formattedDate} - {formattedTime}
 				</Text>
 			</View>
 		);
@@ -141,12 +140,12 @@ const eventLogStyleSheet = () => {
 		},
 		avatarContainer: {
 			flexDirection: 'row',
-			justifyContent: 'space-evenly',
 			gap: 3,
 			paddingLeft: 4,
 			paddingRight: 8,
 			paddingVertical: 4,
 			borderRadius: 16,
+			margin: 0,
 			backgroundColor: getCurrentTheme().colors.primary
 		},
 		avatarText: {
@@ -190,9 +189,8 @@ const eventLogStyleSheet = () => {
 			justifyContent: 'space-between',
 			marginBottom: 2,
 			borderRadius: 16,
-			paddingHorizontal: 4,
-			verticalAlign: 'middle',
-			padding: 0
+			paddingHorizontal: 8,
+			verticalAlign: 'middle'
 		}
 	});
 };
