@@ -146,7 +146,7 @@ export class MockDataGenerator {
 		}
 
 		let userList: User[] | undefined;
-		if (randomInt(0, 1) === 1) {
+		if (state === 'acknowledged' || state === 'resolved') {
 			userList = [];
 			for (let i: number = 0; i < randomInt(1, 5); i++) {
 				userList.push(users[randomInt(0, users.length - 1)]);
