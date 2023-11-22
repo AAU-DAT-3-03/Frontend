@@ -187,7 +187,8 @@ const addUserStyle = StyleSheet.create({
 	card: {
 		backgroundColor: getCurrentTheme().colors.elevation.level2,
 		height: 'auto',
-		width: '100%'
+		width: '100%',
+		shadowColor: 'transparent'
 	},
 	users: {
 		height: 'auto',

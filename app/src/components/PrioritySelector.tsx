@@ -26,21 +26,21 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 						Priority
 					</Text>
 					{this.props.editable === true ? (
-					<SegmentedButtons
-						value={`${selectedValue}`}
-						density={'small'}
-						onValueChange={(value) => {
-							const intValue = parseInt(value, 10);
-							this.setState({ selectedValue: intValue });
-							this.props.onPress(intValue);
-						}}
-						buttons={[
-							{ value: '1', label: 'P1', disabled: selectedValue === 1, style: changeButtonStyle(1, selectedValue) },
-							{ value: '2', label: 'P2', disabled: selectedValue === 2, style: changeButtonStyle(2, selectedValue) },
-							{ value: '3', label: 'P3', disabled: selectedValue === 3, style: changeButtonStyle(3, selectedValue) },
-							{ value: '4', label: 'P4', disabled: selectedValue === 4, style: changeButtonStyle(4, selectedValue) }
-						]}
-					/>
+						<SegmentedButtons
+							value={`${selectedValue}`}
+							density={'small'}
+							onValueChange={(value) => {
+								const intValue = parseInt(value, 10);
+								this.setState({ selectedValue: intValue });
+								this.props.onPress(intValue);
+							}}
+							buttons={[
+								{ value: '1', label: 'P1', disabled: selectedValue === 1, style: changeButtonStyle(1, selectedValue) },
+								{ value: '2', label: 'P2', disabled: selectedValue === 2, style: changeButtonStyle(2, selectedValue) },
+								{ value: '3', label: 'P3', disabled: selectedValue === 3, style: changeButtonStyle(3, selectedValue) },
+								{ value: '4', label: 'P4', disabled: selectedValue === 4, style: changeButtonStyle(4, selectedValue) }
+							]}
+						/>
 					) : (
 						<Text>P{this.props.state}</Text>
 					)}
@@ -53,8 +53,7 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 const changeButtonStyle = (buttonValue: number, selectedValue: number | undefined) => {
 	const selected = buttonValue === selectedValue;
 	return {
-		backgroundColor: selected ? getCurrentTheme().colors.primary : getCurrentTheme().colors.background,
-		color: 'white',
+		backgroundColor: selected ? getCurrentTheme().colors.inversePrimary : getCurrentTheme().colors.surfaceVariant,
 		borderWidth: 0,
 		borderColor: 'transparent'
 	};
