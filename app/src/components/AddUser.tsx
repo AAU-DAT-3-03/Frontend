@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Card, IconButton, Portal, Text, Modal, Searchbar, Button } from 'react-native-paper';
+import { Card, IconButton, Portal, Text, Modal, Searchbar, TouchableRipple, Icon } from 'react-native-paper';
 import { getCurrentTheme } from '../themes/ThemeManager';
 import { FlatList, StyleSheet, View } from 'react-native';
 import UserAvatar from './UserAvatar';
@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'column',
 		alignItems: 'center',
 		borderRadius: 20,
-		backgroundColor: getCurrentTheme().colors.surface,
+		backgroundColor: getCurrentTheme().colors.elevation.level2,
 		width: 256,
 		height: 512
 	},
@@ -45,28 +45,35 @@ class AssignUser extends Component<AssignUserProps> {
 				<Modal style={styles.container} visible={this.props.visible} onDismiss={() => this.props.onDismiss(undefined)}>
 					<View style={styles.view}>
 						<Searchbar
+							style={addUserStyle.searchbar}
 							placeholder={'Search User'}
 							mode={'view'}
-							icon={'account'}
+							icon={'account-search'}
 							showDivider={true}
 							value={this.state.query}
 							onChange={(e) => this.setState({ query: e.nativeEvent.text })}
 						/>
 						<FlatList
-							data={this.props.users.filter(
-								(value) =>
-									value.name.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1 ||
-									value.team.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1
-							)}
+							style={{ width: '100%' }}
+							data={this.props.users
+								.filter(
+									(value) =>
+										value.name.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1 ||
+										value.team.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1
+								)
+								.sort((user1, user2) => user1.name.localeCompare(user2.name))}
 							renderItem={(info) => {
 								return (
-									<Button
-										style={{ justifyContent: 'space-evenly' }}
-										icon={'account'}
-										onPress={() => this.props.onDismiss(info.item)}
-									>
-										{info.item.name} -{info.item.team}
-									</Button>
+									<TouchableRipple onPress={() => this.props.onDismiss(info.item)}>
+										<View style={addUserStyle.buttons}>
+											<View style={addUserStyle.icon}>
+												<Icon size={22} source={'account'} />
+											</View>
+											<Text>
+												{info.item.name} - {info.item.team}
+											</Text>
+										</View>
+									</TouchableRipple>
 								);
 							}}
 						/>
@@ -185,6 +192,25 @@ const addUserStyle = StyleSheet.create({
 		flexDirection: 'row',
 		flexWrap: 'wrap',
 		gap: 8
+	},
+	buttons: {
+		flexDirection: 'row',
+		textAlign: 'left',
+		padding: 0,
+		margin: 0,
+		width: '100%',
+		paddingVertical: 8,
+		alignItems: 'center',
+		paddingHorizontal: 4
+	},
+	icon: {
+		padding: 2,
+		marginLeft: 6
+	},
+	searchbar: {
+		borderTopRightRadius: 16,
+		borderTopLeftRadius: 16,
+		backgroundColor: getCurrentTheme().colors.elevation.level4
 	}
 });
 export default AddUser;

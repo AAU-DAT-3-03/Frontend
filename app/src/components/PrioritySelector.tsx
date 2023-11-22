@@ -38,10 +38,10 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 							this.props.onPress(intValue);
 						}}
 						buttons={[
-							{ value: '1', label: 'P1', disabled: selectedValue === 1 },
-							{ value: '2', label: 'P2', disabled: selectedValue === 2 },
-							{ value: '3', label: 'P3', disabled: selectedValue === 3 },
-							{ value: '4', label: 'P4', disabled: selectedValue === 4 }
+							{ value: '1', label: 'P1', disabled: selectedValue === 1, style: changeButtonStyle(1, selectedValue) },
+							{ value: '2', label: 'P2', disabled: selectedValue === 2, style: changeButtonStyle(2, selectedValue) },
+							{ value: '3', label: 'P3', disabled: selectedValue === 3, style: changeButtonStyle(3, selectedValue) },
+							{ value: '4', label: 'P4', disabled: selectedValue === 4, style: changeButtonStyle(4, selectedValue) }
 						]}
 					/>
 				</Card.Content>
@@ -49,6 +49,15 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 		);
 	}
 }
+
+const changeButtonStyle = (buttonValue: number, selectedValue: number | undefined) => {
+	const selected = buttonValue === selectedValue;
+	return {
+		backgroundColor: selected ? getCurrentTheme().colors.inversePrimary : getCurrentTheme().colors.primaryContainer,
+		borderWidth: 0,
+		borderColor: 'transparent'
+	};
+};
 
 const PriorityStylesheet = StyleSheet.create({
 	card: {
