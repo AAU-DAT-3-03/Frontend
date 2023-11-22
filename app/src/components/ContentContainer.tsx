@@ -55,7 +55,7 @@ class ContentContainer extends Component<ContentContainerProps, ContentContainer
 	render(): React.JSX.Element {
 		return (
 			<View style={{ flexDirection: 'column', height: '100%', backgroundColor: getCurrentTheme().colors.background }}>
-				{this.props.appBar === null ? null : (
+				{this.props.appBar === undefined ? null : (
 					<Appbar style={{ backgroundColor: getCurrentTheme().colors.surface }}>{this.props.appBar}</Appbar>
 				)}
 				<ScrollView style={{ flexGrow: 2, overflow: 'hidden' }} refreshControl={this.getRefreshControl()}>
