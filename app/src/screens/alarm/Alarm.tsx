@@ -8,6 +8,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ScreenProps } from '../../../App';
 import Incident from '../incident/Incident';
 import { Alarm as AlarmData } from '../../components/incidentCard/IncidentCard';
+import { MockDataGenerator } from '../../utility/MockDataGenerator';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 
 const Stack = createStackNavigator();
@@ -15,18 +16,10 @@ interface AlarmState extends AlarmData {
 	loading: boolean;
 }
 
-async function getAlarmData(id: number | undefined) {
-	if (id === undefined) return undefined;
+async function getAlarmData(id: number) {
 	let promise: Promise<AlarmData> = new Promise((resolve): void => {
 		setTimeout(() => {
-			let alarmData: AlarmData = {
-				alarmError: 'errror 404',
-				alarmLog: 'shit not good',
-				alarmNote: 'fix det habibi',
-				service: 'gurli gris',
-				id: 0
-			};
-			resolve(alarmData);
+			resolve(MockDataGenerator.getAlarm(id));
 		}, 1500);
 	});
 	return await promise;
@@ -34,7 +27,7 @@ async function getAlarmData(id: number | undefined) {
 
 class Alarm extends Component<ScreenProps, AlarmState> {
 	state: AlarmState = {
-		alarmError: '',
+		alarmError: 'Loading',
 		alarmLog: '',
 		alarmNote: 'string',
 		service: '',
@@ -44,7 +37,6 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 
 	componentDidMount() {
 		getAlarmData(this.props.route.params?.id).then((value) => {
-			if (value === undefined) return;
 			this.setState({
 				alarmError: value.alarmError,
 				alarmLog: value.alarmLog,
@@ -63,7 +55,7 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 						this.props.navigation.goBack();
 					}}
 				/>
-				<Appbar.Content title={`${this.state.alarm}`} />
+				<Appbar.Content title={`${this.state.alarmError}`} />
 			</>
 		);
 	}
