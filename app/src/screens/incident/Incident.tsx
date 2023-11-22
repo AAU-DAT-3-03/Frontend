@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Appbar, Button, Text } from 'react-native-paper';
+import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import { ScreenProps } from '../../../App';
 import { IncidentType } from '../../components/incidentCard/IncidentCard';
@@ -159,6 +159,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 							</ContainerCard.Content>
 						</ContainerCard>
 						<NoteCard
+							title={'incident'}
 							editable={editable}
 							noteInfo={this.state.incidentData?.incidentNote}
 							onChange={(text) => this.updateIncidentData({ incidentNote: text })}

@@ -81,6 +81,7 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 					<View style={container.padding}>
 						<InformationCard errorType={this.state.alarmError} errorInfo={this.state.alarmLog} />
 						<NoteCard
+							title={'alarm'}
 							editable={true}
 							noteInfo={this.state.alarmNote}
 							onChange={(text: string) => {

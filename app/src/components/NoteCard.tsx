@@ -6,6 +6,7 @@ import { getCurrentTheme } from '../themes/ThemeManager';
 import ContainerCard from './ContainerCard';
 
 interface NoteCardProps {
+	title?: string;
 	noteInfo: string;
 	onChange: (text: string) => void;
 	editable?: boolean;
@@ -37,7 +38,8 @@ class NoteCard extends Component<NoteCardProps, NoteCardState> {
 			<Card style={noteCardStylesheet.card}>
 				<ContainerCard.Header>
 					<View style={noteCardStylesheet.header}>
-						<Text variant={'titleMedium'}>Incident Note</Text>
+						{this.props.title === 'incident' ? <Text variant={'titleMedium'}>Incident Note</Text> : null}
+						{this.props.title === 'alarm' ? <Text variant={'titleMedium'}>Alarm Note</Text> : null}
 						{this.props.editable === true ? (
 							<TouchableRipple
 								style={noteCardStylesheet.icon}
@@ -52,7 +54,7 @@ class NoteCard extends Component<NoteCardProps, NoteCardState> {
 						) : null}
 					</View>
 				</ContainerCard.Header>
-				{this.state.editorActive === true ? (
+				{this.state.editorActive ? (
 					<NoteEditor
 						noteInfo={this.state.text}
 						onSave={(text: string) => {
