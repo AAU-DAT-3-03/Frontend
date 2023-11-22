@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Card, IconButton, Title, TouchableRipple } from 'react-native-paper';
-import { Dimensions, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { getCurrentTheme, Colors } from '../themes/ThemeManager';
 import Color from 'color';
 
@@ -84,7 +84,7 @@ const cardStyle = () => {
 			marginBottom: 8,
 			marginTop: 8,
 			backgroundColor: getCurrentTheme().colors.elevation.level2,
-			height: Dimensions.get('screen').height / 17
+			height: 88
 		},
 		error: {
 			backgroundColor: Colors.error,
