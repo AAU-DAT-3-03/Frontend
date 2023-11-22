@@ -148,8 +148,7 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 const changeButtonStyle = (buttonValue: number, selectedValue: number | undefined) => {
 	const selected = buttonValue === selectedValue;
 	return {
-		backgroundColor: selected ? getCurrentTheme().colors.primary : getCurrentTheme().colors.background,
-		color: 'white',
+		backgroundColor: selected ? getCurrentTheme().colors.inversePrimary : getCurrentTheme().colors.surfaceVariant,
 		borderWidth: 0,
 		borderColor: 'transparent'
 	};
