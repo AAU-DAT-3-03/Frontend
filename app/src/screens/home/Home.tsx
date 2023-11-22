@@ -79,7 +79,7 @@ class Home extends Component<any, HomeState> {
 					<Searchbar
 						style={{ flexShrink: 2 }}
 						onIconPress={() => this.setState({ filterVisible: true })}
-						icon={'menu'}
+						icon={'filter'}
 						traileringIcon={'magnify'}
 						placeholder={'Search'}
 						onChangeText={(query: string) => this.setState({ query: query })}
