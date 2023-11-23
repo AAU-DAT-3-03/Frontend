@@ -53,6 +53,21 @@ interface UserListProps {
 	onDismiss: () => void;
 }
 
+const PriorityColor = (priority: number) => {
+	switch (priority) {
+		case 1:
+			return '#B80000';
+		case 2:
+			return '#FF511A';
+		case 3:
+			return '#FF9416';
+		case 4:
+			return '#FFD66C';
+		default:
+			return 'transparent';
+	}
+};
+
 class UserList extends Component<UserListProps> {
 	render(): React.JSX.Element {
 		return (
@@ -112,7 +127,10 @@ export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 								<Text variant={'titleMedium'}>
 									{this.props.company} #{this.props.case}
 								</Text>
-								<Text variant={'bodySmall'}>Priority {this.props.priority}</Text>
+								<Text style={{ color: PriorityColor(this.props.priority) }} variant={'bodyMedium'}>
+									{' '}
+									Priority {this.props.priority}
+								</Text>
 							</View>
 						</View>
 						<View style={incidentCardStyle().headerSection}>
