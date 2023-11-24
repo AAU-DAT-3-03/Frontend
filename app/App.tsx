@@ -10,6 +10,7 @@ import Companies from './src/screens/Services/Companies';
 import LocalStorage from './src/utility/LocalStorage';
 import Login from './src/screens/login/Login';
 import { MockDataGenerator } from './src/utility/MockDataGenerator';
+import NotificationHandler from './src/utility/NotificationHandler';
 
 export let serverIp = '';
 
