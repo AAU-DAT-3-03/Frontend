@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Icon } from 'react-native-paper';
 import { View } from 'react-native';
-import { Colors } from '../themes/ThemeManager';
+import { getCurrentTheme } from '../themes/ThemeManager';
 
 export type IncidentState = 'none' | 'acknowledged' | 'error' | 'resolved';
 
@@ -16,17 +16,17 @@ class StatusIcon extends Component<StatusIconProps> {
 
 		switch (this.props.status) {
 			case 'resolved': {
-				backgroundColor = Colors.allGood;
+				backgroundColor = 'transparent';
 				icon = 'check';
 				break;
 			}
 			case 'acknowledged': {
-				backgroundColor = Colors.warn;
+				backgroundColor = 'transparent';
 				icon = 'account-check-outline';
 				break;
 			}
 			case 'error': {
-				backgroundColor = Colors.error;
+				backgroundColor = 'transparent';
 				icon = 'exclamation';
 				break;
 			}
@@ -34,7 +34,7 @@ class StatusIcon extends Component<StatusIconProps> {
 
 		return (
 			<View style={{ backgroundColor: backgroundColor, aspectRatio: 1, width: 40, padding: 8, borderRadius: 100 }}>
-				<Icon source={icon} color={'white'} size={24} />
+				<Icon source={icon} color={getCurrentTheme().colors.onBackground} size={26} />
 			</View>
 		);
 	}
