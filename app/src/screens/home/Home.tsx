@@ -10,7 +10,8 @@ import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
-import { MockDataGenerator, users } from '../../utility/MockDataGenerator';
+import { MockDataGenerator } from '../../utility/MockDataGenerator';
+import { User } from '../../components/AddUser';
 
 const Stack = createStackNavigator();
 
@@ -188,28 +189,7 @@ class Home extends Component<any, HomeState> {
 						);
 					})
 					.filter((incident) => {
-						if (this.state.query !== '') {
-							let query: string = this.state.query.toLowerCase();
-							if (incident.company.toLowerCase().includes(query)) return true;
-							if (incident.caseNr.toString(10).includes(query)) return true;
-							if (
-								incident.calledUsers !== undefined &&
-								incident.calledUsers.filter(
-									(user) => user.name.toLowerCase().includes(query) || user.team.toLowerCase().includes(query)
-								).length > 0
-							)
-								return true;
-							if (
-								incident.assignedUsers !== undefined &&
-								incident.assignedUsers.filter(
-									(user) => user.name.toLowerCase().includes(query) || user.team.toLowerCase().includes(query)
-								).length > 0
-							)
-								return true;
-							if (incident.priority.toString(10).includes(query)) return true;
-							return false;
-						}
-						return true;
+						return this.filterIncidentList(incident);
 					})
 					.map((value, index) => {
 						return (
@@ -231,6 +211,52 @@ class Home extends Component<any, HomeState> {
 					})}
 			</View>
 		);
+	}
+
+	private filterIncidentList(incident: IncidentType): boolean {
+		if (this.state.query !== '') {
+			let queries: [boolean, string][] = this.state.query
+				.toLowerCase()
+				.split(' ')
+				.map((value) => [false, value]);
+			for (let query of queries) {
+				if (incident.company.toLowerCase().includes(query[1])) {
+					query[0] = true;
+					continue;
+				}
+				if (incident.caseNr.toString(10).includes(query[1])) {
+					query[0] = true;
+					continue;
+				}
+				if (
+					incident.calledUsers !== undefined &&
+					incident.calledUsers.filter(
+						(user: User) => user.name.toLowerCase().includes(query[1]) || user.team.toLowerCase().includes(query[1])
+					).length > 0
+				) {
+					query[0] = true;
+					continue;
+				}
+				if (
+					incident.assignedUsers !== undefined &&
+					incident.assignedUsers.filter(
+						(user: User) => user.name.toLowerCase().includes(query[1]) || user.team.toLowerCase().includes(query[1])
+					).length > 0
+				) {
+					query[0] = true;
+					continue;
+				}
+				if (incident.priority.toString(10).includes(query[1])) {
+					query[0] = true;
+					continue;
+				}
+			}
+			if (queries.filter((value) => value[0]).length === queries.length) {
+				return true;
+			}
+			return false;
+		}
+		return true;
 	}
 
 	private homeRender(navigation: any): React.JSX.Element {
