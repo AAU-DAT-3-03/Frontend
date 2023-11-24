@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, createRef, Ref } from 'react';
 import { IconButton, Menu, Searchbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import IncidentCard, { IncidentType } from '../../components/incidentCard/IncidentCard';
@@ -12,6 +12,7 @@ import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
 import { MockDataGenerator } from '../../utility/MockDataGenerator';
 import { User } from '../../components/AddUser';
+import { ForwardRefComponent } from 'react-native-paper/lib/typescript/utils/forwardRef';
 
 const Stack = createStackNavigator();
 
@@ -78,8 +79,10 @@ class Home extends Component<any, HomeState> {
 					}}
 				>
 					<Searchbar
-						style={{ flexShrink: 2 }}
+						style={{ flexShrink: 2, backgroundColor: getCurrentTheme().colors.surfaceVariant }}
 						onIconPress={() => this.setState({ filterVisible: true })}
+						mode={'bar'}
+						inputStyle={{ backgroundColor: getCurrentTheme().colors.surfaceVariant }}
 						icon={'filter'}
 						traileringIcon={'magnify'}
 						placeholder={'Search'}
