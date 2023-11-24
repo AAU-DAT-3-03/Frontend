@@ -33,7 +33,6 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		loading: true,
 		timer: 0
 	};
-
 	constructor(props: ScreenProps) {
 		super(props);
 		this.state.incidentId = props.route.params?.id;
@@ -67,31 +66,35 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		}, 60000);
 	}
 
-	private formatTimer(timer: number): string {
-		const hours = Math.floor(timer / 60);
-		const minutes = timer % 60;
-		return `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m`;
-	}
-
 	private AppBar(): React.JSX.Element {
+		const formattedDate = this.state.incidentData
+			? new Date(this.state.incidentData.startTime).toLocaleDateString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+			: null;
+
 		return (
 			<>
-				<Appbar.BackAction
-					onPress={() => {
-						if (Home.instance !== undefined) Home.instance.refresh();
-						if (History.instance !== undefined) History.instance.refresh();
-						this.props.navigation.goBack();
-					}}
-				/>
-				<View>
-					{this.state.loading ? null : (
-						<View style={IncidentScreenStylesheet.header}>
-							<Text variant={'titleLarge'}>
-								{this.state.incidentData?.company} #{this.state.incidentData?.caseNr}
-							</Text>
-							<Text>{this.formatTimer(this.state.timer)}</Text>
-						</View>
-					)}
+				<View style={IncidentScreenStylesheet.header}>
+					<View style={IncidentScreenStylesheet.insideHeader}>
+						<Appbar.BackAction
+							onPress={() => {
+								if (Home.instance !== undefined) Home.instance.refresh();
+								if (History.instance !== undefined) History.instance.refresh();
+								this.props.navigation.goBack();
+							}}
+						/>
+					</View>
+					<View style={IncidentScreenStylesheet.insideHeaderCenter}>
+						{this.state.loading ? null : (
+							<View>
+								<Text variant={'titleLarge'}>
+									{this.state.incidentData?.company} #{this.state.incidentData?.caseNr}
+								</Text>
+							</View>
+						)}
+					</View>
+					<View style={IncidentScreenStylesheet.insideHeader}>
+						<Text>{formattedDate}</Text>
+					</View>
 				</View>
 			</>
 		);
@@ -205,9 +208,16 @@ const IncidentScreenStylesheet = StyleSheet.create({
 		gap: 16
 	},
 	header: {
-		justifyContent: 'space-evenly',
+		justifyContent: 'space-between',
 		flexDirection: 'row',
 		width: '100%',
+		alignItems: 'center'
+	},
+	insideHeader: {
+		width: '25%'
+	},
+	insideHeaderCenter: {
+		width: '50%',
 		alignItems: 'center'
 	},
 	card: {
