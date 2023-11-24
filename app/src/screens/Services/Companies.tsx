@@ -15,7 +15,7 @@ const Stack = createStackNavigator();
 let stateList = ['none', 'acknowledged', 'error'];
 
 interface CompanyState {
-	query: any;
+	query: string;
 	loading: boolean;
 	companies: Company[];
 	state: number;
@@ -52,9 +52,8 @@ class Companies extends Component<any, CompanyState> {
 			<>
 				<Searchbar
 					onClearIconPress={() => this.setState({ query: '' })}
-					style={styles.bar}
+					style={{ backgroundColor: getCurrentTheme().colors.surfaceVariant }}
 					placeholder={'Search'}
-					mode={'bar'}
 					showDivider={false}
 					value={this.state.query}
 					onChange={(e) => this.setState({ query: e.nativeEvent.text })}
@@ -82,16 +81,16 @@ class Companies extends Component<any, CompanyState> {
 						<FlatList
 							showsVerticalScrollIndicator={false}
 							data={this.state.companies
-								.filter(
-									(value) =>
-										value.company.toLowerCase().includes(this.state.query.toLowerCase()) ||
-										value.state.includes(this.state.query.toLowerCase())
-								)
+								.filter((value) => this.filterCompanyList(value))
 								.sort((a, b) => {
-									if (a.state === 'acknowledged' && b.state === 'error') return 1;
-									if (a.state === 'error' && b.state === 'acknowledged') return -1;
-									if (a.state === 'none' && b.state !== 'none') return 1;
-									if (a.state !== 'none' && b.state === 'none') return -1;
+									let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
+									let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
+									let aNone = a.state === 'none' || a.state === 'resolved';
+									let bNone = b.state === 'none' || b.state === 'resolved';
+									if (a.state === 'error' && bLessThanError) return -1;
+									if (b.state === 'error' && aLessThanError) return 1;
+									if (a.state === 'acknowledged' && bNone) return -1;
+									if (b.state === 'acknowledged' && aNone) return 1;
 									return 0;
 								})}
 							renderItem={(info) => (
@@ -106,6 +105,30 @@ class Companies extends Component<any, CompanyState> {
 				)}
 			</ContentContainer>
 		);
+	}
+
+	private filterCompanyList(company: Company): boolean {
+		if (this.state.query !== '') {
+			let queries: [boolean, string][] = this.state.query
+				.toLowerCase()
+				.split(' ')
+				.map((value) => [false, value]);
+			for (let query of queries) {
+				if (company.company.toLowerCase().includes(query[1].toLowerCase())) {
+					query[0] = true;
+					continue;
+				}
+				if (company.state.includes(query[1].toLowerCase())) {
+					query[0] = true;
+					continue;
+				}
+			}
+			if (queries.filter((value) => value[0]).length === queries.length) {
+				return true;
+			}
+			return false;
+		}
+		return true;
 	}
 
 	render(): React.JSX.Element {

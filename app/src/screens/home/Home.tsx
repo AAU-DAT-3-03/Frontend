@@ -1,4 +1,4 @@
-import React, { Component, createRef, Ref } from 'react';
+import React, { Component } from 'react';
 import { IconButton, Menu, Searchbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import IncidentCard, { IncidentType } from '../../components/incidentCard/IncidentCard';
@@ -12,7 +12,7 @@ import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
 import { MockDataGenerator } from '../../utility/MockDataGenerator';
 import { User } from '../../components/AddUser';
-import { ForwardRefComponent } from 'react-native-paper/lib/typescript/utils/forwardRef';
+import History from '../history/History';
 
 const Stack = createStackNavigator();
 
@@ -46,6 +46,52 @@ interface HomeState {
 	filterVisible: boolean;
 	filter: Filter;
 	query: string;
+}
+
+export function filterIncidentList(this: Home | History, incident: IncidentType) {
+	if (this.state.query !== '') {
+		let queries: [boolean, string][] = this.state.query
+			.toLowerCase()
+			.split(' ')
+			.map((value) => [false, value]);
+		for (let query of queries) {
+			if (incident.company.toLowerCase().includes(query[1])) {
+				query[0] = true;
+				continue;
+			}
+			if (incident.caseNr.toString(10).includes(query[1])) {
+				query[0] = true;
+				continue;
+			}
+			if (
+				incident.calledUsers !== undefined &&
+				incident.calledUsers.filter(
+					(user: User) => user.name.toLowerCase().includes(query[1]) || user.team.toLowerCase().includes(query[1])
+				).length > 0
+			) {
+				query[0] = true;
+				continue;
+			}
+			if (
+				incident.assignedUsers !== undefined &&
+				incident.assignedUsers.filter(
+					(user: User) => user.name.toLowerCase().includes(query[1]) || user.team.toLowerCase().includes(query[1])
+				).length > 0
+			) {
+				query[0] = true;
+				continue;
+			}
+			if (incident.priority.toString(10).includes(query[1])) {
+				query[0] = true;
+				continue;
+			}
+		}
+		if (queries.filter((value) => value[0]).length === queries.length) {
+			return true;
+		}
+		return false;
+	}
+	return true;
 }
 
 class Home extends Component<any, HomeState> {
@@ -82,7 +128,6 @@ class Home extends Component<any, HomeState> {
 						style={{ flexShrink: 2, backgroundColor: getCurrentTheme().colors.surfaceVariant }}
 						onIconPress={() => this.setState({ filterVisible: true })}
 						mode={'bar'}
-						inputStyle={{ backgroundColor: getCurrentTheme().colors.surfaceVariant }}
 						icon={'filter'}
 						traileringIcon={'magnify'}
 						placeholder={'Search'}
@@ -192,7 +237,7 @@ class Home extends Component<any, HomeState> {
 						);
 					})
 					.filter((incident) => {
-						return this.filterIncidentList(incident);
+						return filterIncidentList.call(this, incident);
 					})
 					.map((value, index) => {
 						return (
@@ -214,52 +259,6 @@ class Home extends Component<any, HomeState> {
 					})}
 			</View>
 		);
-	}
-
-	private filterIncidentList(incident: IncidentType): boolean {
-		if (this.state.query !== '') {
-			let queries: [boolean, string][] = this.state.query
-				.toLowerCase()
-				.split(' ')
-				.map((value) => [false, value]);
-			for (let query of queries) {
-				if (incident.company.toLowerCase().includes(query[1])) {
-					query[0] = true;
-					continue;
-				}
-				if (incident.caseNr.toString(10).includes(query[1])) {
-					query[0] = true;
-					continue;
-				}
-				if (
-					incident.calledUsers !== undefined &&
-					incident.calledUsers.filter(
-						(user: User) => user.name.toLowerCase().includes(query[1]) || user.team.toLowerCase().includes(query[1])
-					).length > 0
-				) {
-					query[0] = true;
-					continue;
-				}
-				if (
-					incident.assignedUsers !== undefined &&
-					incident.assignedUsers.filter(
-						(user: User) => user.name.toLowerCase().includes(query[1]) || user.team.toLowerCase().includes(query[1])
-					).length > 0
-				) {
-					query[0] = true;
-					continue;
-				}
-				if (incident.priority.toString(10).includes(query[1])) {
-					query[0] = true;
-					continue;
-				}
-			}
-			if (queries.filter((value) => value[0]).length === queries.length) {
-				return true;
-			}
-			return false;
-		}
-		return true;
 	}
 
 	private homeRender(navigation: any): React.JSX.Element {

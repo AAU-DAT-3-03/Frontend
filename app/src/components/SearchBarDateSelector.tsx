@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Searchbar } from 'react-native-paper';
 import TimePicker, { PickerDate } from './TimePicker/TimePicker';
 import { compareDatesLessThanOrEqual, getToday } from './TimePicker/DateHelper';
+import { getCurrentTheme } from '../themes/ThemeManager';
 
 export type Period = {
 	start: PickerDate;
@@ -56,6 +57,7 @@ class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, Search
 			<>
 				<Searchbar
 					onIconPress={() => this.setState({ timePickerVisible: true })}
+					style={{ backgroundColor: getCurrentTheme().colors.surfaceVariant }}
 					icon={'calendar-edit'}
 					traileringIcon={'magnify'}
 					placeholder={this.props.placeholder ?? 'Search'}
