@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Card, IconButton, Modal, Portal, SegmentedButtons, Text, TouchableRipple } from 'react-native-paper';
+import { Button, Card, IconButton, Modal, Portal, SegmentedButtons, Text, TextInput } from 'react-native-paper';
 import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
 import ContainerCard from './ContainerCard';
@@ -22,41 +22,53 @@ interface PriorityConfirmProps {
 }
 
 class PriorityConfirm extends Component<PriorityConfirmProps> {
-	state = { assignVisible: false, resolvedActive: false };
+	state = { assignVisible: false, resolvedActive: false, disable: true, text: '' };
 
 	render(): React.JSX.Element {
-		let buttonStyle = {
-			...styles.resolveButton,
-			backgroundColor: getCurrentTheme().colors.onPrimary
-		};
 		return (
 			<Portal>
-				<Modal style={styles.container} visible={this.props.visible} onDismiss={() => this.props.onDismiss()}>
+				<Modal
+					style={styles.container}
+					visible={this.props.visible}
+					onDismiss={() => {
+						this.props.onDismiss();
+						this.setState({ text: '' });
+					}}
+				>
 					<View style={styles.view}>
 						<View style={styles.buttonview}>
 							<IconButton
 								icon="close-thick"
 								iconColor={getCurrentTheme().colors.onBackground}
 								size={20}
-								onPress={() => this.props.onDismiss()}
+								onPress={() => {
+									this.props.onDismiss();
+									this.setState({ text: '' });
+								}}
 							/>
 						</View>
 						<Text style={styles.fabtext}>Are you sure you want to change the Priority of this? </Text>
 
-						<View>
-							<TouchableRipple
-								style={{ borderRadius: buttonStyle.borderRadius }}
+						<TextInput
+							underlineColor={'#0000000'}
+							style={styles.input}
+							value={this.state.text}
+							onChange={(e) => this.setState({ text: e.nativeEvent.text })}
+							placeholder={'REQUIRED'}
+							numberOfLines={2}
+							dense={true}
+						/>
+						{this.state.text.trim().length < 10 ? (this.state.disable = true) : (this.state.disable = false)}
+						<View style={styles.textinput}>
+							<Button
 								onPress={() => {
 									this.props.onConfirm();
+									this.setState({ text: '' });
 								}}
-								borderless={true}
+								disabled={this.state.disable}
 							>
-								<View style={buttonStyle}>
-									<Text style={styles.text} variant={'bodyLarge'}>
-										Confirm
-									</Text>
-								</View>
-							</TouchableRipple>
+								Confirm
+							</Button>
 						</View>
 					</View>
 				</Modal>
@@ -155,6 +167,15 @@ const changeButtonStyle = (buttonValue: number, selectedValue: number | undefine
 };
 
 const styles = StyleSheet.create({
+	input: {
+		backgroundColor: getCurrentTheme().colors.secondaryContainer
+	},
+	textinput: {
+		justifyContent: 'center',
+		flexWrap: 'wrap',
+		alignItems: 'center',
+		flexDirection: 'row'
+	},
 	card: {
 		alignItems: 'center',
 		backgroundColor: getCurrentTheme().colors.elevation.level2,
@@ -173,24 +194,17 @@ const styles = StyleSheet.create({
 	container: {
 		alignItems: 'center',
 		justifyContent: 'center',
-		backgroundColor: undefined,
-		position: 'absolute'
+		backgroundColor: 'none'
 	},
 	fabtext: {
 		paddingBottom: 10,
 		textAlign: 'center'
 	},
 	view: {
-		paddingLeft: 16,
-		paddingRight: 16,
-		paddingBottom: 16,
-		alignItems: 'center',
-		justifyContent: 'space-evenly',
-		flexDirection: 'column',
 		borderRadius: 20,
 		backgroundColor: getCurrentTheme().colors.surface,
-		width: 230,
-		height: 153
+		width: '50%',
+		height: 'auto'
 	},
 	button: {
 		alignItems: 'center',

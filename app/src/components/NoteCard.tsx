@@ -40,6 +40,7 @@ class NoteCard extends Component<NoteCardProps, NoteCardState> {
 					<View style={noteCardStylesheet.header}>
 						{this.props.title === 'incident' ? <Text variant={'titleMedium'}>Incident Note</Text> : null}
 						{this.props.title === 'alarm' ? <Text variant={'titleMedium'}>Alarm Note</Text> : null}
+						{this.props.title === '' ? null : null}
 						{this.props.editable === true ? (
 							<TouchableRipple
 								style={noteCardStylesheet.icon}
