@@ -97,7 +97,7 @@ class History extends Component<any, HistoryState> {
 		return (
 			<View style={HistoryStyle().incidentContainer}>
 				{this.state.incidents
-					?.filter((incident) => filterIncidentList.call(this, incident))
+					?.filter((incident) => filterIncidentList(incident, this.state.query))
 					?.map((value, index) => {
 						return (
 							<IncidentCard

@@ -16,23 +16,6 @@ import History from '../history/History';
 
 const Stack = createStackNavigator();
 
-//export const compareIncident = (a: IncidentType, b: IncidentType): number => {
-//	if (a.state === 'acknowledged' && b.state === 'error') return 1;
-//	if (a.state === 'error' && b.state === 'acknowledged') return -1;
-//	if (a.priority > b.priority) return 1;
-//	if (a.priority < b.priority) return -1;
-//	if (a.priority === b.priority) {
-//		if (a.company.toLowerCase() < b.company.toLowerCase()) return -1;
-//		if (a.company.toLowerCase() > b.company.toLowerCase()) return 1;
-//	}
-//	if (a.company === b.company) {
-//		if (a.caseNr > b.caseNr) return 1;
-//		return -1;
-//	}
-//
-//	return 0;
-//};
-
 export const compareIncident = (a: IncidentType, b: IncidentType): number => {
 	if (a.priority > b.priority) return 1;
 	if (a.priority < b.priority) return -1;
@@ -68,9 +51,9 @@ interface HomeState {
 	query: string;
 }
 
-export function filterIncidentList(this: Home | History, incident: IncidentType) {
-	if (this.state.query !== '') {
-		let queries: [boolean, string][] = this.state.query
+export function filterIncidentList(incident: IncidentType, query: string): boolean {
+	if (query !== '') {
+		let queries: [boolean, string][] = query
 			.toLowerCase()
 			.split(' ')
 			.map((value) => [false, value]);
@@ -257,7 +240,7 @@ class Home extends Component<any, HomeState> {
 						);
 					})
 					.filter((incident) => {
-						return filterIncidentList.call(this, incident);
+						return filterIncidentList(incident, this.state.query);
 					})
 					.map((value, index) => {
 						return (
