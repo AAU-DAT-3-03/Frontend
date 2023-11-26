@@ -61,7 +61,7 @@ class NotificationHandler {
 	 * Asks for permissions from the user, if already given returns true
 	 * @param {Permission} permission - Which permission to ask for
 	 */
-	public async getPermissionsAndroid(permission: Permission): Promise<PermissionStatus> {
+	private async getPermissionsAndroid(permission: Permission): Promise<PermissionStatus> {
 		// Request permission from the user
 		return await PermissionsAndroid.request(permission);
 	}
@@ -69,7 +69,7 @@ class NotificationHandler {
 	/**
 	 * Get permission for push notifications from user
 	 */
-	public async getPushNotificationPermissionsAndroid(): Promise<Boolean> {
+	private async getPushNotificationPermissionsAndroid(): Promise<Boolean> {
 		// Check local storage, if it's been permanently denied
 		if (LocalStorage.getSettingsValue('notification_never_ask_again') === 'true') return false;
 
@@ -86,7 +86,7 @@ class NotificationHandler {
 	/**
 	 * Register device with Google Firebase, and send id to backend
 	 */
-	public async registerRemote(): Promise<unknown> {
+	private async registerRemote(): Promise<unknown> {
 		if (NotificationHandler.registered) return true;
 
 		// Register itself to Firebase
@@ -120,7 +120,7 @@ class NotificationHandler {
 	/**
 	 * Handles when a notification is received in the foreground
 	 */
-	public handleForegroundNotifications(): void {
+	private handleForegroundNotifications(): void {
 		Notifications.events().registerNotificationReceivedForeground(
 			(notification: Notification, completion: (response: NotificationCompletion) => void) => {
 				Logger.info('Notification Received - Foreground', notification.payload.toString());
@@ -133,7 +133,7 @@ class NotificationHandler {
 	/**
 	 * Handles when a notification is received in the background
 	 */
-	public handleBackgroundNotifications(): void {
+	private handleBackgroundNotifications(): void {
 		Notifications.events().registerNotificationReceivedBackground(
 			(notification: Notification, completion: (response: NotificationBackgroundFetchResult) => void) => {
 				Logger.info(notification.payload.toString());
@@ -145,10 +145,10 @@ class NotificationHandler {
 
 	/**
 	 * Returns a notification if the app was launched by a notification
-	 * @private
+	 * @public
 	 * @return {Notification | undefined}
 	 */
-	private async openedByNotification(): Promise<Notification | undefined> {
+	public async openedByNotification(): Promise<Notification | undefined> {
 		let notification: Notification | undefined = await Notifications.getInitialNotification();
 		return notification;
 	}

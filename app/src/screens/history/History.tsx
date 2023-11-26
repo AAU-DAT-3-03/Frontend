@@ -8,7 +8,7 @@ import { NavigationProp } from '@react-navigation/native';
 import { ScreenProps } from '../../../App';
 import SearchBarDateSelector, { Period } from '../../components/SearchBarDateSelector';
 import IncidentCard, { IncidentType } from '../../components/incidentCard/IncidentCard';
-import { compareIncident } from '../home/Home';
+import { compareIncident, filterIncidentList } from '../home/Home';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { compareDatesEqual, getToday } from '../../components/TimePicker/DateHelper';
@@ -18,7 +18,6 @@ const Stack = createStackNavigator();
 
 interface HistoryState {
 	incidents: IncidentType[] | undefined;
-	filteredIncidents: IncidentType[] | undefined;
 	loading: boolean;
 	query: string;
 	period: Period;
@@ -27,7 +26,6 @@ interface HistoryState {
 class History extends Component<any, HistoryState> {
 	state: HistoryState = {
 		incidents: undefined,
-		filteredIncidents: undefined,
 		loading: true,
 		query: '',
 		period: { start: getToday(-30), end: getToday() }
@@ -44,9 +42,6 @@ class History extends Component<any, HistoryState> {
 				<Appbar.Header style={{ backgroundColor: getCurrentTheme().colors.surface }}>
 					<SearchBarDateSelector
 						onChange={(query: string, period: Period) => {
-							if (this.state.query !== query.toLowerCase()) {
-								this.filterIncident(query);
-							}
 							if (
 								!compareDatesEqual(this.state.period.start, period.start) ||
 								!compareDatesEqual(this.state.period.end, period.end)
@@ -59,24 +54,6 @@ class History extends Component<any, HistoryState> {
 				</Appbar.Header>
 			</>
 		);
-	}
-
-	private filterIncident(query: string) {
-		if (this.state.incidents === undefined) return;
-		query = query.toLowerCase();
-		let incidents: IncidentType[] = this.state.incidents?.filter((value) => {
-			if (value.company.toLowerCase().includes(query)) return true;
-			if (
-				value.assignedUsers !== undefined &&
-				value.assignedUsers.filter((value) => {
-					return value.name.toLowerCase().includes(query);
-				}).length > 0
-			)
-				return true;
-			if (value.caseNr.toString().includes(query)) return true;
-			return value.priority.toString().includes(query);
-		});
-		this.setState({ filteredIncidents: incidents });
 	}
 
 	/**
@@ -104,10 +81,8 @@ class History extends Component<any, HistoryState> {
 	private async getIncidentData(period: Period): Promise<boolean> {
 		let promise: Promise<boolean> = new Promise((resolve): void => {
 			setTimeout(() => {
-				let filteredIncidents = this.sortIncidents(
-					MockDataGenerator.getAllIncidents().filter((value) => value.state === 'resolved')
-				);
-				this.setState({ loading: false, incidents: filteredIncidents, filteredIncidents: filteredIncidents });
+				let incidents = this.sortIncidents(MockDataGenerator.getAllIncidents().filter((value) => value.state === 'resolved'));
+				this.setState({ loading: false, incidents: incidents });
 				resolve(true);
 			}, 100);
 		});
@@ -121,24 +96,26 @@ class History extends Component<any, HistoryState> {
 	private incidentsRender(navigation: NavigationProp<any>): React.JSX.Element {
 		return (
 			<View style={HistoryStyle().incidentContainer}>
-				{this.state.filteredIncidents?.map((value, index) => {
-					return (
-						<IncidentCard
-							key={index}
-							incident={value}
-							onClickIncident={(id) =>
-								navigation.navigate('Incident', {
-									id: id
-								})
-							}
-							onClickAlarm={(id) =>
-								navigation.navigate('Alarm', {
-									id: id
-								})
-							}
-						/>
-					);
-				})}
+				{this.state.incidents
+					?.filter((incident) => filterIncidentList.call(this, incident))
+					?.map((value, index) => {
+						return (
+							<IncidentCard
+								key={index}
+								incident={value}
+								onClickIncident={(id) =>
+									navigation.navigate('Incident', {
+										id: id
+									})
+								}
+								onClickAlarm={(id) =>
+									navigation.navigate('Alarm', {
+										id: id
+									})
+								}
+							/>
+						);
+					})}
 			</View>
 		);
 	}
