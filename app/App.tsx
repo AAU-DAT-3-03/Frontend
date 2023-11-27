@@ -10,7 +10,6 @@ import Companies from './src/screens/Services/Companies';
 import LocalStorage from './src/utility/LocalStorage';
 import Login from './src/screens/login/Login';
 import { MockDataGenerator } from './src/utility/MockDataGenerator';
-import NotificationHandler from './src/utility/NotificationHandler';
 
 export let serverIp = '';
 
@@ -92,7 +91,7 @@ export class AppRender extends Component {
 							component={Companies}
 							options={{
 								headerShown: false,
-								tabBarLabel: 'Overview',
+								tabBarLabel: 'Companies',
 								tabBarIcon: ({ color, size }) => {
 									return <Icon source="view-list" size={size} color={color} />;
 								}
@@ -103,7 +102,7 @@ export class AppRender extends Component {
 							component={Home}
 							options={{
 								headerShown: false,
-								tabBarLabel: 'Home',
+								tabBarLabel: 'Incidents',
 								tabBarIcon: ({ color, size }) => {
 									return <Icon source="home" size={size} color={color} />;
 								}
