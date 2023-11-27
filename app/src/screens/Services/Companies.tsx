@@ -9,7 +9,8 @@ import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from 'react
 import { ScreenProps } from '../../../App';
 import { Company, MockDataGenerator } from '../../utility/MockDataGenerator';
 import { getCurrentTheme } from '../../themes/ThemeManager';
-import ContainerCard from '../../components/ContainerCard';
+import Incident from '../incident/Incident';
+import Alarm from '../alarm/Alarm';
 
 const Stack = createStackNavigator();
 
@@ -85,18 +86,18 @@ class Companies extends Component<any, CompanyState> {
 								style={{ padding: 8, height: '100%' }}
 								showsVerticalScrollIndicator={false}
 								data={this.state.companies
-								.filter((value) => this.filterCompanyList(value))
-								.sort((a, b) => {
-									let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
-									let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
-									let aNone = a.state === 'none' || a.state === 'resolved';
-									let bNone = b.state === 'none' || b.state === 'resolved';
-									if (a.state === 'error' && bLessThanError) return -1;
-									if (b.state === 'error' && aLessThanError) return 1;
-									if (a.state === 'acknowledged' && bNone) return -1;
-									if (b.state === 'acknowledged' && aNone) return 1;
-									return 0;
-								})}
+									.filter((value) => this.filterCompanyList(value))
+									.sort((a, b) => {
+										let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
+										let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
+										let aNone = a.state === 'none' || a.state === 'resolved';
+										let bNone = b.state === 'none' || b.state === 'resolved';
+										if (a.state === 'error' && bLessThanError) return -1;
+										if (b.state === 'error' && aLessThanError) return 1;
+										if (a.state === 'acknowledged' && bNone) return -1;
+										if (b.state === 'acknowledged' && aNone) return 1;
+										return 0;
+									})}
 								renderItem={(info) => (
 									<CompanyCard
 										company={info.item.company}
@@ -125,13 +126,9 @@ class Companies extends Component<any, CompanyState> {
 				}
 				if (company.state.includes(query[1].toLowerCase())) {
 					query[0] = true;
-					continue;
 				}
 			}
-			if (queries.filter((value) => value[0]).length === queries.length) {
-				return true;
-			}
-			return false;
+			return queries.filter((value) => value[0]).length === queries.length;
 		}
 		return true;
 	}
@@ -144,6 +141,12 @@ class Companies extends Component<any, CompanyState> {
 				</Stack.Screen>
 				<Stack.Screen options={{ headerShown: false }} name="ServiceList">
 					{(props: ScreenProps) => <CompanyServiceList {...props} />}
+				</Stack.Screen>
+				<Stack.Screen options={{ headerShown: false }} name="IncidentCompanies">
+					{(props: ScreenProps) => <Incident {...props} />}
+				</Stack.Screen>
+				<Stack.Screen options={{ headerShown: false }} name="AlarmCompanies">
+					{(props: ScreenProps) => <Alarm {...props} />}
 				</Stack.Screen>
 			</Stack.Navigator>
 		);

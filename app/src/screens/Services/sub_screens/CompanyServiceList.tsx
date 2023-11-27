@@ -104,12 +104,12 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 							key={index}
 							incident={value}
 							onClickIncident={(id) =>
-								navigation.navigate('Incident', {
+								navigation.navigate('IncidentCompanies', {
 									id: id
 								})
 							}
 							onClickAlarm={(id) =>
-								navigation.navigate('Alarm', {
+								navigation.navigate('AlarmCompanies', {
 									id: id
 								})
 							}
