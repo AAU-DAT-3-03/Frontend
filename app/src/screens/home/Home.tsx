@@ -10,26 +10,11 @@ import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
-import { MockDataGenerator, users } from '../../utility/MockDataGenerator';
+import { MockDataGenerator } from '../../utility/MockDataGenerator';
+import { User } from '../../components/AddUser';
+import History from '../history/History';
 
 const Stack = createStackNavigator();
-
-//export const compareIncident = (a: IncidentType, b: IncidentType): number => {
-//	if (a.state === 'acknowledged' && b.state === 'error') return 1;
-//	if (a.state === 'error' && b.state === 'acknowledged') return -1;
-//	if (a.priority > b.priority) return 1;
-//	if (a.priority < b.priority) return -1;
-//	if (a.priority === b.priority) {
-//		if (a.company.toLowerCase() < b.company.toLowerCase()) return -1;
-//		if (a.company.toLowerCase() > b.company.toLowerCase()) return 1;
-//	}
-//	if (a.company === b.company) {
-//		if (a.caseNr > b.caseNr) return 1;
-//		return -1;
-//	}
-//
-//	return 0;
-//};
 
 export const compareIncident = (a: IncidentType, b: IncidentType): number => {
 	if (a.priority > b.priority) return 1;
@@ -66,6 +51,52 @@ interface HomeState {
 	query: string;
 }
 
+export function filterIncidentList(incident: IncidentType, query: string): boolean {
+	if (query !== '') {
+		let queries: [boolean, string][] = query
+			.toLowerCase()
+			.split(' ')
+			.map((value) => [false, value]);
+		for (let query of queries) {
+			if (incident.company.toLowerCase().includes(query[1])) {
+				query[0] = true;
+				continue;
+			}
+			if (incident.caseNr.toString(10).includes(query[1])) {
+				query[0] = true;
+				continue;
+			}
+			if (
+				incident.calledUsers !== undefined &&
+				incident.calledUsers.filter(
+					(user: User) => user.name.toLowerCase().includes(query[1]) || user.team.toLowerCase().includes(query[1])
+				).length > 0
+			) {
+				query[0] = true;
+				continue;
+			}
+			if (
+				incident.assignedUsers !== undefined &&
+				incident.assignedUsers.filter(
+					(user: User) => user.name.toLowerCase().includes(query[1]) || user.team.toLowerCase().includes(query[1])
+				).length > 0
+			) {
+				query[0] = true;
+				continue;
+			}
+			if (incident.priority.toString(10).includes(query[1])) {
+				query[0] = true;
+				continue;
+			}
+		}
+		if (queries.filter((value) => value[0]).length === queries.length) {
+			return true;
+		}
+		return false;
+	}
+	return true;
+}
+
 class Home extends Component<any, HomeState> {
 	static instance: Home;
 
@@ -97,8 +128,9 @@ class Home extends Component<any, HomeState> {
 					}}
 				>
 					<Searchbar
-						style={{ flexShrink: 2 }}
+						style={{ flexShrink: 2, backgroundColor: getCurrentTheme().colors.surfaceVariant }}
 						onIconPress={() => this.setState({ filterVisible: true })}
+						mode={'bar'}
 						icon={'filter'}
 						traileringIcon={'magnify'}
 						placeholder={'Search'}
@@ -208,28 +240,7 @@ class Home extends Component<any, HomeState> {
 						);
 					})
 					.filter((incident) => {
-						if (this.state.query !== '') {
-							let query: string = this.state.query.toLowerCase();
-							if (incident.company.toLowerCase().includes(query)) return true;
-							if (incident.caseNr.toString(10).includes(query)) return true;
-							if (
-								incident.calledUsers !== undefined &&
-								incident.calledUsers.filter(
-									(user) => user.name.toLowerCase().includes(query) || user.team.toLowerCase().includes(query)
-								).length > 0
-							)
-								return true;
-							if (
-								incident.assignedUsers !== undefined &&
-								incident.assignedUsers.filter(
-									(user) => user.name.toLowerCase().includes(query) || user.team.toLowerCase().includes(query)
-								).length > 0
-							)
-								return true;
-							if (incident.priority.toString(10).includes(query)) return true;
-							return false;
-						}
-						return true;
+						return filterIncidentList(incident, this.state.query);
 					})
 					.map((value, index) => {
 						return (

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
-import { StyleSheet, View } from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import StatusIcon, { IncidentState } from '../StatusIcon';
 import UserAvatar from './UserAvatar';
 import { getCurrentTheme } from '../../themes/ThemeManager';
@@ -99,9 +99,10 @@ export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 		usersVisible: false
 	};
 	render(): React.JSX.Element {
-		let outerContainer = {};
+		let outerContainer: StyleProp<ViewStyle> = { flexGrow: 2 };
 		if (this.props.onClickButton !== undefined) {
 			outerContainer = {
+				...outerContainer,
 				borderBottomWidth: this.props.collapsed ? 0 : 0.5,
 				borderBottomColor: getCurrentTheme().colors.onSurface,
 				paddingBottom: 16,

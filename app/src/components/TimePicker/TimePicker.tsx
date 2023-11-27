@@ -507,14 +507,15 @@ const timePickerStyleSheet = () => {
 		dateStyle: {
 			padding: 10,
 			borderRadius: 100,
-			borderColor: getCurrentTheme().colors?.surface,
+			borderColor: getCurrentTheme().colors?.onSurface,
 			borderWidth: 2
 		},
 		dateActiveStyle: {
 			padding: 10,
 			borderRadius: 100,
 			borderColor: getCurrentTheme().colors?.onSurface,
-			borderWidth: 2
+			borderWidth: 2,
+			backgroundColor: getCurrentTheme().colors.tertiary
 		}
 	});
 };
