@@ -9,6 +9,7 @@ import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from 'react
 import { ScreenProps } from '../../../App';
 import { Company, MockDataGenerator } from '../../utility/MockDataGenerator';
 import { getCurrentTheme } from '../../themes/ThemeManager';
+import ContainerCard from '../../components/ContainerCard';
 
 const Stack = createStackNavigator();
 
@@ -78,9 +79,12 @@ class Companies extends Component<any, CompanyState> {
 					</View>
 				) : (
 					<ScrollView contentContainerStyle={styles.contentContainer} style={styles.view} horizontal={true}>
-						<FlatList
-							showsVerticalScrollIndicator={false}
-							data={this.state.companies
+						<View style={{ width: '100%' }}>
+							<FlatList
+								ListFooterComponent={<View style={{ padding: 8 }} />}
+								style={{ padding: 8, height: '100%' }}
+								showsVerticalScrollIndicator={false}
+								data={this.state.companies
 								.filter((value) => this.filterCompanyList(value))
 								.sort((a, b) => {
 									let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
@@ -93,14 +97,15 @@ class Companies extends Component<any, CompanyState> {
 									if (b.state === 'acknowledged' && aNone) return 1;
 									return 0;
 								})}
-							renderItem={(info) => (
-								<CompanyCard
-									company={info.item.company}
-									state={stateList.indexOf(info.item.state)}
-									onPress={() => this.onPress(info.item.company, info.item.id ?? -1, navigation)}
-								/>
-							)}
-						/>
+								renderItem={(info) => (
+									<CompanyCard
+										company={info.item.company}
+										state={stateList.indexOf(info.item.state)}
+										onPress={() => this.onPress(info.item.company, info.item.id ?? -1, navigation)}
+									/>
+								)}
+							/>
+						</View>
 					</ScrollView>
 				)}
 			</ContentContainer>
@@ -148,15 +153,13 @@ class Companies extends Component<any, CompanyState> {
 const styles = StyleSheet.create({
 	view: {
 		flexDirection: 'row',
-		width: '100%',
-		padding: 16
+		width: '100%'
 	},
 	contentContainer: {
 		flex: 1,
 		width: '100%'
 	},
 	bar: {
-		margin: 8,
 		alignItems: 'center'
 	},
 	activity: {
