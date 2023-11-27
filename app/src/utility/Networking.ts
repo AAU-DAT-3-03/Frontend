@@ -93,7 +93,7 @@ class Networking {
 		};
 
 		if (options?.sendAuthKey === undefined) {
-			this.setHeader('Cookie', LocalStorage.getSettingsValue('authKey'));
+			this.setHeader('Cookie', 'authKey=' + LocalStorage.getSettingsValue('authKey'));
 		}
 
 		if (options?.headers) {
