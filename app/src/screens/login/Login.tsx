@@ -7,6 +7,7 @@ import LocalStorage from '../../utility/LocalStorage';
 import Networking from '../../utility/Networking';
 import { serverIp } from '../../../App';
 import NeticLogo from '../../assets/NeticLogo';
+import DataHandler from '../../utility/DataHandler';
 
 interface LoginProps {
 	onLoggedIn: () => void;
@@ -45,8 +46,14 @@ class Login extends Component<LoginProps> {
 			this.setState({ error: true });
 			return;
 		}
-		LocalStorage.setSettingsValue('authKey', 'test');
-		this.props.onLoggedIn();
+
+		DataHandler.login(this.state.email, this.state.password).then((value: boolean) => {
+			if (value === true) {
+				this.props.onLoggedIn();
+			} else {
+				this.setState({ error: true });
+			}
+		});
 	}
 
 	render(): React.JSX.Element {
@@ -62,6 +69,7 @@ class Login extends Component<LoginProps> {
 						</Text>
 						{this.state.error ? <Text style={{ color: Colors.error, alignSelf: 'center' }}>Credentials not valid</Text> : null}
 						<TextInput
+							defaultValue={this.state.email}
 							placeholder={'Email'}
 							style={{
 								backgroundColor: getCurrentTheme().colors.background,
@@ -76,6 +84,7 @@ class Login extends Component<LoginProps> {
 							textContentType={'emailAddress'}
 						/>
 						<TextInput
+							defaultValue={this.state.password}
 							placeholder={'Password'}
 							style={{
 								backgroundColor: getCurrentTheme().colors.background,
