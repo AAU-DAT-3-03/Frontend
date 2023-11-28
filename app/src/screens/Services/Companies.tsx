@@ -14,7 +14,7 @@ import Alarm from '../alarm/Alarm';
 
 const Stack = createStackNavigator();
 
-let stateList = ['none', 'acknowledged', 'error'];
+let stateList = ['none', 'acknowledged', 'error', 'errorAcknowledged'];
 
 interface CompanyState {
 	query: string;
@@ -47,6 +47,14 @@ class Companies extends Component<any, CompanyState> {
 				companies: value
 			})
 		);
+		this.props.navigation.addListener('focus', () => {
+			getCompanyData().then((value) =>
+				this.setState({
+					loading: false,
+					companies: value
+				})
+			);
+		});
 	}
 
 	private AppBar(): React.JSX.Element {
@@ -88,6 +96,8 @@ class Companies extends Component<any, CompanyState> {
 								data={this.state.companies
 									.filter((value) => this.filterCompanyList(value))
 									.sort((a, b) => {
+										if (a.priority > b.priority) return 1;
+										if (a.priority < b.priority) return -1;
 										let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
 										let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
 										let aNone = a.state === 'none' || a.state === 'resolved';
@@ -98,13 +108,22 @@ class Companies extends Component<any, CompanyState> {
 										if (b.state === 'acknowledged' && aNone) return 1;
 										return 0;
 									})}
-								renderItem={(info) => (
-									<CompanyCard
-										company={info.item.company}
-										state={stateList.indexOf(info.item.state)}
-										onPress={() => this.onPress(info.item.company, info.item.id ?? -1, navigation)}
-									/>
-								)}
+								renderItem={(info) => {
+									let state = 0;
+									if (info.item.secondaryState === 'acknowledged') {
+										state = 3;
+									} else {
+										state = stateList.indexOf(info.item.state);
+									}
+									return (
+										<CompanyCard
+											company={info.item.company}
+											state={state}
+											onPress={() => this.onPress(info.item.company, info.item.id ?? -1, navigation)}
+											priority={info.item.priority}
+										/>
+									);
+								}}
 							/>
 						</View>
 					</ScrollView>

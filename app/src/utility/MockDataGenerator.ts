@@ -31,6 +31,8 @@ export type Company = {
 	company: string;
 	id: number;
 	state: string;
+	secondaryState: string;
+	priority: number;
 };
 
 const companies: string[] = ['Jysk', 'Min Læge', 'Fut', 'Spar Nord', 'TrendHim', 'Norli', 'Opendo'];
@@ -371,22 +373,37 @@ export class MockDataGenerator {
 		let companiesData: Company[] = [];
 		for (let i = 0; i < companies.length; i++) {
 			let state: IncidentState = 'none';
+			let secondaryState: IncidentState = 'none';
+			let priority: number = 5;
+			let stateFound: boolean = false;
 			for (let incidentsKey in MockDataGenerator.incidents) {
 				let incident: IncidentType = MockDataGenerator.incidents[incidentsKey];
 				if (incident.companyId !== i) continue;
+				if (priority > incident.priority) priority = incident.priority;
+
+				if (stateFound) continue;
+
 				let currentState: IncidentState = incident.state;
 				if (currentState === 'none') continue;
-				if (currentState === 'error') {
-					state = 'error';
-					break;
+				if (currentState === 'acknowledged' && state === 'error') {
+					secondaryState = 'acknowledged';
+					stateFound = true;
+					continue;
 				}
+				if (currentState === 'error' || state === 'error') {
+					state = 'error';
+					continue;
+				}
+
 				if (currentState === 'acknowledged') state = 'acknowledged';
 				if (currentState === 'resolved' && state !== 'acknowledged') state = 'resolved';
 			}
 			companiesData.push({
 				company: companies[i],
 				id: i,
-				state: state
+				state: state,
+				secondaryState: secondaryState,
+				priority: priority === 5 ? -1 : priority
 			});
 		}
 		return companiesData;
