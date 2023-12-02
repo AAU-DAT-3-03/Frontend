@@ -168,19 +168,29 @@ class Home extends Component<any, HomeState> {
 						onDismiss={() => this.setState({ filterVisible: false })}
 					>
 						<Menu.Item
-							title={'None'}
-							style={{ backgroundColor: this.state.filter === Filter.NONE ? getCurrentTheme().colors.primary : undefined }}
+							title={'All incidents'}
+							leadingIcon={'all-inclusive'}
+							style={{
+								backgroundColor: this.state.filter === Filter.NONE ? getCurrentTheme().colors.primary : undefined,
+								width: '100%'
+							}}
 							onPress={() => this.setState({ filter: Filter.NONE, filterVisible: false })}
 						/>
 						<Menu.Item
-							title={'Called'}
-							style={{ backgroundColor: this.state.filter === Filter.CALLED ? getCurrentTheme().colors.primary : undefined }}
+							title={'My calls'}
+							leadingIcon={'phone'}
+							style={{
+								backgroundColor: this.state.filter === Filter.CALLED ? getCurrentTheme().colors.primary : undefined,
+								width: '100%'
+							}}
 							onPress={() => this.setState({ filter: Filter.CALLED, filterVisible: false })}
 						/>
 						<Menu.Item
-							title={'Assigned'}
+							title={'Assigned incidents'}
+							leadingIcon={'account-check'}
 							style={{
-								backgroundColor: this.state.filter === Filter.ASSIGNED ? getCurrentTheme().colors.primary : undefined
+								backgroundColor: this.state.filter === Filter.ASSIGNED ? getCurrentTheme().colors.primary : undefined,
+								width: '100%'
 							}}
 							onPress={() => this.setState({ filter: Filter.ASSIGNED, filterVisible: false })}
 						/>
