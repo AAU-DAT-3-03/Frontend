@@ -99,8 +99,8 @@ export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 									}
 								/>
 							</View>
-							<View>
-								<Text variant={'titleMedium'}>
+							<View style={{ flexShrink: 2 }}>
+								<Text variant={'titleMedium'} adjustsFontSizeToFit={true} allowFontScaling={true} style={{ width: '100%' }}>
 									{this.props.incident.companyName} #{this.props.incident.caseNumber}
 								</Text>
 								<Text style={{ color: PriorityColor(this.props.incident.priority) }} variant={'bodyMedium'}>
@@ -108,7 +108,7 @@ export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 								</Text>
 							</View>
 						</View>
-						<View style={incidentCardStyle().headerSection}>
+						<View style={{ ...incidentCardStyle().headerSection, flexShrink: 0 }}>
 							<View>
 								{this.props.incident.users?.length === 0 ? null : (
 									<UserAvatar
@@ -116,9 +116,8 @@ export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 											this.setState({ usersVisible: true });
 										}}
 										cutName={true}
-										name={`${this.props.incident.users[0].name}${
-											this.props.incident.users.length > 1 ? ` +${this.props.incident.users.length - 1}` : ''
-										}`}
+										extraUsers={this.props.incident.users.length - 1}
+										name={this.props.incident.users[0].name}
 									/>
 								)}
 							</View>
@@ -231,6 +230,8 @@ const incidentCardStyle = () => {
 			borderRadius: 16
 		},
 		headerSection: {
+			flexShrink: 2,
+			overflow: 'hidden',
 			paddingLeft: 4,
 			flexDirection: 'row',
 			alignItems: 'center'
