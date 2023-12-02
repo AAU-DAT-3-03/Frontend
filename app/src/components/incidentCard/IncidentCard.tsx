@@ -53,7 +53,7 @@ interface UserListProps {
 	onDismiss: () => void;
 }
 
-const PriorityColor = (priority: number) => {
+export const PriorityColor = (priority: number) => {
 	switch (priority) {
 		case 1:
 			return '#B80000';
