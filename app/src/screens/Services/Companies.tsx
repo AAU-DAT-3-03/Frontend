@@ -38,23 +38,21 @@ class Companies extends Component<any, CompanyState> {
 
 	private async getCompanyData(): Promise<void> {
 		let data: CompanyData[] = await DataHandler.getCompanies();
-		data = data
-			.filter((value) => this.filterCompanyList(value))
-			.sort((a, b) => {
-				if (a.priority === -1) return 1;
-				if (b.priority === -1) return -1;
-				if (a.priority > b.priority) return 1;
-				if (a.priority < b.priority) return -1;
-				let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
-				let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
-				let aNone = a.state === 'none' || a.state === 'resolved';
-				let bNone = b.state === 'none' || b.state === 'resolved';
-				if (a.state === 'error' && bLessThanError) return -1;
-				if (b.state === 'error' && aLessThanError) return 1;
-				if (a.state === 'acknowledged' && bNone) return -1;
-				if (b.state === 'acknowledged' && aNone) return 1;
-				return 0;
-			});
+		data = data.sort((a, b) => {
+			if (a.priority === -1) return 1;
+			if (b.priority === -1) return -1;
+			if (a.priority > b.priority) return 1;
+			if (a.priority < b.priority) return -1;
+			let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
+			let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
+			let aNone = a.state === 'none' || a.state === 'resolved';
+			let bNone = b.state === 'none' || b.state === 'resolved';
+			if (a.state === 'error' && bLessThanError) return -1;
+			if (b.state === 'error' && aLessThanError) return 1;
+			if (a.state === 'acknowledged' && bNone) return -1;
+			if (b.state === 'acknowledged' && aNone) return 1;
+			return 0;
+		});
 		this.setState({
 			loading: false,
 			companies: data
@@ -101,7 +99,7 @@ class Companies extends Component<any, CompanyState> {
 								ListFooterComponent={<View style={{ padding: 8 }} />}
 								style={{ height: '100%', padding: 16 }}
 								showsVerticalScrollIndicator={false}
-								data={this.state.companies}
+								data={this.state.companies.filter((value) => this.filterCompanyList(value))}
 								renderItem={(info) => (
 									<CompanyCard
 										priority={info.item.priority}
