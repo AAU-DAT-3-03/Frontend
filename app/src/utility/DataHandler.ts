@@ -8,17 +8,23 @@ import {
 	LoginBody,
 	MergeIncident,
 	ServerResponse,
+	ServicesResponse,
 	UpdateIncident,
 	UserResponse
 } from './DataHandlerTypes';
 import LocalStorage from './LocalStorage';
 import { IncidentState } from '../components/StatusIcon';
 import Logger from './Logger';
+import companies from '../screens/Services/Companies';
+
+const longDataCacheTime: number = 300000;
+const shortDataCacheTime: number = 300000;
 
 class DataHandler {
 	private static ip: string = 'http://10.92.0.231/';
 	private static users: [number, Map<string, UserResponse>] = [0, new Map<string, UserResponse>()];
 	private static companies: [number, Map<string, CompanyData>] = [0, new Map<string, CompanyData>()];
+	private static services: [number, Map<string, ServicesResponse>] = [0, new Map<string, ServicesResponse>()];
 	private static activeIncidents: [number, Map<string, IncidentData>] = [0, new Map<string, IncidentData>()];
 	private static resolvedIncidents: [number, Map<string, IncidentData>] = [0, new Map<string, IncidentData>()];
 	private static logger: Logger = new Logger('DataHandler');
@@ -45,14 +51,29 @@ class DataHandler {
 	private static async createIncidentMap(value: [Object, Response]): Promise<Map<string, IncidentData>> {
 		let response: ServerResponse<IncidentResponse[]> = JSON.parse(JSON.stringify(value[0]));
 		let incidentMap: Map<string, IncidentData> = new Map<string, IncidentData>();
-		let companyData: CompanyResponse[] = await this.getCompanyData();
 		let companyMap: Map<string, string> = new Map<string, string>();
-		companyData.forEach((value: CompanyResponse) => {
-			companyMap.set(value.id, value.name);
+		let servicesMap: Map<string, string> = new Map<string, string>();
+
+		let companyDataPromise: Promise<void> = new Promise(async (resolve) => {
+			let companyData: CompanyResponse[] = await this.getCompanyData();
+			companyData.forEach((value: CompanyResponse) => {
+				companyMap.set(value.id, value.name);
+			});
+			resolve();
 		});
+		let servicesDataPromise: Promise<void> = new Promise(async (resolve) => {
+			let servicesData: ServicesResponse[] = await this.getServicesData();
+			servicesData.forEach((value: ServicesResponse) => {
+				servicesMap.set(value.id, value.companyId);
+			});
+			resolve();
+		});
+		await Promise.all([servicesDataPromise, companyDataPromise]);
 
 		response.msg.forEach((value: IncidentResponse): void => {
-			incidentMap.set(value.id, { ...value, companyName: companyMap.get(value.companyId) ?? '' });
+			let companyId: string = servicesMap.get(value.alarms.at(0)?.serviceId ?? '') ?? '';
+			console.log(companyId, value.alarms.at(0)?.serviceId);
+			incidentMap.set(value.id, { ...value, companyId: companyId, companyName: companyMap.get(companyId) ?? '' });
 		});
 		return incidentMap;
 	}
@@ -74,7 +95,7 @@ class DataHandler {
 	}
 
 	public static async getResolvedIncidentsData(start: number, end: number): Promise<IncidentData[]> {
-		if (Date.now() - this.resolvedIncidents[0] < 5000 && this.resolvedIncidents[1].size > 0)
+		if (Date.now() - this.resolvedIncidents[0] < shortDataCacheTime && this.resolvedIncidents[1].size > 0)
 			return Array.from(this.resolvedIncidents[1].values());
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
@@ -90,7 +111,7 @@ class DataHandler {
 	}
 
 	public static async getIncidentData(id: string): Promise<IncidentData | undefined> {
-		if (Date.now() - this.activeIncidents[0] < 5000 && this.activeIncidents[1].size > 0) {
+		if (Date.now() - this.activeIncidents[0] < shortDataCacheTime && this.activeIncidents[1].size > 0) {
 			let data: IncidentData | undefined = this.activeIncidents[1].get(id);
 			if (data !== undefined) return data;
 		}
@@ -207,7 +228,7 @@ class DataHandler {
 	}
 
 	public static async getUsers(): Promise<UserResponse[]> {
-		if (Date.now() - this.users[0] < 300000 && this.users[1].size > 0) return Array.from(this.users[1].values());
+		if (Date.now() - this.users[0] < longDataCacheTime && this.users[1].size > 0) return Array.from(this.users[1].values());
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
 			networkHandler.get(DataHandler.ip + 'users?id=*', undefined, (value) => {
@@ -227,6 +248,32 @@ class DataHandler {
 		});
 	}
 
+	private static async getServicesMap(): Promise<Map<string, ServicesResponse>> {
+		await this.getServicesData();
+		return this.services[1];
+	}
+
+	private static async getServicesData(): Promise<ServicesResponse[]> {
+		if (Date.now() - this.services[0] < longDataCacheTime && this.services[1].size > 0) return Array.from(this.services[1].values());
+		let networkHandler: Networking = new Networking();
+		return new Promise((resolve) => {
+			networkHandler.get(DataHandler.ip + 'services?id=*', undefined, (value) => {
+				if (value) {
+					this.logger.info('Loaded user data');
+					let services: ServerResponse<ServicesResponse[]> = JSON.parse(JSON.stringify(value[0]));
+					let servicesMap: Map<string, ServicesResponse> = new Map<string, ServicesResponse>();
+					services.msg.forEach((value) => {
+						servicesMap.set(value.id, value);
+					});
+					this.services = [Date.now(), servicesMap];
+					resolve(services.msg);
+					return;
+				}
+				resolve([]);
+			});
+		});
+	}
+
 	public static async getCompaniesMap(): Promise<Map<string, CompanyData>> {
 		await this.getCompanies();
 		return this.companies[1];
@@ -238,7 +285,7 @@ class DataHandler {
 	}
 
 	private static async getCompanyData(): Promise<CompanyResponse[]> {
-		if (Date.now() - this.companies[0] < 300000 && this.companies[1].size > 0) return Array.from(this.companies[1].values());
+		if (Date.now() - this.companies[0] < longDataCacheTime && this.companies[1].size > 0) return Array.from(this.companies[1].values());
 
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
@@ -253,7 +300,7 @@ class DataHandler {
 	}
 
 	public static async getCompanies(): Promise<CompanyData[]> {
-		if (Date.now() - this.companies[0] < 300000 && this.companies[1].size > 0) return Array.from(this.companies[1].values());
+		if (Date.now() - this.companies[0] < longDataCacheTime && this.companies[1].size > 0) return Array.from(this.companies[1].values());
 
 		let companies: CompanyResponse[] = await this.getCompanyData();
 		if (companies.length === 0) return [];

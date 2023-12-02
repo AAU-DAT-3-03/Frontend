@@ -20,7 +20,7 @@ interface UserListProps {
 	onDismiss: () => void;
 }
 
-const PriorityColor = (priority: number): string => {
+export const PriorityColor = (priority: number): string => {
 	switch (priority) {
 		case 1:
 			return '#B80000';
@@ -101,7 +101,7 @@ export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 							</View>
 							<View>
 								<Text variant={'titleMedium'}>
-									{this.props.incident.companyId} #{this.props.incident.caseNumber}
+									{this.props.incident.companyName} #{this.props.incident.caseNumber}
 								</Text>
 								<Text style={{ color: PriorityColor(this.props.incident.priority) }} variant={'bodyMedium'}>
 									Priority {this.props.incident.priority}

@@ -87,3 +87,9 @@ export interface MergeIncident {
 	first: string;
 	second: string;
 }
+
+export interface ServicesResponse {
+	id: string;
+	name: string;
+	companyId: string;
+}
