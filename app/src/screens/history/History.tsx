@@ -69,9 +69,9 @@ class History extends Component<any, HistoryState> {
 	private async getIncidentData(period: Period): Promise<void> {
 		let start: number = new Date(period.start[2], period.start[1] - 1, period.start[0]).getTime();
 		let end: number = new Date(period.end[2], period.end[1] - 1, period.end[0]).getTime();
-		this.logger.info(`Getting incident date for period: ${start}-${end}`);
+		this.logger.info(`Getting incident date for period: ${start}-${end} - ${new Date(start)}-${new Date(end)}`);
 		let incidentData: IncidentData[] = await DataHandler.getResolvedIncidentsData(start, end);
-		this.logger.info('Received incident data, rendering');
+		this.logger.info('Rendering Incidents');
 		this.setState({ incidents: incidentData, loading: false });
 	}
 
@@ -84,7 +84,6 @@ class History extends Component<any, HistoryState> {
 	}
 
 	private incidentsRender(navigation: NavigationProp<any>): React.JSX.Element {
-		this.logger.info(this.state.incidents?.pop()?.id);
 		return (
 			<View style={HistoryStyle().incidentContainer}>
 				{this.state.incidents

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Searchbar } from 'react-native-paper';
+import { Appbar, Searchbar } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import CompanyCard from '../../components/CompanyCard';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -55,7 +55,7 @@ class Companies extends Component<any, CompanyState> {
 
 	private AppBar(): React.JSX.Element {
 		return (
-			<>
+			<Appbar.Header style={{ backgroundColor: getCurrentTheme().colors.surface }}>
 				<Searchbar
 					onClearIconPress={() => this.setState({ query: '' })}
 					style={{ backgroundColor: getCurrentTheme().colors.surfaceVariant }}
@@ -64,7 +64,7 @@ class Companies extends Component<any, CompanyState> {
 					value={this.state.query}
 					onChange={(e) => this.setState({ query: e.nativeEvent.text })}
 				/>
-			</>
+			</Appbar.Header>
 		);
 	}
 
@@ -87,7 +87,7 @@ class Companies extends Component<any, CompanyState> {
 						<View style={{ width: '100%' }}>
 							<FlatList
 								ListFooterComponent={<View style={{ padding: 8 }} />}
-								style={{ padding: 8, height: '100%' }}
+								style={{ height: '100%' }}
 								showsVerticalScrollIndicator={false}
 								data={this.state.companies
 									.filter((value) => this.filterCompanyList(value))
@@ -167,7 +167,8 @@ const styles = StyleSheet.create({
 	},
 	contentContainer: {
 		flex: 1,
-		width: '100%'
+		width: '100%',
+		padding: 16
 	},
 	bar: {
 		alignItems: 'center'
