@@ -59,7 +59,9 @@ class CompanyCard extends Component<CompanyCardProps> {
 				>
 					<Card.Content style={style.cardContent}>
 						<View style={style.beer}>
-							<Text variant={'titleLarge'}>{this.props.company}</Text>
+							<Text variant={'titleMedium'} adjustsFontSizeToFit={true} allowFontScaling={true} style={{ width: '100%' }}>
+								{this.props.company}
+							</Text>
 							{this.props.priority === -1 ? null : (
 								<Text variant={'titleSmall'} style={{ color: PriorityColor(this.props.priority) }}>
 									Priority {this.props.priority}
