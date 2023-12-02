@@ -4,8 +4,6 @@ import { getCurrentTheme } from '../themes/ThemeManager';
 import { StyleSheet, View } from 'react-native';
 import Color from 'color';
 import ContainerCard from './ContainerCard';
-import CardContent from 'react-native-paper/lib/typescript/components/Card/CardContent';
-import { white } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 type EventLog = {
 	dateTime: number;

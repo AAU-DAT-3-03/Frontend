@@ -3,6 +3,7 @@ import { Card, IconButton, Portal, Text, Modal, Searchbar, TouchableRipple, Icon
 import { getCurrentTheme } from '../themes/ThemeManager';
 import { FlatList, StyleSheet, View } from 'react-native';
 import UserAvatar from './UserAvatar';
+import { UserResponse } from '../utility/DataHandlerTypes';
 
 const styles = StyleSheet.create({
 	container: {
@@ -28,9 +29,9 @@ const styles = StyleSheet.create({
 });
 
 interface AssignUserProps {
-	users: User[];
+	users: UserResponse[];
 	visible: boolean;
-	onDismiss: (user: User | undefined) => void;
+	onDismiss: (user: UserResponse | undefined) => void;
 	removable: boolean;
 }
 
@@ -59,7 +60,8 @@ class AssignUser extends Component<AssignUserProps> {
 								.filter(
 									(value) =>
 										value.name.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1 ||
-										value.team.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1
+										(value.team !== undefined &&
+											value.team.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1)
 								)
 								.sort((user1, user2) => user1.name.localeCompare(user2.name))}
 							renderItem={(info) => {
@@ -84,25 +86,19 @@ class AssignUser extends Component<AssignUserProps> {
 	}
 }
 
-export type User = {
-	name: string;
-	team: string;
-	phoneNr: number;
-};
-
 interface AddUserProps {
 	type: string;
-	usersAll: User[];
-	users: User[];
+	usersAll: UserResponse[];
+	users: UserResponse[];
 	removable: boolean;
-	onRemove?: (user: User) => void;
-	onAdd?: (user: User) => void;
+	onRemove?: (user: string) => void;
+	onAdd?: (user: string) => void;
 	editable: boolean;
 }
 
 interface AddUserState {
 	assignVisible: boolean;
-	users: User[];
+	users: UserResponse[];
 }
 
 class AddUser extends Component<AddUserProps, AddUserState> {
@@ -112,7 +108,7 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 		super(props);
 	}
 
-	private onDeleteUser(user: User): void {
+	private onDeleteUser(user: string): void {
 		if (this.props.onRemove !== undefined) this.props.onRemove(user);
 	}
 
@@ -124,16 +120,17 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 						{this.props.type}
 					</Text>
 					<View style={addUserStyle.users}>
-						{this.props.users?.map((user: User, key: number) => {
+						{this.props.users?.map((user: UserResponse, key: number) => {
 							return (
 								<UserAvatar
-									team={user.team}
+									id={user.id}
+									team={user.team ?? ''}
 									key={key}
 									name={user.name}
-									phoneNr={user.phoneNr}
+									phoneNr={user.phoneNumber}
 									onDelete={
 										this.props.removable && this.props.editable
-											? (user: User) => {
+											? (user: string) => {
 													this.onDeleteUser(user);
 											  }
 											: undefined
@@ -155,7 +152,7 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 							<AssignUser
 								removable={this.props.removable}
 								visible={this.state.assignVisible}
-								onDismiss={(user: User | undefined): void => {
+								onDismiss={(user: UserResponse | undefined): void => {
 									if (user !== undefined) this.addUser(user);
 									this.setState({ assignVisible: false });
 								}}
@@ -168,12 +165,12 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 		);
 	}
 
-	private addUser(user: User): void {
-		let users: User[] = this.state.users.filter((value: User) => {
-			return value.name === user.name && value.phoneNr === user.phoneNr;
+	private addUser(user: UserResponse): void {
+		let users: UserResponse[] = this.state.users.filter((value: UserResponse) => {
+			return value.name === user.name && value.phoneNumber === user.phoneNumber;
 		});
 		if (users.length > 0) return;
-		if (this.props.onAdd !== undefined) this.props.onAdd(user);
+		if (this.props.onAdd !== undefined) this.props.onAdd(user.id);
 	}
 }
 

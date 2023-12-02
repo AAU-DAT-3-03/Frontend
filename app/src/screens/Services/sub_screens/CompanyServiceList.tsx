@@ -3,16 +3,17 @@ import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../../components/ContentContainer';
 import { ScreenProps } from '../../../../App';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import IncidentCard, { IncidentType } from '../../../components/incidentCard/IncidentCard';
-import { MockDataGenerator } from '../../../utility/MockDataGenerator';
+import IncidentCard from '../../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../../themes/ThemeManager';
 import { compareIncident } from '../../home/Home';
+import { IncidentData } from '../../../utility/DataHandlerTypes';
+import DataHandler from '../../../utility/DataHandler';
 
 interface CompanyServiceLisState {
 	company: string;
-	id: number;
+	id: string;
 	loading: boolean;
-	incidents: IncidentType[];
+	incidents: IncidentData[];
 }
 
 class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> {
@@ -48,36 +49,25 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 		this.getIncidentData();
 	}
 
-	/**
-	 * @todo Get data from server instead
-	 * @private
-	 */
-	private async getIncidentData(): Promise<boolean> {
-		let promise: Promise<boolean> = new Promise((resolve): void => {
-			setTimeout(() => {
-				let incidentsSorted = this.sortIncidents(
-					MockDataGenerator.getAllIncidents().filter((value) => value.state !== 'resolved' && value.companyId === this.state.id)
-				);
-				console.log(incidentsSorted);
-				this.setState({ loading: false, incidents: incidentsSorted });
-				resolve(true);
-			}, 100);
-		});
-		return await promise;
+	private async getIncidentData(): Promise<void> {
+		let data: IncidentData[] = await DataHandler.getIncidentsData();
+		let incidentsSorted: IncidentData[] = this.sortIncidents(
+			data.filter((value: IncidentData) => value.resolved && value.companyId === this.state.id)
+		);
+		this.setState({ loading: false, incidents: incidentsSorted });
 	}
 
 	private onRefresh(finished: () => void): void {
-		MockDataGenerator.generateIncident();
 		this.getIncidentData().then(() => finished());
 	}
 
 	/**
 	 * This is messy, but it sorts everything in the proper order using QSort
-	 * @param {IncidentType[]} incidents - List of incidents to sort
+	 * @param {IncidentData[]} incidents - List of incidents to sort
 	 * @private
-	 * @return {IncidentType[]} - The sorted list
+	 * @return {IncidentData[]} - The sorted list
 	 */
-	private sortIncidents(incidents: IncidentType[]): IncidentType[] {
+	private sortIncidents(incidents: IncidentData[]): IncidentData[] {
 		return incidents.sort(compareIncident);
 	}
 

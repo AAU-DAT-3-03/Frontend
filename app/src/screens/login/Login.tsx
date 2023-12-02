@@ -3,9 +3,6 @@ import ContentContainer from '../../components/ContentContainer';
 import { Button, Text } from 'react-native-paper';
 import { StyleSheet, TextInput, View } from 'react-native';
 import { Colors, getCurrentTheme } from '../../themes/ThemeManager';
-import LocalStorage from '../../utility/LocalStorage';
-import Networking from '../../utility/Networking';
-import { serverIp } from '../../../App';
 import NeticLogo from '../../assets/NeticLogo';
 import DataHandler from '../../utility/DataHandler';
 
@@ -13,33 +10,16 @@ interface LoginProps {
 	onLoggedIn: () => void;
 }
 
+/**
+ * @todo slet login imformation
+ */
+
 class Login extends Component<LoginProps> {
 	state = {
-		email: '',
-		password: '',
+		email: 'mads.byriel@gmail.com',
+		password: 'mads.byriel123',
 		error: false
 	};
-
-	private tryLogin() {
-		new Networking().post(
-			serverIp + '/login',
-			{ body: { email: this.state.email, password: this.state.password }, sendAuthKey: false },
-			(value) => {
-				if (value === undefined) {
-					this.setState({ error: true });
-					return;
-				}
-
-				let authKeyPair: string[] | undefined = value[1].headers.get('Set-Cookie')?.split('=');
-				if (authKeyPair === undefined || authKeyPair.length < 2 || authKeyPair[0] !== 'authToken') {
-					this.setState({ error: true });
-					return;
-				}
-
-				LocalStorage.setSettingsValue('authKey', authKeyPair[1]);
-			}
-		);
-	}
 
 	private handleLogin() {
 		if (this.state.email.length === 0 || this.state.password.length === 0) {

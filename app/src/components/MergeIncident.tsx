@@ -3,15 +3,17 @@ import ContainerCard from './ContainerCard';
 import { Button, Checkbox, IconButton, MD3Theme, Modal, Portal, Searchbar, Text } from 'react-native-paper';
 import { getCurrentTheme } from '../themes/ThemeManager';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { MockDataGenerator } from '../utility/MockDataGenerator';
-import { IncidentCardHeader, IncidentType } from './incidentCard/IncidentCard';
+import { IncidentCardHeader } from './incidentCard/IncidentCard';
 import { compareIncident, filterIncidentList } from '../screens/home/Home';
 import Color from 'color';
+import { IncidentData } from '../utility/DataHandlerTypes';
+import DataHandler from '../utility/DataHandler';
 
 interface MergeIncidentProps {
-	id: number;
+	id: string;
 	onMerge: () => void;
 	user: string;
+	incident: IncidentData;
 }
 
 class MergeIncident extends Component<MergeIncidentProps> {
@@ -31,6 +33,7 @@ class MergeIncident extends Component<MergeIncidentProps> {
 						if (merged) this.props.onMerge();
 						this.setState({ modalVisible: false });
 					}}
+					incident={this.props.incident}
 				/>
 				<ContainerCard.Content>
 					<Button
@@ -50,14 +53,15 @@ class MergeIncident extends Component<MergeIncidentProps> {
 interface MergeIncidentModalProps {
 	visible: boolean;
 	onDismiss: (merged: boolean) => void;
-	id: number;
+	id: string;
+	incident: IncidentData;
 	user: string;
 }
 
 interface MergeIncidentModalState {
 	query: string;
-	selectedIds: Set<number>;
-	incidents: IncidentType[];
+	selectedIds: Set<string>;
+	incidents: IncidentData[];
 	refreshing: boolean;
 	confirmVisible: boolean;
 }
@@ -65,7 +69,7 @@ interface MergeIncidentModalState {
 class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeIncidentModalState> {
 	state: MergeIncidentModalState = {
 		query: '',
-		selectedIds: new Set<number>(),
+		selectedIds: new Set<string>(),
 		incidents: [],
 		refreshing: false,
 		confirmVisible: false
@@ -75,17 +79,19 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		this.getIncidentData();
 	}
 
+	/**
+	 * @todo Make de mergings work
+	 * @private
+	 */
 	private mergeIncidents(): void {
 		this.setState({ confirmVisible: false });
-		for (let id of this.state.selectedIds) {
-			MockDataGenerator.mergeIncidents(this.props.id, id, this.props.user);
-		}
+		// Do the mergy mergy
 		this.props.onDismiss(true);
 	}
 
-	private checkBoxSelector(id: number): void {
+	private checkBoxSelector(id: string): void {
 		if (this.state.selectedIds.has(id)) {
-			let ids: Set<number> = this.state.selectedIds;
+			let ids: Set<string> = this.state.selectedIds;
 			ids.delete(id);
 			this.setState({ selectedIds: ids });
 		} else {
@@ -93,12 +99,12 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		}
 	}
 
-	private getIncidentData(): void {
-		let currentIncident: IncidentType = MockDataGenerator.getIncident(this.props.id);
-		let activeCompanyIncidents: IncidentType[] = MockDataGenerator.getAllIncidents().filter((value) => {
-			return value.state !== 'resolved' && value.companyId === currentIncident.companyId && value.id !== currentIncident.id;
+	private async getIncidentData(): Promise<void> {
+		let activeCompanyIncidents: IncidentData[] = await DataHandler.getIncidentsData();
+		let filteredIncident: IncidentData[] = activeCompanyIncidents.filter((value) => {
+			return value.resolved && value.companyId === this.props.incident.companyId && value.id !== this.props.incident.id;
 		});
-		this.setState({ incidents: activeCompanyIncidents, refreshing: false });
+		this.setState({ incidents: filteredIncident, refreshing: false });
 	}
 
 	private onRefresh(): void {
@@ -110,7 +116,7 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		return <RefreshControl refreshing={this.state.refreshing} onRefresh={() => this.onRefresh()} />;
 	}
 
-	private listItemRender(key: number, value: IncidentType): React.JSX.Element {
+	private listItemRender(key: number, value: IncidentData): React.JSX.Element {
 		let styleSheet = style(getCurrentTheme());
 
 		return (
@@ -125,11 +131,7 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 					collapsed={false}
 					onClickButton={undefined}
 					onClickIncident={() => this.checkBoxSelector(value.id)}
-					company={value.company}
-					case={value.caseNr}
-					users={value.assignedUsers}
-					status={value.state}
-					priority={value.priority}
+					incident={value}
 				/>
 			</View>
 		);
@@ -186,7 +188,7 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 									{this.state.incidents
 										.filter((incident) => filterIncidentList(incident, this.state.query))
 										.sort(compareIncident)
-										.map((value: IncidentType, key: number) => this.listItemRender(key, value))}
+										.map((value: IncidentData, key: number) => this.listItemRender(key, value))}
 								</View>
 							</ScrollView>
 						) : (

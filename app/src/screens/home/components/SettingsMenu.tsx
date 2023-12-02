@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Button, Drawer, IconButton, Modal, Portal, Switch, Text, TextInput } from 'react-native-paper';
+import { Button, Drawer, IconButton, Modal, Portal, Switch, Text } from 'react-native-paper';
 import { StyleSheet, View } from 'react-native';
 import { Colors, getCurrentTheme } from '../../../themes/ThemeManager';
 import LocalStorage from '../../../utility/LocalStorage';
 import { AppRender } from '../../../../App';
+import DataHandler from '../../../utility/DataHandler';
 
 interface MenuProps {
 	visible: boolean;
@@ -47,42 +48,16 @@ class SettingsMenu extends Component<MenuProps> {
 									/>
 								</View>
 								<View style={MenuStyle().row}>
-									<Text>Phone Nr.</Text>
-									<TextInput
-										style={{ flexGrow: 2, backgroundColor: undefined }}
-										onKeyPress={(e) => {
-											if (this.state.phoneNr === null) {
-												this.state.phoneNr = '';
-											}
-											let text: string = e.nativeEvent.key;
-											if (text === 'Backspace') {
-												return;
-											}
-											let number: number = parseInt(text, 10);
-											if (isNaN(number) || this.state.phoneNr.length > 7) {
-												e.preventDefault();
-												return;
-											}
-										}}
-										onChangeText={(text) => {
-											this.setState({ phoneNr: text });
-											LocalStorage.setSettingsValue('phoneNr', text);
-										}}
-										inputMode={'numeric'}
-										value={this.state.phoneNr}
-									/>
+									<Text>Phone number</Text>
+									<Text>{this.state.phoneNr}</Text>
 								</View>
 								<View style={MenuStyle().row}>
 									<Text>Name</Text>
-									<TextInput
-										style={{ flexGrow: 2, backgroundColor: undefined }}
-										onChangeText={(text) => {
-											this.setState({ username: text });
-											LocalStorage.setSettingsValue('username', text);
-										}}
-										inputMode={'text'}
-										value={this.state.username}
-									/>
+									<Text>{this.state.username}</Text>
+								</View>
+								<View style={MenuStyle().row}>
+									<Text>Test</Text>
+									<Button onPress={async () => console.log(await DataHandler.getIncidentsData())}>Test</Button>
 								</View>
 							</Drawer.Section>
 						</View>
@@ -122,6 +97,7 @@ const MenuStyle = () => {
 		row: {
 			width: '100%',
 			paddingHorizontal: 16,
+			paddingTop: 16,
 			gap: 16,
 			flexDirection: 'row',
 			justifyContent: 'space-between',

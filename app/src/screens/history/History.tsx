@@ -7,33 +7,34 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationProp } from '@react-navigation/native';
 import { ScreenProps } from '../../../App';
 import SearchBarDateSelector, { Period } from '../../components/SearchBarDateSelector';
-import IncidentCard, { IncidentType } from '../../components/incidentCard/IncidentCard';
-import { compareIncident, filterIncidentList } from '../home/Home';
+import IncidentCard from '../../components/incidentCard/IncidentCard';
+import { filterIncidentList } from '../home/Home';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { compareDatesEqual, getToday } from '../../components/TimePicker/DateHelper';
-import { MockDataGenerator } from '../../utility/MockDataGenerator';
+import DataHandler from '../../utility/DataHandler';
+import { IncidentData } from '../../utility/DataHandlerTypes';
+import Logger from '../../utility/Logger';
 
 const Stack = createStackNavigator();
 
 interface HistoryState {
-	incidents: IncidentType[] | undefined;
+	incidents: IncidentData[] | undefined;
 	loading: boolean;
 	query: string;
 	period: Period;
 }
 
 class History extends Component<any, HistoryState> {
+	private logger: Logger = new Logger('HistoryScreen');
 	state: HistoryState = {
 		incidents: undefined,
 		loading: true,
 		query: '',
 		period: { start: getToday(-30), end: getToday() }
 	};
-	static instance: History;
 	constructor(props: any) {
 		super(props);
-		History.instance = this;
 	}
 
 	private AppBar(): React.JSX.Element {
@@ -56,20 +57,6 @@ class History extends Component<any, HistoryState> {
 		);
 	}
 
-	/**
-	 * This is messy, but it sorts everything in the proper order using QSort
-	 * @param {IncidentType[]} incidents - List of incidents to sort
-	 * @private
-	 * @return {IncidentType[]} - The sorted list
-	 */
-	private sortIncidents(incidents: IncidentType[]): IncidentType[] {
-		return incidents.sort((a: IncidentType, b: IncidentType) => {
-			if (a.startTime > b.startTime) return 1;
-			if (a.startTime < b.startTime) return -1;
-			return compareIncident(a, b);
-		});
-	}
-
 	public refresh(): void {
 		this.getIncidentData(this.state.period);
 	}
@@ -78,22 +65,25 @@ class History extends Component<any, HistoryState> {
 	 * @todo Get data from server instead with a period
 	 * @private
 	 */
-	private async getIncidentData(period: Period): Promise<boolean> {
-		let promise: Promise<boolean> = new Promise((resolve): void => {
-			setTimeout(() => {
-				let incidents = this.sortIncidents(MockDataGenerator.getAllIncidents().filter((value) => value.state === 'resolved'));
-				this.setState({ loading: false, incidents: incidents });
-				resolve(true);
-			}, 100);
-		});
-		return await promise;
+	private async getIncidentData(period: Period): Promise<void> {
+		let start: number = new Date(period.start[2], period.start[1] - 1, period.start[0]).getTime();
+		let end: number = new Date(period.end[2], period.end[1] - 1, period.end[0]).getTime();
+		this.logger.info(`Getting incident date for period: ${start}-${end}`);
+		let incidentData: IncidentData[] = await DataHandler.getResolvedIncidentsData(start, end);
+		this.logger.info('Received incident data, rendering');
+		this.setState({ incidents: incidentData, loading: false });
 	}
 
 	componentDidMount() {
+		this.props.navigation.addListener('focus', () => {
+			this.logger.info("I'm focused");
+			this.getIncidentData(this.state.period);
+		});
 		this.getIncidentData(this.state.period);
 	}
 
 	private incidentsRender(navigation: NavigationProp<any>): React.JSX.Element {
+		this.logger.info(this.state.incidents?.pop()?.id);
 		return (
 			<View style={HistoryStyle().incidentContainer}>
 				{this.state.incidents
@@ -141,7 +131,6 @@ class History extends Component<any, HistoryState> {
 	}
 
 	private onRefresh(finished: () => void): void {
-		MockDataGenerator.generateIncident(true);
 		this.getIncidentData(this.state.period).then(() => finished());
 	}
 

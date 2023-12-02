@@ -1,59 +1,26 @@
 import React, { Component } from 'react';
 import { IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import StatusIcon, { IncidentState } from '../StatusIcon';
+import StatusIcon from '../StatusIcon';
 import UserAvatar from './UserAvatar';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import ContainerCard from '../ContainerCard';
-import { User } from '../AddUser';
-
-export type Alarm = {
-	alarmError: string;
-	alarmLog: string;
-	alarmNote: string;
-	service: string;
-	id: number;
-};
-
-export type EventLog = {
-	dateTime: number;
-	user: string;
-	message: string;
-};
-
-export type IncidentType = {
-	id: number;
-	companyId: number;
-	company: string;
-	priority: number;
-	caseNr: number;
-	incidentNote: string;
-	startTime: number;
-	alarms: Alarm[];
-	assignedUsers: User[];
-	calledUsers: User[];
-	eventLog: EventLog[];
-	state: IncidentState;
-};
+import { AlarmResponse, IncidentData, UserResponse } from '../../utility/DataHandlerTypes';
 
 interface IncidentCardHeaderProps {
 	collapsed: boolean;
 	onClickButton?: () => void;
 	onClickIncident: () => void;
-	company: string;
-	case: number;
-	users: User[];
-	status: IncidentState;
-	priority: number;
+	incident: IncidentData;
 }
 
 interface UserListProps {
-	users?: User[];
+	users?: UserResponse[];
 	visible: boolean;
 	onDismiss: () => void;
 }
 
-const PriorityColor = (priority: number) => {
+const PriorityColor = (priority: number): string => {
 	switch (priority) {
 		case 1:
 			return '#B80000';
@@ -115,34 +82,42 @@ export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 			<View style={outerContainer}>
 				<UserList
 					visible={this.state.usersVisible}
-					users={this.props.users}
+					users={this.props.incident.users}
 					onDismiss={() => this.setState({ usersVisible: false })}
 				/>
 				<TouchableRipple style={incidentCardStyle().headerRipple} onPress={() => this.props.onClickIncident()} borderless={true}>
 					<View style={incidentCardStyle().headerContainer}>
 						<View style={incidentCardStyle().headerSection}>
 							<View style={{ marginRight: 16 }}>
-								<StatusIcon status={this.props.status} />
+								<StatusIcon
+									status={
+										this.props.incident.resolved
+											? 'resolved'
+											: this.props.incident.users.length > 0
+											? 'acknowledged'
+											: 'error'
+									}
+								/>
 							</View>
 							<View>
 								<Text variant={'titleMedium'}>
-									{this.props.company} #{this.props.case}
+									{this.props.incident.companyId} #{this.props.incident.caseNumber}
 								</Text>
-								<Text style={{ color: PriorityColor(this.props.priority) }} variant={'bodyMedium'}>
-									{' '}
-									Priority {this.props.priority}
+								<Text style={{ color: PriorityColor(this.props.incident.priority) }} variant={'bodyMedium'}>
+									Priority {this.props.incident.priority}
 								</Text>
 							</View>
 						</View>
 						<View style={incidentCardStyle().headerSection}>
 							<View>
-								{this.props.users?.length === 0 ? null : (
+								{this.props.incident.users?.length === 0 ? null : (
 									<UserAvatar
 										onPress={() => {
 											this.setState({ usersVisible: true });
 										}}
-										name={`${this.props.users[0].name}${
-											this.props.users.length > 1 ? ` +${this.props.users.length - 1}` : ''
+										cutName={true}
+										name={`${this.props.incident.users[0].name}${
+											this.props.incident.users.length > 1 ? ` +${this.props.incident.users.length - 1}` : ''
 										}`}
 									/>
 								)}
@@ -166,9 +141,9 @@ export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 }
 
 interface IncidentCardListItemProps {
-	alarm: Alarm;
+	alarm: AlarmResponse;
 	alternate: boolean;
-	onClickAlarm: (id: number) => void;
+	onClickAlarm: (id: string) => void;
 }
 
 class IncidentCardListItem extends Component<IncidentCardListItemProps> {
@@ -176,38 +151,40 @@ class IncidentCardListItem extends Component<IncidentCardListItemProps> {
 		return (
 			<TouchableRipple onPress={() => this.props.onClickAlarm(this.props.alarm.id)} borderless={true}>
 				<View style={this.props.alternate ? incidentCardStyle().listItemAlternate : incidentCardStyle().listItem}>
-					<Text>{this.props.alarm.alarmError}</Text>
+					<Text>{this.props.alarm.name}</Text>
 				</View>
 			</TouchableRipple>
 		);
 	}
 }
 interface IncidentCardListProps {
-	alarms: Alarm[];
-	onClickAlarm: (id: number) => void;
+	alarms: AlarmResponse[];
+	onClickAlarm: (id: string) => void;
 }
 
 export class IncidentCardList extends Component<IncidentCardListProps> {
 	render(): React.JSX.Element {
 		return (
 			<View style={{ borderBottomRightRadius: 16, borderBottomLeftRadius: 16, overflow: 'hidden' }}>
-				{this.props.alarms.map((alarm: Alarm, key: number) => (
-					<IncidentCardListItem
-						key={key}
-						alarm={alarm}
-						alternate={key % 2 === 0}
-						onClickAlarm={(id: number) => this.props.onClickAlarm(id)}
-					/>
-				))}
+				{this.props.alarms !== undefined
+					? this.props.alarms.map((alarm: AlarmResponse, key: number) => (
+							<IncidentCardListItem
+								key={key}
+								alarm={alarm}
+								alternate={key % 2 === 0}
+								onClickAlarm={(id: string) => this.props.onClickAlarm(id)}
+							/>
+					  ))
+					: null}
 			</View>
 		);
 	}
 }
 
 interface IncidentCardProps {
-	incident: IncidentType;
-	onClickIncident: (id: number) => void;
-	onClickAlarm: (id: number) => void;
+	incident: IncidentData;
+	onClickIncident: (id: string) => void;
+	onClickAlarm: (id: string) => void;
 }
 
 interface IncidentCardState {
@@ -224,20 +201,16 @@ class IncidentCard extends Component<IncidentCardProps, IncidentCardState> {
 			<ContainerCard style={{ paddingBottom: 0 }}>
 				<ContainerCard.Content>
 					<IncidentCardHeader
-						priority={this.props.incident.priority}
 						collapsed={this.state.collapsed}
 						onClickButton={() => this.setState({ collapsed: !this.state.collapsed })}
-						company={this.props.incident.company}
-						case={this.props.incident.caseNr}
-						users={this.props.incident.assignedUsers}
-						status={this.props.incident.state}
+						incident={this.props.incident}
 						onClickIncident={() => this.props.onClickIncident(this.props.incident.id)}
 					/>
 					<View style={incidentCardStyle().list}>
 						{this.state.collapsed ? null : (
 							<IncidentCardList
 								alarms={this.props.incident.alarms}
-								onClickAlarm={(id: number) => this.props.onClickAlarm(id)}
+								onClickAlarm={(id: string) => this.props.onClickAlarm(id)}
 							/>
 						)}
 					</View>

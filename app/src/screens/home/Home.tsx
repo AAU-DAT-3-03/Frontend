@@ -1,35 +1,50 @@
 import React, { Component } from 'react';
 import { IconButton, Menu, Searchbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
-import IncidentCard, { IncidentType } from '../../components/incidentCard/IncidentCard';
+import IncidentCard from '../../components/incidentCard/IncidentCard';
 import SettingsMenu from './components/SettingsMenu';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import Incident from '../incident/Incident';
 import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
-import { MockDataGenerator } from '../../utility/MockDataGenerator';
-import { User } from '../../components/AddUser';
-import History from '../history/History';
+import DataHandler from '../../utility/DataHandler';
+import { IncidentData, IncidentResponse, UserResponse } from '../../utility/DataHandlerTypes';
 
 const Stack = createStackNavigator();
 
-export const compareIncident = (a: IncidentType, b: IncidentType): number => {
+export const compareIncident = (a: IncidentResponse, b: IncidentResponse): number => {
 	if (a.priority > b.priority) return 1;
 	if (a.priority < b.priority) return -1;
+
+	let aIncidentResolved: boolean = a.resolved;
+	let aIncidentAcknowledged: boolean = a.users.length > 0;
+	let aIncidentError: boolean = !aIncidentAcknowledged && !aIncidentResolved;
+
+	let bIncidentResolved: boolean = b.resolved;
+	let bIncidentAcknowledged: boolean = b.users.length > 0;
+	let bIncidentError: boolean = !bIncidentAcknowledged && !bIncidentResolved;
+
 	if (a.priority === b.priority) {
-		if (a.state === 'acknowledged' && b.state === 'error') return 1;
-		if (a.state === 'error' && b.state === 'acknowledged') return -1;
-	}
-	if (a.state === b.state) {
-		if (a.company.toLowerCase() < b.company.toLowerCase()) return -1;
-		if (a.company.toLowerCase() > b.company.toLowerCase()) return 1;
+		if (aIncidentAcknowledged && bIncidentError) return 1;
+		if (aIncidentError && bIncidentAcknowledged) return -1;
 	}
 
-	if (a.company === b.company) {
-		if (a.caseNr > b.caseNr) return 1;
+	if (
+		bIncidentResolved === aIncidentResolved &&
+		aIncidentAcknowledged === bIncidentAcknowledged &&
+		a.companyId !== undefined &&
+		b.companyId !== undefined
+	) {
+		if (a.companyId.toLowerCase() < b.companyId.toLowerCase()) return -1;
+		if (a.companyId.toLowerCase() > b.companyId.toLowerCase()) return 1;
+	}
+
+	if (a.companyId === b.companyId) {
+		if (a.caseNumber === undefined || b.caseNumber === undefined) return 0;
+		if (a.caseNumber > b.caseNumber) return 1;
 		return -1;
 	}
 
@@ -44,52 +59,58 @@ enum Filter {
 
 interface HomeState {
 	menuVisible: boolean;
-	incidents: IncidentType[] | undefined;
+	incidents: IncidentData[] | undefined;
 	loading: boolean;
 	filterVisible: boolean;
 	filter: Filter;
 	query: string;
 }
 
-export function filterIncidentList(incident: IncidentType, query: string): boolean {
+export async function filterIncidentList(incident: IncidentData, query: string): Promise<boolean> {
 	if (query !== '') {
 		let queries: [boolean, string][] = query
 			.toLowerCase()
 			.split(' ')
 			.map((value) => [false, value]);
 		for (let query of queries) {
-			if (incident.company.toLowerCase().includes(query[1])) {
+			if (incident.companyName.toLowerCase().includes(query[1])) {
 				query[0] = true;
 				continue;
 			}
-			if (incident.caseNr.toString(10).includes(query[1])) {
+			if (incident.caseNumber?.toString(10).includes(query[1])) {
 				query[0] = true;
 				continue;
 			}
+
 			if (
-				incident.calledUsers !== undefined &&
-				incident.calledUsers.filter(
-					(user: User) => user.name.toLowerCase().includes(query[1]) || user.team.toLowerCase().includes(query[1])
-				).length > 0
+				incident.calls !== undefined &&
+				incident.calls.filter((user: UserResponse) => {
+					if (user === undefined) return false;
+					return user.name.toLowerCase().includes(query[1]) || user.team?.toLowerCase().includes(query[1]);
+				}).length > 0
 			) {
 				query[0] = true;
 				continue;
 			}
+
 			if (
-				incident.assignedUsers !== undefined &&
-				incident.assignedUsers.filter(
-					(user: User) => user.name.toLowerCase().includes(query[1]) || user.team.toLowerCase().includes(query[1])
-				).length > 0
+				incident.users !== undefined &&
+				incident.users.filter((user: UserResponse) => {
+					if (user === undefined) return false;
+					return user.name.toLowerCase().includes(query[1]) || user.team?.toLowerCase().includes(query[1]);
+				}).length > 0
 			) {
 				query[0] = true;
 				continue;
 			}
+
 			if (incident.priority.toString(10).includes(query[1])) {
 				query[0] = true;
-				continue;
 			}
 		}
-		if (queries.filter((value) => value[0]).length === queries.length) {
+		let queriesHit: number = queries.filter((value) => value[0] === true).length;
+		console.log(queriesHit, queries.length, incident);
+		if (queriesHit === queries.length) {
 			return true;
 		}
 		return false;
@@ -98,8 +119,6 @@ export function filterIncidentList(incident: IncidentType, query: string): boole
 }
 
 class Home extends Component<any, HomeState> {
-	static instance: Home;
-
 	state: HomeState = {
 		menuVisible: false,
 		incidents: undefined,
@@ -109,10 +128,7 @@ class Home extends Component<any, HomeState> {
 		query: ''
 	};
 
-	constructor(props: any) {
-		super(props);
-		Home.instance = this;
-	}
+	private loadingData: boolean = false;
 
 	private AppBar(): React.JSX.Element {
 		return (
@@ -170,6 +186,10 @@ class Home extends Component<any, HomeState> {
 	}
 
 	componentDidMount() {
+		this.props.navigation.addListener('focus', () => {
+			console.log("[Home] : I'm focused");
+			this.getIncidentData().then(() => this.forceUpdate());
+		});
 		this.getIncidentData();
 	}
 
@@ -181,24 +201,25 @@ class Home extends Component<any, HomeState> {
 	 * @todo Get data from server instead
 	 * @private
 	 */
-	private async getIncidentData(): Promise<boolean> {
-		let promise: Promise<boolean> = new Promise((resolve): void => {
-			setTimeout(() => {
-				let incidentsSorted = this.sortIncidents(MockDataGenerator.getAllIncidents().filter((value) => value.state !== 'resolved'));
-				this.setState({ loading: false, incidents: incidentsSorted });
-				resolve(true);
-			}, 100);
-		});
-		return await promise;
+	private async getIncidentData() {
+		if (this.loadingData) return;
+		this.loadingData = true;
+		console.log('[Home] : Getting incident data');
+		let incidentData: IncidentData[] = await DataHandler.getIncidentsData();
+		console.log('[Home] : Sorting incident data');
+		let incidentsSorted: IncidentData[] = this.sortIncidents(incidentData.filter((value) => !value.resolved));
+		console.log('[Home] : Rendering incident data');
+		this.setState({ loading: false, incidents: incidentsSorted });
+		this.loadingData = false;
 	}
 
 	/**
 	 * This is messy, but it sorts everything in the proper order using QSort
-	 * @param {IncidentType[]} incidents - List of incidents to sort
+	 * @param {IncidentData[]} incidents - List of incidents to sort
 	 * @private
-	 * @return {IncidentType[]} - The sorted list
+	 * @return {IncidentData[]} - The sorted list
 	 */
-	private sortIncidents(incidents: IncidentType[]): IncidentType[] {
+	private sortIncidents(incidents: IncidentData[]): IncidentData[] {
 		return incidents.sort(compareIncident);
 	}
 
@@ -217,50 +238,53 @@ class Home extends Component<any, HomeState> {
 	}
 
 	private incidentsRender(navigation: any, filter: Filter): React.JSX.Element {
-		let phoneNr: string = LocalStorage.getSettingsValue('phoneNr');
-		let username: string = LocalStorage.getSettingsValue('username');
+		let id: string = LocalStorage.getSettingsValue('id');
+		let incidentData = this.state.incidents?.filter((incident) => {
+			let shouldShow: boolean = false;
+			if (filter === Filter.NONE) {
+				shouldShow = true;
+			} else if (filter === Filter.CALLED) {
+				shouldShow =
+					incident.calls !== undefined && incident.calls?.filter((user: UserResponse): boolean => user.id === id).length > 0;
+			} else if (filter === Filter.ASSIGNED) {
+				shouldShow =
+					incident.users !== undefined &&
+					incident.users.filter((user: UserResponse): boolean => {
+						return user.id === id;
+					}).length > 0;
+			}
+			if (shouldShow) {
+				return filterIncidentList(incident, this.state.query);
+			}
+			return false;
+		});
 		return (
-			<View style={HomeStyle().incidentContainer}>
-				{this.state.incidents
-					?.filter((incident) => {
-						if (filter === Filter.NONE) return true;
-						if (filter === Filter.CALLED) {
-							return (
-								incident.calledUsers !== undefined &&
-								incident.calledUsers?.filter(
-									(value) => value.phoneNr.toString() === phoneNr && value.name.toLowerCase() === username.toLowerCase()
-								).length > 0
-							);
-						}
-						return (
-							incident.assignedUsers !== undefined &&
-							incident.assignedUsers.filter((user) => {
-								return user.phoneNr.toString() === phoneNr && user.name.toLowerCase() === username.toLowerCase();
-							}).length > 0
-						);
-					})
-					.filter((incident) => {
-						return filterIncidentList(incident, this.state.query);
-					})
-					.map((value, index) => {
-						return (
-							<IncidentCard
-								key={index}
-								incident={value}
-								onClickIncident={(id) =>
-									navigation.navigate('Incident', {
-										id: id
-									})
-								}
-								onClickAlarm={(id) =>
-									navigation.navigate('Alarm', {
-										id: id
-									})
-								}
-							/>
-						);
-					})}
-			</View>
+			<ScrollView
+				horizontal={true}
+				showsVerticalScrollIndicator={false}
+				contentContainerStyle={{ width: '100%', height: '100%', margin: 0, padding: 0 }}
+			>
+				<FlatList
+					data={incidentData}
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={HomeStyle().incidentContainer}
+					renderItem={(info) => (
+						<IncidentCard
+							incident={info.item}
+							onClickIncident={(id) =>
+								navigation.navigate('Incident', {
+									id: id
+								})
+							}
+							onClickAlarm={(id) =>
+								navigation.navigate('Alarm', {
+									id: id
+								})
+							}
+						/>
+					)}
+				/>
+			</ScrollView>
 		);
 	}
 
@@ -273,7 +297,6 @@ class Home extends Component<any, HomeState> {
 	}
 
 	private onRefresh(finished: () => void): void {
-		MockDataGenerator.generateIncident();
 		this.getIncidentData().then(() => finished());
 	}
 

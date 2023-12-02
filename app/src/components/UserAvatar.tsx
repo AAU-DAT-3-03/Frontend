@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
 import { Icon, IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
-import { User } from './AddUser';
 
 interface UserAvatarProps {
 	team: string;
 	name: string;
-	phoneNr: number;
-	onDelete?: (user: User) => void;
+	phoneNr: string;
+	id: string;
+	onDelete?: (user: string) => void;
 }
 
 interface UserAvatarConfirmProps {
@@ -68,11 +68,7 @@ class UserAvatar extends Component<UserAvatarProps> {
 	render(): React.JSX.Element {
 		let onDelete = () => {
 			if (this.props.onDelete !== undefined) {
-				this.props.onDelete({
-					team: this.props.team,
-					name: this.props.name,
-					phoneNr: this.props.phoneNr
-				});
+				this.props.onDelete(this.props.id);
 			}
 		};
 		return (

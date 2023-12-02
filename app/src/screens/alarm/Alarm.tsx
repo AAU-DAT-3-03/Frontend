@@ -7,54 +7,30 @@ import NoteCard from '../../components/NoteCard';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ScreenProps } from '../../../App';
 import Incident from '../incident/Incident';
-import { Alarm as AlarmData } from '../../components/incidentCard/IncidentCard';
-import { MockDataGenerator } from '../../utility/MockDataGenerator';
 import { getCurrentTheme } from '../../themes/ThemeManager';
+import { AlarmResponse } from '../../utility/DataHandlerTypes';
+import DataHandler from '../../utility/DataHandler';
 
 const Stack = createStackNavigator();
-interface AlarmState extends AlarmData {
+interface AlarmState {
+	alarm: AlarmResponse | undefined;
 	loading: boolean;
-}
-
-async function getAlarmData(id: number) {
-	let promise: Promise<AlarmData> = new Promise((resolve): void => {
-		setTimeout(() => {
-			resolve(MockDataGenerator.getAlarm(id));
-		}, 100);
-	});
-	return await promise;
+	id: string;
 }
 
 class Alarm extends Component<ScreenProps, AlarmState> {
-	private userName: string = 'Bent';
 	state: AlarmState = {
-		alarmError: 'Loading',
-		alarmLog: '',
-		alarmNote: 'string',
-		service: '',
-		loading: true,
-		id: -1
+		alarm: undefined,
+		id: this.props.route.params?.id,
+		loading: true
 	};
 
 	componentDidMount() {
-		this.getData();
+		this.getAlarmData();
 	}
 
-	constructor(props: ScreenProps) {
-		super(props);
-		this.state.id = this.props.route.params?.id;
-	}
-
-	private async getData() {
-		await getAlarmData(this.props.route.params?.id).then((value) => {
-			this.setState({
-				alarmError: value.alarmError,
-				alarmLog: value.alarmLog,
-				alarmNote: value.alarmNote,
-				service: value.service,
-				loading: false
-			});
-		});
+	private async getAlarmData() {
+		DataHandler.getAlarmData(this.state.id);
 	}
 
 	private AppBar(): React.JSX.Element {
@@ -65,11 +41,17 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 						this.props.navigation.goBack();
 					}}
 				/>
-				<Appbar.Content title={`${this.state.alarmError}`} />
+				<Appbar.Content title={`${this.state.alarm?.name}`} />
 			</>
 		);
 	}
 
+	private async updateAlarm(text: string): Promise<void> {}
+
+	/**
+	 * @todo add alarm log/note
+	 * @private
+	 */
 	private alarmRender() {
 		return (
 			<ContentContainer appBar={this.AppBar()}>
@@ -79,14 +61,13 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 					</View>
 				) : (
 					<View style={container.padding}>
-						<InformationCard errorType={this.state.alarmError} errorInfo={this.state.alarmLog} />
+						<InformationCard errorType={this.state.alarm?.name ?? ''} errorInfo={this.state.alarm?.name ?? ''} />
 						<NoteCard
 							title={'alarm'}
 							editable={true}
-							noteInfo={this.state.alarmNote}
+							noteInfo={this.state.alarm?.name ?? ''}
 							onChange={(text: string) => {
-								MockDataGenerator.updateAlarm(this.state.id, this.userName, { alarmNote: text });
-								this.getData().then(() => this.forceUpdate());
+								this.updateAlarm(text);
 							}}
 						/>
 					</View>

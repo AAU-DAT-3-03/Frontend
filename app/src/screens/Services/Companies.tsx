@@ -7,9 +7,9 @@ import { NavigationProp } from '@react-navigation/native';
 import CompanyServiceList from './sub_screens/CompanyServiceList';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from 'react-native';
 import { ScreenProps } from '../../../App';
-import { Company, MockDataGenerator } from '../../utility/MockDataGenerator';
 import { getCurrentTheme } from '../../themes/ThemeManager';
-import ContainerCard from '../../components/ContainerCard';
+import DataHandler from '../../utility/DataHandler';
+import { CompanyData } from '../../utility/DataHandlerTypes';
 
 const Stack = createStackNavigator();
 
@@ -18,17 +18,12 @@ let stateList = ['none', 'acknowledged', 'error'];
 interface CompanyState {
 	query: string;
 	loading: boolean;
-	companies: Company[];
+	companies: CompanyData[];
 	state: number;
 }
 
 async function getCompanyData() {
-	let promise: Promise<Company[]> = new Promise((resolve): void => {
-		setTimeout(() => {
-			resolve(MockDataGenerator.getCompanies());
-		}, 100);
-	});
-	return await promise;
+	return await DataHandler.getCompanies();
 }
 
 class Companies extends Component<any, CompanyState> {
@@ -63,7 +58,7 @@ class Companies extends Component<any, CompanyState> {
 		);
 	}
 
-	private onPress(company: string, id: number, navigation: NavigationProp<any>): void {
+	private onPress(company: string, id: string, navigation: NavigationProp<any>): void {
 		navigation.navigate('ServiceList', {
 			company: company,
 			id: id
@@ -85,23 +80,23 @@ class Companies extends Component<any, CompanyState> {
 								style={{ padding: 8, height: '100%' }}
 								showsVerticalScrollIndicator={false}
 								data={this.state.companies
-								.filter((value) => this.filterCompanyList(value))
-								.sort((a, b) => {
-									let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
-									let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
-									let aNone = a.state === 'none' || a.state === 'resolved';
-									let bNone = b.state === 'none' || b.state === 'resolved';
-									if (a.state === 'error' && bLessThanError) return -1;
-									if (b.state === 'error' && aLessThanError) return 1;
-									if (a.state === 'acknowledged' && bNone) return -1;
-									if (b.state === 'acknowledged' && aNone) return 1;
-									return 0;
-								})}
+									.filter((value) => this.filterCompanyList(value))
+									.sort((a, b) => {
+										let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
+										let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
+										let aNone = a.state === 'none' || a.state === 'resolved';
+										let bNone = b.state === 'none' || b.state === 'resolved';
+										if (a.state === 'error' && bLessThanError) return -1;
+										if (b.state === 'error' && aLessThanError) return 1;
+										if (a.state === 'acknowledged' && bNone) return -1;
+										if (b.state === 'acknowledged' && aNone) return 1;
+										return 0;
+									})}
 								renderItem={(info) => (
 									<CompanyCard
-										company={info.item.company}
+										company={info.item.name}
 										state={stateList.indexOf(info.item.state)}
-										onPress={() => this.onPress(info.item.company, info.item.id ?? -1, navigation)}
+										onPress={() => this.onPress(info.item.name, info.item.id ?? -1, navigation)}
 									/>
 								)}
 							/>
@@ -112,20 +107,19 @@ class Companies extends Component<any, CompanyState> {
 		);
 	}
 
-	private filterCompanyList(company: Company): boolean {
+	private filterCompanyList(company: CompanyData): boolean {
 		if (this.state.query !== '') {
 			let queries: [boolean, string][] = this.state.query
 				.toLowerCase()
 				.split(' ')
 				.map((value) => [false, value]);
 			for (let query of queries) {
-				if (company.company.toLowerCase().includes(query[1].toLowerCase())) {
+				if (company.name.toLowerCase().includes(query[1].toLowerCase())) {
 					query[0] = true;
 					continue;
 				}
 				if (company.state.includes(query[1].toLowerCase())) {
 					query[0] = true;
-					continue;
 				}
 			}
 			if (queries.filter((value) => value[0]).length === queries.length) {

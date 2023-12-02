@@ -44,7 +44,7 @@ class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, Search
 		if (compareDatesLessThanOrEqual(today, date[1])) {
 			date[1] = today;
 		}
-		await this.setState({
+		this.setState({
 			startDate: date[0],
 			endDate: date[1],
 			timePickerVisible: false

@@ -9,8 +9,8 @@ import History from './src/screens/history/History';
 import Companies from './src/screens/Services/Companies';
 import LocalStorage from './src/utility/LocalStorage';
 import Login from './src/screens/login/Login';
-import { MockDataGenerator } from './src/utility/MockDataGenerator';
-import NotificationHandler from './src/utility/NotificationHandler';
+import DataHandler from './src/utility/DataHandler';
+import Logger from './src/utility/Logger';
 
 export let serverIp = '';
 
@@ -23,6 +23,8 @@ const Tab = createBottomTabNavigator();
 
 export class AppRender extends Component {
 	private static main: AppRender;
+	private logger: Logger = new Logger('App');
+	private loadedBaseData: boolean = false;
 
 	constructor(props: any) {
 		super(props);
@@ -37,13 +39,33 @@ export class AppRender extends Component {
 	 * @todo delete this
 	 */
 	componentDidMount() {
-		MockDataGenerator.generateIncidentList(4);
-		MockDataGenerator.generateIncidentList(2, true);
+		let key: string = LocalStorage.getSettingsValue('authKey');
+		if (key === 'null' || key === '' || key === null) {
+			return;
+		}
+		if (!this.loadedBaseData) {
+			DataHandler.getUsers();
+			DataHandler.getCompanies();
+			this.loadedBaseData = true;
+		}
 	}
 
 	render() {
-		if (LocalStorage.getSettingsValue('authKey') === 'null') {
-			return <Login onLoggedIn={() => this.forceUpdate()} />;
+		let key: string = LocalStorage.getSettingsValue('authKey');
+		if (key === 'null' || key === '' || key === null) {
+			this.logger.warn('User needs to log in');
+			return (
+				<Login
+					onLoggedIn={() => {
+						if (!this.loadedBaseData) {
+							DataHandler.getUsers();
+							DataHandler.getCompanies();
+							this.loadedBaseData = true;
+						}
+						this.forceUpdate();
+					}}
+				/>
+			);
 		}
 		return (
 			<PaperProvider>
