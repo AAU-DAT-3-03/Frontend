@@ -1,6 +1,7 @@
 import { Alarm, EventLog, IncidentType } from '../components/incidentCard/IncidentCard';
 import { IncidentState } from '../components/StatusIcon';
 import { User } from '../components/AddUser';
+import { ToastAndroid } from 'react-native';
 
 export function randomInt(min: number, max: number): number {
 	return Math.floor(Math.random() * (max - min + 1) + min);
@@ -148,6 +149,12 @@ export class MockDataGenerator {
 		return Array.from(set);
 	}
 
+	private static updateEventLog(eventLog: EventLog, incident: IncidentType): IncidentType {
+		ToastAndroid.show('Change saved - ' + eventLog.message, 5);
+		incident.eventLog.push(eventLog);
+		return incident;
+	}
+
 	public static mergeIncidents(mainId: number, mergingId: number, user: string): void {
 		let main: IncidentType = MockDataGenerator.getIncident(mainId);
 		let merging: IncidentType = MockDataGenerator.getIncident(mergingId);
@@ -167,11 +174,14 @@ export class MockDataGenerator {
 			if (a.dateTime < b.dateTime) return 1;
 			return -1;
 		});
-		main.eventLog.push({
-			user: user,
-			dateTime: Date.now(),
-			message: `Merged incident ${main.caseNr} with incident ${merging.caseNr}`
-		});
+		main = this.updateEventLog(
+			{
+				user: user,
+				dateTime: Date.now(),
+				message: `Merged incident ${main.caseNr} with incident ${merging.caseNr}`
+			},
+			main
+		);
 
 		MockDataGenerator.incidents[mainId] = main;
 		delete MockDataGenerator.incidents[mergingId];
@@ -203,11 +213,14 @@ export class MockDataGenerator {
 		let alarm: Alarm = MockDataGenerator.alarms[id].alarm;
 		let incidentId: number = MockDataGenerator.alarms[id].incidentId;
 		if (data.alarmNote) {
-			MockDataGenerator.incidents[incidentId].eventLog?.push({
-				user: user,
-				dateTime: Date.now(),
-				message: `Changed incident note to: \n ${data.alarmNote}\n Old note: ${alarm.alarmNote}`
-			});
+			MockDataGenerator.incidents[incidentId] = this.updateEventLog(
+				{
+					user: user,
+					dateTime: Date.now(),
+					message: `Changed incident note to: \n ${data.alarmNote}\n Old note: ${alarm.alarmNote}`
+				},
+				MockDataGenerator.incidents[incidentId]
+			);
 			alarm.alarmNote = data.alarmNote;
 		}
 
@@ -219,18 +232,22 @@ export class MockDataGenerator {
 		if (incident.state === 'resolved') return;
 		if (data.state) {
 			incident.state = data.state;
-			incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Changed state to ${data.state}` });
+			incident = this.updateEventLog({ user: user, dateTime: Date.now(), message: `Changed state to ${data.state}` }, incident);
 		}
 		if (data.priority) {
 			incident.priority = data.priority;
-			incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Changed priority to ${data.priority}` });
+			incident = this.updateEventLog({ user: user, dateTime: Date.now(), message: `Changed priority to ${data.priority}` }, incident);
 		}
 		if (data.incidentNote) {
-			incident.eventLog?.push({
-				user: user,
-				dateTime: Date.now(),
-				message: `Changed incident note to: \n ${data.incidentNote}\n Old note: ${incident.incidentNote}`
-			});
+			incident = this.updateEventLog(
+				{
+					user: user,
+					dateTime: Date.now(),
+					message: `Changed incident note to: \n ${data.incidentNote}\n Old note: ${incident.incidentNote}`
+				},
+				incident
+			);
+
 			incident.incidentNote = data.incidentNote;
 		}
 		if (data.assignUser !== undefined) {
@@ -241,7 +258,7 @@ export class MockDataGenerator {
 			if (test === 0) {
 				if (incident.state === 'error') incident.state = 'acknowledged';
 				incident.assignedUsers?.push(data.assignUser);
-				incident.eventLog?.push({ user: user, dateTime: Date.now(), message: `Assigned ${data.assignUser.name}` });
+				incident = this.updateEventLog({ user: user, dateTime: Date.now(), message: `Assigned ${data.assignUser.name}` }, incident);
 			}
 		}
 		if (data.unAssignUser) {
@@ -251,11 +268,14 @@ export class MockDataGenerator {
 					userCurrent.team === data.unAssignUser?.team &&
 					userCurrent.phoneNr === data.unAssignUser?.phoneNr
 				) {
-					incident.eventLog?.push({
-						user: user,
-						dateTime: Date.now(),
-						message: `Removed user: ${userCurrent.name}`
-					});
+					incident = this.updateEventLog(
+						{
+							user: user,
+							dateTime: Date.now(),
+							message: `Removed user: ${userCurrent.name}`
+						},
+						incident
+					);
 					return false;
 				}
 				return true;
@@ -272,11 +292,14 @@ export class MockDataGenerator {
 				).length === 0
 			) {
 				incident.calledUsers?.push(data.calledUser);
-				incident.eventLog?.push({
-					user: user,
-					dateTime: Date.now(),
-					message: `Called ${data.calledUser.name}`
-				});
+				incident = this.updateEventLog(
+					{
+						user: user,
+						dateTime: Date.now(),
+						message: `Called ${data.calledUser.name}`
+					},
+					incident
+				);
 			}
 		}
 
