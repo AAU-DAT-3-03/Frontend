@@ -67,7 +67,7 @@ interface HomeState {
 	query: string;
 }
 
-export async function filterIncidentList(incident: IncidentData, query: string): Promise<boolean> {
+export function filterIncidentList(incident: IncidentData, query: string): boolean {
 	if (query !== '') {
 		let queries: [boolean, string][] = query
 			.toLowerCase()
@@ -193,10 +193,6 @@ class Home extends Component<any, HomeState> {
 	}
 
 	componentDidMount() {
-		this.props.navigation.addListener('focus', () => {
-			this.logger.info("I'm focused");
-			this.getIncidentData().then(() => this.forceUpdate());
-		});
 		this.getIncidentData();
 	}
 
@@ -216,9 +212,8 @@ class Home extends Component<any, HomeState> {
 		this.logger.info('Sorting incident data');
 		let incidentsSorted: IncidentData[] = this.sortIncidents(incidentData.filter((value) => !value.resolved));
 		this.logger.info('Rendering incident data');
-		this.setState({ loading: false, incidents: incidentsSorted });
+		this.setState({ incidents: undefined }, () => this.setState({ loading: false, incidents: incidentsSorted }));
 		this.loadingData = false;
-		console.log(this.state.incidents?.at(0));
 	}
 
 	/**
@@ -266,6 +261,8 @@ class Home extends Component<any, HomeState> {
 			}
 			return false;
 		});
+		this.logger.info('Re-rendering list', incidentData?.length ?? -1, this.state.incidents?.length);
+
 		return (
 			<ScrollView
 				horizontal={true}

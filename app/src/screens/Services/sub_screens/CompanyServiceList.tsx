@@ -6,7 +6,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import IncidentCard from '../../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../../themes/ThemeManager';
 import { compareIncident } from '../../home/Home';
-import { IncidentData } from '../../../utility/DataHandlerTypes';
+import { CompanyData, IncidentData } from '../../../utility/DataHandlerTypes';
 import DataHandler from '../../../utility/DataHandler';
 
 interface CompanyServiceLisState {
@@ -20,7 +20,7 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 	state: CompanyServiceLisState = {
 		company: this.props.route.params?.company,
 		id: this.props.route.params?.id,
-		loading: false,
+		loading: true,
 		incidents: []
 	};
 
@@ -50,11 +50,16 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 	}
 
 	private async getIncidentData(): Promise<void> {
-		let data: IncidentData[] = await DataHandler.getIncidentsData();
-		let incidentsSorted: IncidentData[] = this.sortIncidents(
-			data.filter((value: IncidentData) => value.resolved && value.companyId === this.state.id)
-		);
-		this.setState({ loading: false, incidents: incidentsSorted });
+		let filteredIncident: IncidentData[] = [];
+		let companies: CompanyData | undefined = await DataHandler.getCompany(this.state.id);
+		if (companies !== undefined) {
+			let activeCompanyIncidents: Map<string, IncidentData> = DataHandler.getIncidentDataNoUpdate();
+			for (let incidentReference of companies.incidentReferences) {
+				let incident: IncidentData | undefined = activeCompanyIncidents.get(incidentReference);
+				if (incident !== undefined) filteredIncident.push(incident);
+			}
+		}
+		this.setState({ incidents: filteredIncident, loading: false });
 	}
 
 	private onRefresh(finished: () => void): void {

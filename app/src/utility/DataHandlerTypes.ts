@@ -38,6 +38,7 @@ export interface CompanyData extends CompanyResponse {
 	state: string;
 	secondaryState: string;
 	priority: number;
+	incidentReferences: string[];
 }
 
 export interface IncidentResponse {

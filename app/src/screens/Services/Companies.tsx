@@ -24,10 +24,6 @@ interface CompanyState {
 	state: number;
 }
 
-async function getCompanyData() {
-	return await DataHandler.getCompanies();
-}
-
 class Companies extends Component<any, CompanyState> {
 	state: CompanyState = {
 		loading: true,
@@ -37,19 +33,31 @@ class Companies extends Component<any, CompanyState> {
 	};
 
 	componentDidMount() {
-		getCompanyData().then((value) =>
-			this.setState({
-				loading: false,
-				companies: value
-			})
-		);
-		this.props.navigation.addListener('focus', () => {
-			getCompanyData().then((value) =>
-				this.setState({
-					loading: false,
-					companies: value
-				})
-			);
+		this.getCompanyData();
+	}
+
+	private async getCompanyData(): Promise<void> {
+		let data: CompanyData[] = await DataHandler.getCompanies();
+		data = data
+			.filter((value) => this.filterCompanyList(value))
+			.sort((a, b) => {
+				if (a.priority === -1) return 1;
+				if (b.priority === -1) return -1;
+				if (a.priority > b.priority) return 1;
+				if (a.priority < b.priority) return -1;
+				let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
+				let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
+				let aNone = a.state === 'none' || a.state === 'resolved';
+				let bNone = b.state === 'none' || b.state === 'resolved';
+				if (a.state === 'error' && bLessThanError) return -1;
+				if (b.state === 'error' && aLessThanError) return 1;
+				if (a.state === 'acknowledged' && bNone) return -1;
+				if (b.state === 'acknowledged' && aNone) return 1;
+				return 0;
+			});
+		this.setState({
+			loading: false,
+			companies: data
 		});
 	}
 
@@ -75,9 +83,13 @@ class Companies extends Component<any, CompanyState> {
 		});
 	}
 
+	private onRefresh(finished: () => void): void {
+		this.getCompanyData().then(() => finished());
+	}
+
 	private servicesRender(navigation: NavigationProp<any>) {
 		return (
-			<ContentContainer appBar={this.AppBar()}>
+			<ContentContainer appBar={this.AppBar()} onRefresh={(finished) => this.onRefresh(finished)}>
 				{this.state.loading ? (
 					<View style={styles.activity}>
 						<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
@@ -87,23 +99,9 @@ class Companies extends Component<any, CompanyState> {
 						<View style={{ width: '100%' }}>
 							<FlatList
 								ListFooterComponent={<View style={{ padding: 8 }} />}
-								style={{ height: '100%' }}
+								style={{ height: '100%', padding: 16 }}
 								showsVerticalScrollIndicator={false}
-								data={this.state.companies
-									.filter((value) => this.filterCompanyList(value))
-									.sort((a, b) => {
-										if (a.priority > b.priority) return 1;
-										if (a.priority < b.priority) return -1;
-										let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
-										let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
-										let aNone = a.state === 'none' || a.state === 'resolved';
-										let bNone = b.state === 'none' || b.state === 'resolved';
-										if (a.state === 'error' && bLessThanError) return -1;
-										if (b.state === 'error' && aLessThanError) return 1;
-										if (a.state === 'acknowledged' && bNone) return -1;
-										if (b.state === 'acknowledged' && aNone) return 1;
-										return 0;
-									})}
+								data={this.state.companies}
 								renderItem={(info) => (
 									<CompanyCard
 										priority={info.item.priority}
@@ -167,8 +165,7 @@ const styles = StyleSheet.create({
 	},
 	contentContainer: {
 		flex: 1,
-		width: '100%',
-		padding: 16
+		width: '100%'
 	},
 	bar: {
 		alignItems: 'center'

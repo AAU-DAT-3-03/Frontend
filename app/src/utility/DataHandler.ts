@@ -15,10 +15,9 @@ import {
 import LocalStorage from './LocalStorage';
 import { IncidentState } from '../components/StatusIcon';
 import Logger from './Logger';
-import companies from '../screens/Services/Companies';
 
 const longDataCacheTime: number = 300000;
-const shortDataCacheTime: number = 300000;
+const shortDataCacheTime: number = 5000;
 
 class DataHandler {
 	private static ip: string = 'http://10.92.0.231/';
@@ -28,6 +27,7 @@ class DataHandler {
 	private static activeIncidents: [number, Map<string, IncidentData>] = [0, new Map<string, IncidentData>()];
 	private static resolvedIncidents: [number, Map<string, IncidentData>] = [0, new Map<string, IncidentData>()];
 	private static logger: Logger = new Logger('DataHandler');
+
 	public static getCookiesMap(response: Response): Map<string, string> | undefined {
 		if (!response.headers.has('set-cookie')) return undefined;
 
@@ -72,14 +72,13 @@ class DataHandler {
 
 		response.msg.forEach((value: IncidentResponse): void => {
 			let companyId: string = servicesMap.get(value.alarms.at(0)?.serviceId ?? '') ?? '';
-			console.log(companyId, value.alarms.at(0)?.serviceId);
 			incidentMap.set(value.id, { ...value, companyId: companyId, companyName: companyMap.get(companyId) ?? '' });
 		});
 		return incidentMap;
 	}
 
 	public static async getIncidentsData(): Promise<IncidentData[]> {
-		if (Date.now() - this.activeIncidents[0] < 5000 && this.activeIncidents[1].size > 0)
+		if (Date.now() - this.activeIncidents[0] < shortDataCacheTime && this.activeIncidents[1].size > 0)
 			return Array.from(this.activeIncidents[1].values());
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
@@ -115,7 +114,7 @@ class DataHandler {
 			let data: IncidentData | undefined = this.activeIncidents[1].get(id);
 			if (data !== undefined) return data;
 		}
-		this.logger.info('Loading a single incident with id: ${id}');
+		this.logger.info(`Loading a single incident with id: ${id}`);
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
 			networkHandler.get(DataHandler.ip + `incidents?id=${id}`, undefined, async (value) => {
@@ -123,11 +122,32 @@ class DataHandler {
 				if (value) {
 					let response: ServerResponse<IncidentResponse[]> = JSON.parse(JSON.stringify(value[0]));
 					if (response.statusCode === 200 || response.statusCode === 0) {
-						let companyData: CompanyResponse[] = (await this.getCompanyData()).filter(
-							(value1: CompanyResponse): boolean => value1.id === response.msg[0].companyId
-						);
-						let companyName: string = companyData.at(0)?.name ?? '';
-						let incidentData: IncidentData = { ...response.msg[0], companyName: companyName };
+						let companyMap: Map<string, string> = new Map<string, string>();
+						let servicesMap: Map<string, string> = new Map<string, string>();
+
+						let companyDataPromise: Promise<void> = new Promise(async (resolve) => {
+							let companyData: CompanyResponse[] = await this.getCompanyData();
+							companyData.forEach((value: CompanyResponse) => {
+								companyMap.set(value.id, value.name);
+							});
+							resolve();
+						});
+						let servicesDataPromise: Promise<void> = new Promise(async (resolve) => {
+							let servicesData: ServicesResponse[] = await this.getServicesData();
+							servicesData.forEach((value: ServicesResponse) => {
+								servicesMap.set(value.id, value.companyId);
+							});
+							resolve();
+						});
+						await Promise.all([servicesDataPromise, companyDataPromise]);
+
+						let companyId: string = servicesMap.get(response.msg[0].alarms.at(0)?.serviceId ?? '') ?? '';
+
+						let incidentData: IncidentData = {
+							...response.msg[0],
+							companyId: companyId,
+							companyName: companyMap.get(companyId) ?? ''
+						};
 						this.activeIncidents[1].set(incidentData.id, incidentData);
 						resolve(incidentData);
 						return;
@@ -142,24 +162,31 @@ class DataHandler {
 
 	public static async updateIncidentData(data: UpdateIncident): Promise<void> {
 		let networkHandler: Networking = new Networking();
-		networkHandler.put(
-			DataHandler.ip + 'incidents',
-			{
-				body: data
-			},
-			(value) => {
-				if (value) {
-					this.logger.info(value[0]);
-					return;
+		return await new Promise((resolve) => {
+			networkHandler.put(
+				DataHandler.ip + 'incidents',
+				{
+					body: data
+				},
+				(value) => {
+					if (value) {
+						this.logger.info(value[0]);
+					} else {
+						this.logger.warn(`${data.id} - Got nothing back`);
+					}
+					resolve();
 				}
-				this.logger.warn(`${data.id} - Got nothing back`);
-			}
-		);
+			);
+		});
+	}
+
+	public static getIncidentDataNoUpdate(): Map<string, IncidentData> {
+		return this.activeIncidents[1];
 	}
 
 	public static async getAlarmData(id: string) {
 		let networkHandler: Networking = new Networking();
-		networkHandler.get(DataHandler.ip + '');
+		networkHandler.get(DataHandler.ip + `alarm?id=${id}`);
 	}
 
 	public static async auth(): Promise<boolean> {
@@ -302,21 +329,31 @@ class DataHandler {
 	public static async getCompanies(): Promise<CompanyData[]> {
 		if (Date.now() - this.companies[0] < longDataCacheTime && this.companies[1].size > 0) return Array.from(this.companies[1].values());
 
-		let companies: CompanyResponse[] = await this.getCompanyData();
-		if (companies.length === 0) return [];
+		let companies: CompanyResponse[] = [];
+		let incidentData: IncidentData[] = [];
+		let companiesPromise: Promise<void> = new Promise(async (resolve) => {
+			companies = await this.getCompanyData();
+			resolve();
+		});
+		let incidentDataPromise: Promise<void> = new Promise(async (resolve) => {
+			incidentData = await this.getIncidentsData();
+			resolve();
+		});
+		await Promise.all([companiesPromise, incidentDataPromise]);
 
-		let incidentData: IncidentResponse[] = await this.getIncidentsData();
+		if (companies.length === 0) return [];
 		let companiesData: Map<string, CompanyData> = new Map<string, CompanyData>();
 		for (let i = 0; i < companies.length; i++) {
 			let priority: number = 5;
 			let state: IncidentState = 'none';
 			let secondaryState: IncidentState = 'none';
 			let stateFound: boolean = false;
+			let incidentReferences: string[] = [];
 			for (let incidentsKey in incidentData) {
 				let incident: IncidentResponse = incidentData[incidentsKey];
 
 				if (incident.companyId !== companies[i].id) continue;
-
+				incidentReferences.push(incident.id);
 				if (priority > incident.priority) priority = incident.priority;
 				if (stateFound) continue;
 
@@ -343,7 +380,8 @@ class DataHandler {
 				state: state,
 				name: companies[i].name,
 				secondaryState: secondaryState,
-				priority: priority === 5 ? -1 : priority
+				priority: priority === 5 ? -1 : priority,
+				incidentReferences: incidentReferences
 			});
 		}
 		this.companies = [Date.now(), companiesData];

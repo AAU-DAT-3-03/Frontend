@@ -76,10 +76,6 @@ class History extends Component<any, HistoryState> {
 	}
 
 	componentDidMount() {
-		this.props.navigation.addListener('focus', () => {
-			this.logger.info("I'm focused");
-			this.getIncidentData(this.state.period);
-		});
 		this.getIncidentData(this.state.period);
 	}
 

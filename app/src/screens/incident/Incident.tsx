@@ -35,11 +35,6 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		users: []
 	};
 
-	constructor(props: ScreenProps) {
-		super(props);
-		this.loadIncidentData();
-	}
-
 	private async loadIncidentData(): Promise<void> {
 		this.logger.info(`Loading data for: ${this.state.incidentId}`);
 		let incidentData: IncidentData | undefined = await DataHandler.getIncidentData(this.state.incidentId);
@@ -53,10 +48,17 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		DataHandler.getUsers().then((value: UserResponse[]) => {
 			this.setState({ users: value });
 		});
-
 		this.setState({
 			incidentData: incidentData,
 			loading: false
+		});
+	}
+
+	componentDidMount(): void {
+		requestAnimationFrame(() => {
+			setTimeout(() => {
+				this.loadIncidentData();
+			}, 0);
 		});
 	}
 

@@ -6,7 +6,7 @@ import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 
 import { IncidentCardHeader } from './incidentCard/IncidentCard';
 import { compareIncident, filterIncidentList } from '../screens/home/Home';
 import Color from 'color';
-import { IncidentData } from '../utility/DataHandlerTypes';
+import { CompanyData, IncidentData } from '../utility/DataHandlerTypes';
 import DataHandler from '../utility/DataHandler';
 import Logger from '../utility/Logger';
 
@@ -117,10 +117,15 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 	}
 
 	private async getIncidentData(): Promise<void> {
-		let activeCompanyIncidents: IncidentData[] = await DataHandler.getIncidentsData();
-		let filteredIncident: IncidentData[] = activeCompanyIncidents.filter((value) => {
-			return value.resolved && value.companyId === this.props.incident.companyId && value.id !== this.props.incident.id;
-		});
+		let filteredIncident: IncidentData[] = [];
+		let companies: CompanyData | undefined = await DataHandler.getCompany(this.props.incident.companyId);
+		if (companies !== undefined) {
+			let activeCompanyIncidents: Map<string, IncidentData> = DataHandler.getIncidentDataNoUpdate();
+			for (let incidentReference of companies.incidentReferences) {
+				let incident: IncidentData | undefined = activeCompanyIncidents.get(incidentReference);
+				if (incident !== undefined) filteredIncident.push(incident);
+			}
+		}
 		this.setState({ incidents: filteredIncident, refreshing: false });
 	}
 
