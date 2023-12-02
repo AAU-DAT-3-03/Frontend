@@ -82,3 +82,8 @@ export interface UpdateIncident {
 	removeCalls?: string[];
 	incidentNote?: string;
 }
+
+export interface MergeIncident {
+	first: string;
+	second: string;
+}

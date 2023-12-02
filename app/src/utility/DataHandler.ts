@@ -6,6 +6,7 @@ import {
 	IncidentData,
 	IncidentResponse,
 	LoginBody,
+	MergeIncident,
 	ServerResponse,
 	UpdateIncident,
 	UserResponse
@@ -20,7 +21,7 @@ class DataHandler {
 	private static companies: [number, Map<string, CompanyData>] = [0, new Map<string, CompanyData>()];
 	private static activeIncidents: [number, Map<string, IncidentData>] = [0, new Map<string, IncidentData>()];
 	private static resolvedIncidents: [number, Map<string, IncidentData>] = [0, new Map<string, IncidentData>()];
-	private static logger = new Logger('DataHandler');
+	private static logger: Logger = new Logger('DataHandler');
 	public static getCookiesMap(response: Response): Map<string, string> | undefined {
 		if (!response.headers.has('set-cookie')) return undefined;
 
@@ -300,6 +301,27 @@ class DataHandler {
 		}
 		this.companies = [Date.now(), companiesData];
 		return Array.from(companiesData.values());
+	}
+
+	public static async mergeIncidents(first: string, second: string): Promise<IncidentData | undefined> {
+		let networking: Networking = new Networking();
+		let body: MergeIncident = {
+			first: first,
+			second: second
+		};
+		let promise: Promise<IncidentData | undefined> = new Promise((resolve) => {
+			networking.post(DataHandler.ip + 'merge', { body: body }, (value) => {
+				if (value) {
+					let data: ServerResponse<IncidentData> = JSON.parse(JSON.stringify(value[0]));
+					if (data.statusCode === 200 || data.statusCode === 0) {
+						resolve(data.msg);
+						return;
+					}
+				}
+				resolve(undefined);
+			});
+		});
+		return promise;
 	}
 }
 
