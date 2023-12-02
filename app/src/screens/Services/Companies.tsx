@@ -92,8 +92,8 @@ class Companies extends Component<any, CompanyState> {
 								data={this.state.companies
 									.filter((value) => this.filterCompanyList(value))
 									.sort((a, b) => {
-                                        if (a.priority > b.priority) return 1;
-                                        if (a.priority < b.priority) return -1;
+										if (a.priority > b.priority) return 1;
+										if (a.priority < b.priority) return -1;
 										let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
 										let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
 										let aNone = a.state === 'none' || a.state === 'resolved';
@@ -106,6 +106,7 @@ class Companies extends Component<any, CompanyState> {
 									})}
 								renderItem={(info) => (
 									<CompanyCard
+										priority={info.item.priority}
 										company={info.item.name}
 										state={stateList.indexOf(info.item.state)}
 										onPress={() => this.onPress(info.item.name, info.item.id ?? -1, navigation)}
