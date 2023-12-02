@@ -15,7 +15,7 @@ interface IncidentCardHeaderProps {
 }
 
 interface UserListProps {
-	users?: UserResponse[];
+	users?: User[];
 	visible: boolean;
 	onDismiss: () => void;
 }

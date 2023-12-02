@@ -1,66 +1,72 @@
 import React, { Component } from 'react';
-import { Card, IconButton, Title, TouchableRipple } from 'react-native-paper';
+import { Card, IconButton, MD3Theme, Text, TouchableRipple } from 'react-native-paper';
 import { View, StyleSheet } from 'react-native';
 import { getCurrentTheme, Colors } from '../themes/ThemeManager';
-import Color from 'color';
+import { PriorityColor } from './incidentCard/IncidentCard';
 
 enum Status {
 	NONE,
 	ACKNOWLEDGED,
-	ERROR
+	ERROR,
+	ERRORACKNOWLEDGED
 }
 
 interface CompanyCardProps {
 	company: string;
 	state: Status;
+	priority: number;
 	onPress: (value: string) => void;
 }
 
-interface CompanyCardState {
-	state: Status;
-}
-
-class CompanyCard extends Component<CompanyCardProps, CompanyCardState> {
-	state: CompanyCardState = {
-		state: Status.NONE
-	};
-
-	constructor(props: CompanyCardProps) {
-		super(props);
-		this.state.state = props.state;
-	}
-
-	private acknowledgeIconRender() {
+class CompanyCard extends Component<CompanyCardProps> {
+	private iconRender(): React.JSX.Element {
+		let icon = 'exclamation';
+		let style = cardStyle(getCurrentTheme());
+		let barStyle = style.error;
+		if (this.props.state === Status.ACKNOWLEDGED) {
+			icon = 'account-check-outline';
+			barStyle = cardStyle(getCurrentTheme()).acknowledge;
+		}
 		return (
-			<>
-				<IconButton icon="account-check-outline" iconColor={'white'} size={25} style={{ backgroundColor: Colors.warn }} />
-				<View style={cardStyle().acknowledge} />
-			</>
-		);
-	}
-
-	private ErrorIconRender() {
-		return (
-			<>
-				<IconButton icon="exclamation" iconColor={getCurrentTheme().colors.onError} size={25} containerColor={Colors.error} />
-				<View style={cardStyle().error} />
-			</>
+			<View style={style.iconContainer}>
+				<IconButton
+					icon={icon}
+					iconColor={getCurrentTheme().colors.onError}
+					size={25}
+					containerColor={barStyle.backgroundColor}
+					style={{ marginRight: 16 }}
+				/>
+				<View style={style.barStyle}>
+					<View
+						style={
+							this.props.state === Status.ERRORACKNOWLEDGED ? style.acknowledge : { ...barStyle, backgroundColor: undefined }
+						}
+					/>
+					<View style={barStyle} />
+				</View>
+			</View>
 		);
 	}
 
 	render(): React.JSX.Element {
+		let style = cardStyle(getCurrentTheme());
 		return (
-			<Card style={cardStyle().card} elevation={0}>
+			<Card style={style.card} elevation={0}>
 				<TouchableRipple
-					style={{ borderRadius: cardStyle().cardContent.borderRadius }}
+					style={{ borderRadius: style.cardContent.borderRadius }}
 					borderless={true}
 					onPress={() => this.props.onPress(this.props.company)}
-					rippleColor={Color(getCurrentTheme().colors.onSurface).alpha(0.3).toString()}
 				>
-					<Card.Content style={cardStyle().cardContent}>
-						<Title style={cardStyle().beer}>{this.props.company}</Title>
-						{this.state.state === Status.ACKNOWLEDGED ? this.acknowledgeIconRender() : null}
-						{this.state.state === Status.ERROR ? this.ErrorIconRender() : null}
+					<Card.Content style={style.cardContent}>
+						<View style={style.beer}>
+							<Text variant={'titleLarge'}>{this.props.company}</Text>
+							{this.props.priority === -1 ? null : (
+								<Text variant={'titleSmall'} style={{ color: PriorityColor(this.props.priority) }}>
+									Priority {this.props.priority}
+								</Text>
+							)}
+						</View>
+						{this.props.state !== Status.NONE ? this.iconRender() : null}
 					</Card.Content>
 				</TouchableRipple>
 			</Card>
@@ -68,12 +74,12 @@ class CompanyCard extends Component<CompanyCardProps, CompanyCardState> {
 	}
 }
 
-const cardStyle = () => {
+const cardStyle = (theme: MD3Theme) => {
 	return StyleSheet.create({
 		cardContent: {
 			borderRadius: 16,
 			flexDirection: 'row',
-			justifyContent: 'space-evenly',
+			justifyContent: 'space-between',
 			alignItems: 'center',
 			paddingRight: 0,
 			paddingTop: 0,
@@ -83,28 +89,34 @@ const cardStyle = () => {
 		card: {
 			marginBottom: 8,
 			marginTop: 8,
-			backgroundColor: getCurrentTheme().colors.elevation.level2,
+			backgroundColor: theme.colors.elevation.level2,
 			height: 88
 		},
 		error: {
 			backgroundColor: Colors.error,
 			width: 14,
-			height: '100%',
-			borderTopRightRadius: 10,
-			borderBottomRightRadius: 10,
-			marginRight: 0.4
+			height: '100%'
 		},
 		acknowledge: {
 			backgroundColor: Colors.warn,
 			width: 14,
-			height: '100%',
-			borderTopRightRadius: 10,
-			borderBottomRightRadius: 10,
-			marginRight: 0.4
+			height: '100%'
 		},
 		beer: {
-			color: getCurrentTheme().colors.onSurface,
-			flex: 6
+			flexDirection: 'column',
+			flexWrap: 'wrap',
+			color: theme.colors.onSurface
+		},
+		barStyle: {
+			flexDirection: 'row',
+			gap: 0,
+			height: '100%'
+		},
+		iconContainer: {
+			height: '100%',
+			flexDirection: 'row',
+			flexWrap: 'wrap',
+			alignItems: 'center'
 		}
 	});
 };

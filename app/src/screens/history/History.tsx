@@ -94,12 +94,12 @@ class History extends Component<any, HistoryState> {
 								key={index}
 								incident={value}
 								onClickIncident={(id) =>
-									navigation.navigate('Incident', {
+									navigation.navigate('IncidentHistory', {
 										id: id
 									})
 								}
 								onClickAlarm={(id) =>
-									navigation.navigate('Alarm', {
+									navigation.navigate('AlarmHistory', {
 										id: id
 									})
 								}
@@ -140,10 +140,10 @@ class History extends Component<any, HistoryState> {
 				<Stack.Screen options={{ headerShown: false }} name="HomeRender">
 					{(props: ScreenProps) => this.HistoryRender(props.navigation)}
 				</Stack.Screen>
-				<Stack.Screen options={{ headerShown: false }} name="Incident">
+				<Stack.Screen options={{ headerShown: false }} name="IncidentHistory">
 					{(props: ScreenProps) => <Incident {...props} />}
 				</Stack.Screen>
-				<Stack.Screen options={{ headerShown: false }} name="Alarm">
+				<Stack.Screen options={{ headerShown: false }} name="AlarmHistory">
 					{(props: ScreenProps) => <Alarm {...props} />}
 				</Stack.Screen>
 			</Stack.Navigator>

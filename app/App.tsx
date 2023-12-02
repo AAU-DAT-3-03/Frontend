@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 import { AppRegistry } from 'react-native';
-import { CommonActions, NavigationContainer, NavigationProp, RouteProp } from '@react-navigation/native';
+import { NavigationContainer, NavigationProp, RouteProp } from '@react-navigation/native';
 import 'react-native-gesture-handler';
 import Home from './src/screens/home/Home';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { BottomNavigation, Icon, PaperProvider } from 'react-native-paper';
+import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Icon, PaperProvider } from 'react-native-paper';
 import History from './src/screens/history/History';
 import Companies from './src/screens/Services/Companies';
 import LocalStorage from './src/utility/LocalStorage';
 import Login from './src/screens/login/Login';
 import DataHandler from './src/utility/DataHandler';
 import Logger from './src/utility/Logger';
+import ButtonBarTabBar from './src/components/ButtonBarTabBar';
 
 export let serverIp = '';
 
@@ -75,38 +76,8 @@ export class AppRender extends Component {
 						screenOptions={{
 							headerShown: false
 						}}
-						tabBar={({ navigation, state, descriptors, insets }) => (
-							<BottomNavigation.Bar
-								navigationState={state}
-								safeAreaInsets={insets}
-								onTabPress={({ route, preventDefault }) => {
-									const event = navigation.emit({
-										type: 'tabPress',
-										target: route.key,
-										canPreventDefault: true
-									});
-
-									if (event.defaultPrevented) {
-										preventDefault();
-									} else {
-										navigation.dispatch({
-											...CommonActions.navigate(route.name, route.params),
-											target: state.key
-										});
-									}
-								}}
-								renderIcon={({ route, focused, color }) => {
-									const { options } = descriptors[route.key];
-									if (options.tabBarIcon) {
-										return options.tabBarIcon({ focused, color, size: 24 });
-									}
-									return null;
-								}}
-								getLabelText={({ route }) => {
-									const { options } = descriptors[route.key];
-									return options.tabBarLabel?.toString();
-								}}
-							/>
+						tabBar={({ navigation, state, descriptors, insets }: BottomTabBarProps) => (
+							<ButtonBarTabBar navigation={navigation} state={state} descriptors={descriptors} insets={insets} />
 						)}
 					>
 						<Tab.Screen
@@ -114,7 +85,7 @@ export class AppRender extends Component {
 							component={Companies}
 							options={{
 								headerShown: false,
-								tabBarLabel: 'Overview',
+								tabBarLabel: 'Companies',
 								tabBarIcon: ({ color, size }) => {
 									return <Icon source="view-list" size={size} color={color} />;
 								}
@@ -125,7 +96,7 @@ export class AppRender extends Component {
 							component={Home}
 							options={{
 								headerShown: false,
-								tabBarLabel: 'Home',
+								tabBarLabel: 'Incidents',
 								tabBarIcon: ({ color, size }) => {
 									return <Icon source="home" size={size} color={color} />;
 								}

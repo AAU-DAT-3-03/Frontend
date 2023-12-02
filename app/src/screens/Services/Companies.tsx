@@ -10,6 +10,8 @@ import { ScreenProps } from '../../../App';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import DataHandler from '../../utility/DataHandler';
 import { CompanyData } from '../../utility/DataHandlerTypes';
+import Incident from '../incident/Incident';
+import Alarm from '../alarm/Alarm';
 
 const Stack = createStackNavigator();
 
@@ -41,6 +43,14 @@ class Companies extends Component<any, CompanyState> {
 				companies: value
 			})
 		);
+		this.props.navigation.addListener('focus', () => {
+			getCompanyData().then((value) =>
+				this.setState({
+					loading: false,
+					companies: value
+				})
+			);
+		});
 	}
 
 	private AppBar(): React.JSX.Element {
@@ -82,6 +92,8 @@ class Companies extends Component<any, CompanyState> {
 								data={this.state.companies
 									.filter((value) => this.filterCompanyList(value))
 									.sort((a, b) => {
+                                        if (a.priority > b.priority) return 1;
+                                        if (a.priority < b.priority) return -1;
 										let aLessThanError = a.state === 'acknowledged' || a.state === 'none' || a.state === 'resolved';
 										let bLessThanError = b.state === 'acknowledged' || b.state === 'none' || b.state === 'resolved';
 										let aNone = a.state === 'none' || a.state === 'resolved';
@@ -122,10 +134,7 @@ class Companies extends Component<any, CompanyState> {
 					query[0] = true;
 				}
 			}
-			if (queries.filter((value) => value[0]).length === queries.length) {
-				return true;
-			}
-			return false;
+			return queries.filter((value) => value[0]).length === queries.length;
 		}
 		return true;
 	}
@@ -138,6 +147,12 @@ class Companies extends Component<any, CompanyState> {
 				</Stack.Screen>
 				<Stack.Screen options={{ headerShown: false }} name="ServiceList">
 					{(props: ScreenProps) => <CompanyServiceList {...props} />}
+				</Stack.Screen>
+				<Stack.Screen options={{ headerShown: false }} name="IncidentCompanies">
+					{(props: ScreenProps) => <Incident {...props} />}
+				</Stack.Screen>
+				<Stack.Screen options={{ headerShown: false }} name="AlarmCompanies">
+					{(props: ScreenProps) => <Alarm {...props} />}
 				</Stack.Screen>
 			</Stack.Navigator>
 		);
