@@ -79,11 +79,7 @@ class Login extends Component<LoginProps> {
 							secureTextEntry={true}
 							textContentType={'password'}
 						/>
-						<Button
-							buttonColor={Colors.error}
-							textColor={getCurrentTheme().colors.onSurface}
-							onPress={() => this.handleLogin()}
-						>
+						<Button buttonColor={Colors.error} textColor={'white'} onPress={() => this.handleLogin()}>
 							Login
 						</Button>
 					</View>

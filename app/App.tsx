@@ -13,8 +13,6 @@ import DataHandler from './src/utility/DataHandler';
 import Logger from './src/utility/Logger';
 import ButtonBarTabBar from './src/components/ButtonBarTabBar';
 
-export let serverIp = '';
-
 export interface ScreenProps {
 	navigation: NavigationProp<any>;
 	route: RouteProp<any>;
@@ -38,9 +36,6 @@ export class AppRender extends Component {
 		AppRender.main.forceUpdate();
 	}
 
-	/**
-	 * @todo delete this
-	 */
 	componentDidMount() {
 		let key: string = LocalStorage.getSettingsValue('authKey');
 		if (key === 'null' || key === '' || key === null) {
@@ -56,7 +51,7 @@ export class AppRender extends Component {
 	render() {
 		let key: string = LocalStorage.getSettingsValue('authKey');
 		if (key === 'null' || key === '' || key === null) {
-			this.logger.warn('User needs to log in');
+			this.logger.info('User needs to log in');
 			return (
 				<Login
 					onLoggedIn={() => {
