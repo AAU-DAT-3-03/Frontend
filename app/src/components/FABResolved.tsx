@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { FAB, Icon, IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
+import { Button, Icon, IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { Colors, getCurrentTheme } from '../themes/ThemeManager';
 
@@ -90,14 +90,17 @@ class FABResolved extends Component<FABResolvedProps> {
 	render(): React.JSX.Element {
 		return (
 			<>
-				<FAB
-					style={styles.fabbutton}
-					elevation={0}
-					icon="check-bold"
-					onPress={() => this.resolvedTimeout()}
-					rippleColor={getCurrentTheme().colors.primary}
-				/>
-
+				<View style={styles.fabcontainer}>
+					<Button
+						mode={'contained'}
+						style={styles.fabbutton}
+						icon="check-bold"
+						onPress={() => this.resolvedTimeout()}
+						rippleColor={getCurrentTheme().colors.primary}
+					>
+						Resolve
+					</Button>
+				</View>
 				<ResolvedConfirm
 					onResolve={() => {
 						this.props.onResolve();
@@ -127,14 +130,16 @@ class FABResolved extends Component<FABResolvedProps> {
 }
 
 const styles = StyleSheet.create({
+	fabcontainer: {
+		padding: 8,
+		backgroundColor: 'none',
+		width: 'auto',
+		flexDirection: 'column',
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
 	fabbutton: {
-		bottom: 16,
-		right: 16,
-		position: 'absolute',
-		overflow: 'hidden',
-		borderRadius: 30,
-		backgroundColor: Colors.allGood,
-		zIndex: 10000
+		backgroundColor: Colors.allGood
 	},
 	fab: {
 		backgroundColor: getCurrentTheme().colors.onTertiary,
