@@ -4,7 +4,6 @@ import { StyleSheet, View } from 'react-native';
 import { Colors, getCurrentTheme } from '../../../themes/ThemeManager';
 import LocalStorage from '../../../utility/LocalStorage';
 import { AppRender } from '../../../../App';
-import DataHandler from '../../../utility/DataHandler';
 
 interface MenuProps {
 	visible: boolean;
@@ -54,10 +53,6 @@ class SettingsMenu extends Component<MenuProps> {
 								<View style={MenuStyle().row}>
 									<Text>Name</Text>
 									<Text>{this.state.username}</Text>
-								</View>
-								<View style={MenuStyle().row}>
-									<Text>Test</Text>
-									<Button onPress={async () => console.log(await DataHandler.getIncidentsData())}>Test</Button>
 								</View>
 							</Drawer.Section>
 						</View>

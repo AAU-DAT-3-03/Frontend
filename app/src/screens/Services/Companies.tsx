@@ -96,18 +96,23 @@ class Companies extends Component<any, CompanyState> {
 					<ScrollView contentContainerStyle={styles.contentContainer} style={styles.view} horizontal={true}>
 						<View style={{ width: '100%' }}>
 							<FlatList
-								ListFooterComponent={<View style={{ padding: 8 }} />}
-								style={{ height: '100%', padding: 16 }}
+								style={{ height: '100%', paddingHorizontal: 16, paddingVertical: 8 }}
 								showsVerticalScrollIndicator={false}
 								data={this.state.companies.filter((value) => this.filterCompanyList(value))}
-								renderItem={(info) => (
-									<CompanyCard
-										priority={info.item.priority}
-										company={info.item.name}
-										state={stateList.indexOf(info.item.state)}
-										onPress={() => this.onPress(info.item.name, info.item.id ?? -1, navigation)}
-									/>
-								)}
+								renderItem={(info) => {
+									let state: number = stateList.indexOf(info.item.state);
+									if (info.item.secondaryState !== 'none') {
+										state = 3;
+									}
+									return (
+										<CompanyCard
+											priority={info.item.priority}
+											company={info.item.name}
+											state={state}
+											onPress={() => this.onPress(info.item.name, info.item.id ?? -1, navigation)}
+										/>
+									);
+								}}
 							/>
 						</View>
 					</ScrollView>

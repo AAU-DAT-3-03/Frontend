@@ -62,10 +62,6 @@ class History extends Component<any, HistoryState> {
 		this.getIncidentData(this.state.period);
 	}
 
-	/**
-	 * @todo Get data from server instead with a period
-	 * @private
-	 */
 	private async getIncidentData(period: Period): Promise<void> {
 		let start: number = new Date(period.start[2], period.start[1] - 1, period.start[0]).getTime();
 		let end: number = new Date(period.end[2], period.end[1] - 1, period.end[0]).getTime();
