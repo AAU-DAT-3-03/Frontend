@@ -16,23 +16,31 @@ import { IncidentData, UpdateIncident, UserResponse } from '../../utility/DataHa
 import DataHandler from '../../utility/DataHandler';
 import LocalStorage from '../../utility/LocalStorage';
 import Logger from '../../utility/Logger';
+import Toast from '../../components/Toast';
 
 interface IncidentState {
 	incidentId: string;
 	incidentData: IncidentData | undefined;
 	loading: boolean;
 	users: UserResponse[];
+	toastMessage: string;
+	toastVisible: boolean;
+	toastIcon?: string;
 }
 
 class Incident extends Component<ScreenProps, IncidentState> {
 	private userName: string = LocalStorage.getSettingsValue('username');
 	private logger: Logger = new Logger('IncidentScreen');
+	private toastTimeout: NodeJS.Timeout | undefined;
 
 	state: IncidentState = {
 		incidentId: this.props.route.params?.id ?? '',
 		incidentData: undefined,
 		loading: true,
-		users: []
+		users: [],
+		toastMessage: '',
+		toastVisible: false,
+		toastIcon: undefined
 	};
 
 	private async loadIncidentData(): Promise<void> {
@@ -96,8 +104,11 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		);
 	}
 
-	private updateIncidentData(data: UpdateIncident): void {
-		DataHandler.updateIncidentData(data).then(() => this.loadIncidentData());
+	private updateIncidentData(data: UpdateIncident, toastText: string, toastIcon?: string): void {
+		DataHandler.updateIncidentData(data).then(() => {
+			this.toast(toastText, toastIcon);
+			this.loadIncidentData();
+		});
 	}
 
 	private incidentsRender(): React.JSX.Element {
@@ -107,13 +118,6 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		let editable: boolean = !this.state.incidentData.resolved;
 		return (
 			<View style={{ width: '100%', height: '100%' }}>
-				{editable ? (
-					<FABResolved
-						onResolve={() => {
-							this.updateIncidentData({ id: this.state.incidentId, resolved: true });
-						}}
-					/>
-				) : null}
 				<ScrollView showsVerticalScrollIndicator={false}>
 					<View style={IncidentScreenStylesheet.incidentContainer}>
 						<AddUser
@@ -122,15 +126,31 @@ class Incident extends Component<ScreenProps, IncidentState> {
 							type={'Assigned'}
 							usersAll={this.state.users}
 							removable={true}
-							onAdd={(user) => {
-								this.updateIncidentData({ id: this.state.incidentId, addUsers: [user] });
+							onAdd={(user, name) => {
+								this.updateIncidentData(
+									{ id: this.state.incidentId, addUsers: [user] },
+									`${name} has been assigned`,
+									'account'
+								);
 							}}
-							onRemove={(user) => this.updateIncidentData({ id: this.state.incidentId, removeUsers: [user] })}
+							onRemove={(user, name) =>
+								this.updateIncidentData(
+									{ id: this.state.incidentId, removeUsers: [user] },
+									`${name} has been removed`,
+									'account'
+								)
+							}
 						/>
 						<PrioritySelector
 							editable={editable}
 							state={this.state.incidentData?.priority}
-							onPress={(value) => this.updateIncidentData({ id: this.state.incidentId, priority: value })}
+							onPress={(value) =>
+								this.updateIncidentData(
+									{ id: this.state.incidentId, priority: value },
+									`Priority has been set to ${value}`,
+									'clipboard-list-outline'
+								)
+							}
 						/>
 						<AddUser
 							editable={editable}
@@ -138,7 +158,13 @@ class Incident extends Component<ScreenProps, IncidentState> {
 							type={'Called'}
 							usersAll={this.state.users}
 							removable={false}
-							onAdd={(user) => this.updateIncidentData({ id: this.state.incidentId, addCalls: [user] })}
+							onAdd={(user, name) =>
+								this.updateIncidentData(
+									{ id: this.state.incidentId, addCalls: [user] },
+									`${name} has been called`,
+									'account'
+								)
+							}
 						/>
 						<ContainerCard style={{ paddingBottom: 0 }}>
 							<ContainerCard.Content>
@@ -155,15 +181,35 @@ class Incident extends Component<ScreenProps, IncidentState> {
 							title={'incident'}
 							editable={editable}
 							noteInfo={this.state.incidentData?.incidentNote}
-							onChange={(text) => this.updateIncidentData({ id: this.state.incidentId, incidentNote: text })}
+							onChange={(text) =>
+								this.updateIncidentData(
+									{ id: this.state.incidentId, incidentNote: text },
+									`Note has been updated to: ${text.slice(0, Math.min(text.length, 10))}${text.length > 10 ? '...' : ''}`,
+									'note-outline'
+								)
+							}
 						/>
 						{editable ? (
-							<MergeIncident
-								incident={this.state.incidentData}
-								user={this.userName}
-								id={this.state.incidentId}
-								onMerge={() => this.loadIncidentData().then(() => this.forceUpdate())}
-							/>
+							<>
+								<MergeIncident
+									incident={this.state.incidentData}
+									user={this.userName}
+									id={this.state.incidentId}
+									onMerge={() => {
+										this.toast('Incident(s) merged', 'merge');
+										this.loadIncidentData();
+									}}
+								/>
+								<FABResolved
+									onResolve={() => {
+										this.updateIncidentData(
+											{ id: this.state.incidentId, resolved: true },
+											'Incident has been resolved',
+											'check'
+										);
+									}}
+								/>
+							</>
 						) : null}
 						{this.state.incidentData.eventLog !== undefined ? (
 							<EventLogCard eventLog={this.state.incidentData?.eventLog} />
@@ -174,23 +220,45 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		);
 	}
 
+	private toast(text: string, icon?: string) {
+		this.setState({ toastVisible: true, toastIcon: icon, toastMessage: text });
+		this.toastTimeout = setTimeout(() => {
+			this.setState({ toastVisible: false });
+		}, 3000);
+	}
+
+	private toastOnDismiss() {
+		clearTimeout(this.toastTimeout);
+		this.toastTimeout = undefined;
+		this.setState({ toastVisible: false });
+	}
+
 	render(): React.JSX.Element {
 		return (
-			<ContentContainer
-				appBar={this.AppBar()}
-				onRefresh={async (finished) => {
-					await this.loadIncidentData();
-					finished();
-				}}
-			>
-				{this.state.loading ? (
-					<View style={IncidentScreenStylesheet.activity}>
-						<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
-					</View>
-				) : (
-					this.incidentsRender()
-				)}
-			</ContentContainer>
+			<View>
+				<Toast
+					message={this.state.toastMessage}
+					visible={this.state.toastVisible}
+					onDismiss={() => this.toastOnDismiss()}
+					icon={this.state.toastIcon}
+				/>
+
+				<ContentContainer
+					appBar={this.AppBar()}
+					onRefresh={async (finished) => {
+						await this.loadIncidentData();
+						finished();
+					}}
+				>
+					{this.state.loading ? (
+						<View style={IncidentScreenStylesheet.activity}>
+							<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
+						</View>
+					) : (
+						this.incidentsRender()
+					)}
+				</ContentContainer>
+			</View>
 		);
 	}
 }

@@ -91,8 +91,8 @@ interface AddUserProps {
 	usersAll: UserResponse[];
 	users: UserResponse[];
 	removable: boolean;
-	onRemove?: (user: string) => void;
-	onAdd?: (user: string) => void;
+	onRemove?: (user: string, name: string) => void;
+	onAdd?: (user: string, name: string) => void;
 	editable: boolean;
 }
 
@@ -108,8 +108,8 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 		super(props);
 	}
 
-	private onDeleteUser(user: string): void {
-		if (this.props.onRemove !== undefined) this.props.onRemove(user);
+	private onDeleteUser(user: string, name: string): void {
+		if (this.props.onRemove !== undefined) this.props.onRemove(user, name);
 	}
 
 	render(): React.JSX.Element {
@@ -130,8 +130,8 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 									phoneNr={user.phoneNumber}
 									onDelete={
 										this.props.removable && this.props.editable
-											? (user: string) => {
-													this.onDeleteUser(user);
+											? (user: string, name: string) => {
+													this.onDeleteUser(user, name);
 											  }
 											: undefined
 									}
@@ -170,7 +170,7 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 			return value.name === user.name && value.phoneNumber === user.phoneNumber;
 		});
 		if (users.length > 0) return;
-		if (this.props.onAdd !== undefined) this.props.onAdd(user.id);
+		if (this.props.onAdd !== undefined) this.props.onAdd(user.id, user.name);
 	}
 }
 

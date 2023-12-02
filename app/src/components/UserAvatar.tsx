@@ -8,7 +8,7 @@ interface UserAvatarProps {
 	name: string;
 	phoneNr: string;
 	id: string;
-	onDelete?: (user: string) => void;
+	onDelete?: (user: string, name: string) => void;
 }
 
 interface UserAvatarConfirmProps {
@@ -68,7 +68,7 @@ class UserAvatar extends Component<UserAvatarProps> {
 	render(): React.JSX.Element {
 		let onDelete = () => {
 			if (this.props.onDelete !== undefined) {
-				this.props.onDelete(this.props.id);
+				this.props.onDelete(this.props.id, this.props.name);
 			}
 		};
 		return (

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import ContainerCard from './ContainerCard';
 import { Button, Checkbox, IconButton, MD3Theme, Modal, Portal, Searchbar, Text } from 'react-native-paper';
 import { getCurrentTheme } from '../themes/ThemeManager';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
@@ -25,7 +24,7 @@ class MergeIncident extends Component<MergeIncidentProps> {
 
 	render(): React.JSX.Element {
 		return (
-			<ContainerCard>
+			<View>
 				<MergeIncidentModal
 					user={this.props.user}
 					visible={this.state.modalVisible}
@@ -36,17 +35,14 @@ class MergeIncident extends Component<MergeIncidentProps> {
 					}}
 					incident={this.props.incident}
 				/>
-				<ContainerCard.Content>
-					<Button
-						style={{ marginHorizontal: 16 }}
-						buttonColor={getCurrentTheme().colors.primary}
-						textColor={'white'}
-						onPress={() => this.setState({ modalVisible: true })}
-					>
-						Merge with incident
-					</Button>
-				</ContainerCard.Content>
-			</ContainerCard>
+				<Button
+					buttonColor={getCurrentTheme().colors.primary}
+					textColor={'white'}
+					onPress={() => this.setState({ modalVisible: true })}
+				>
+					Merge with incident
+				</Button>
+			</View>
 		);
 	}
 }
