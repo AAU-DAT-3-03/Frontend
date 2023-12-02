@@ -8,10 +8,11 @@ import { getCurrentTheme } from '../../themes/ThemeManager';
 import Incident from '../incident/Incident';
 import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
-import { ScreenProps } from '../../../App';
+import { AppRender, ScreenProps } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
 import DataHandler from '../../utility/DataHandler';
 import { IncidentData, IncidentResponse, UserResponse } from '../../utility/DataHandlerTypes';
+import Logger from '../../utility/Logger';
 
 const Stack = createStackNavigator();
 
@@ -109,7 +110,6 @@ export async function filterIncidentList(incident: IncidentData, query: string):
 			}
 		}
 		let queriesHit: number = queries.filter((value) => value[0] === true).length;
-		console.log(queriesHit, queries.length, incident);
 		if (queriesHit === queries.length) {
 			return true;
 		}
@@ -119,6 +119,8 @@ export async function filterIncidentList(incident: IncidentData, query: string):
 }
 
 class Home extends Component<any, HomeState> {
+	private logger: Logger = new Logger('HomeScreen');
+
 	state: HomeState = {
 		menuVisible: false,
 		incidents: undefined,
@@ -129,6 +131,11 @@ class Home extends Component<any, HomeState> {
 	};
 
 	private loadingData: boolean = false;
+
+	constructor(props: any) {
+		super(props);
+		AppRender.home = this;
+	}
 
 	private AppBar(): React.JSX.Element {
 		return (
@@ -187,7 +194,7 @@ class Home extends Component<any, HomeState> {
 
 	componentDidMount() {
 		this.props.navigation.addListener('focus', () => {
-			console.log("[Home] : I'm focused");
+			this.logger.info("I'm focused");
 			this.getIncidentData().then(() => this.forceUpdate());
 		});
 		this.getIncidentData();
@@ -204,11 +211,11 @@ class Home extends Component<any, HomeState> {
 	private async getIncidentData() {
 		if (this.loadingData) return;
 		this.loadingData = true;
-		console.log('[Home] : Getting incident data');
+		this.logger.info('Getting incident data');
 		let incidentData: IncidentData[] = await DataHandler.getIncidentsData();
-		console.log('[Home] : Sorting incident data');
+		this.logger.info('Sorting incident data');
 		let incidentsSorted: IncidentData[] = this.sortIncidents(incidentData.filter((value) => !value.resolved));
-		console.log('[Home] : Rendering incident data');
+		this.logger.info('Rendering incident data');
 		this.setState({ loading: false, incidents: incidentsSorted });
 		this.loadingData = false;
 	}

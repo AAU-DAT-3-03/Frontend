@@ -26,6 +26,8 @@ export class AppRender extends Component {
 	private static main: AppRender;
 	private logger: Logger = new Logger('App');
 	private loadedBaseData: boolean = false;
+	public static home: Home;
+	public static history: History;
 
 	constructor(props: any) {
 		super(props);

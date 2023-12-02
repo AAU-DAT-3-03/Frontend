@@ -5,7 +5,7 @@ import Incident from '../incident/Incident';
 import Alarm from '../alarm/Alarm';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationProp } from '@react-navigation/native';
-import { ScreenProps } from '../../../App';
+import { AppRender, ScreenProps } from '../../../App';
 import SearchBarDateSelector, { Period } from '../../components/SearchBarDateSelector';
 import IncidentCard from '../../components/incidentCard/IncidentCard';
 import { filterIncidentList } from '../home/Home';
@@ -35,6 +35,7 @@ class History extends Component<any, HistoryState> {
 	};
 	constructor(props: any) {
 		super(props);
+		AppRender.history = this;
 	}
 
 	private AppBar(): React.JSX.Element {

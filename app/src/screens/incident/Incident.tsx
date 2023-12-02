@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
-import { ScreenProps } from '../../../App';
+import { AppRender, ScreenProps } from '../../../App';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import PrioritySelector from '../../components/PrioritySelector';
 import EventLogCard from '../../components/EventLogCard';
@@ -71,6 +71,8 @@ class Incident extends Component<ScreenProps, IncidentState> {
 					<View style={IncidentScreenStylesheet.insideHeader}>
 						<Appbar.BackAction
 							onPress={() => {
+								AppRender.home?.refresh();
+								AppRender.history?.refresh();
 								this.props.navigation.goBack();
 							}}
 						/>
@@ -172,7 +174,13 @@ class Incident extends Component<ScreenProps, IncidentState> {
 
 	render(): React.JSX.Element {
 		return (
-			<ContentContainer appBar={this.AppBar()}>
+			<ContentContainer
+				appBar={this.AppBar()}
+				onRefresh={async (finished) => {
+					await this.loadIncidentData();
+					finished();
+				}}
+			>
 				{this.state.loading ? (
 					<View style={IncidentScreenStylesheet.activity}>
 						<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />

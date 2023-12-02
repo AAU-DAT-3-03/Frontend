@@ -5,7 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import InformationCard from '../../components/InformationCard';
 import NoteCard from '../../components/NoteCard';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { ScreenProps } from '../../../App';
+import { AppRender, ScreenProps } from '../../../App';
 import Incident from '../incident/Incident';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { AlarmResponse } from '../../utility/DataHandlerTypes';
@@ -29,6 +29,10 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 		this.getAlarmData();
 	}
 
+	/**
+	 * @todo Implement this
+	 * @private
+	 */
 	private async getAlarmData() {
 		DataHandler.getAlarmData(this.state.id);
 	}
@@ -38,6 +42,8 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 			<>
 				<Appbar.BackAction
 					onPress={() => {
+						AppRender.home?.refresh();
+						AppRender.history?.refresh();
 						this.props.navigation.goBack();
 					}}
 				/>
@@ -54,7 +60,13 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 	 */
 	private alarmRender() {
 		return (
-			<ContentContainer appBar={this.AppBar()}>
+			<ContentContainer
+				appBar={this.AppBar()}
+				onRefresh={async (finished): Promise<void> => {
+					await this.getAlarmData();
+					finished();
+				}}
+			>
 				{this.state.loading ? (
 					<View style={container.activity}>
 						<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
