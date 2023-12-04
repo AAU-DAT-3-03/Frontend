@@ -2,18 +2,11 @@ import React, { Component } from 'react';
 import { Appbar, Searchbar } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import CompanyCard from '../../components/CompanyCard';
-import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationProp } from '@react-navigation/native';
-import CompanyServiceList from './sub_screens/CompanyServiceList';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from 'react-native';
-import { ScreenProps } from '../../../App';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import DataHandler from '../../utility/DataHandler';
 import { CompanyData } from '../../utility/DataHandlerTypes';
-import Incident from '../incident/Incident';
-import Alarm from '../alarm/Alarm';
-
-const Stack = createStackNavigator();
 
 let stateList = ['none', 'acknowledged', 'error'];
 
@@ -85,7 +78,27 @@ class Companies extends Component<any, CompanyState> {
 		this.getCompanyData().then(() => finished());
 	}
 
-	private servicesRender(navigation: NavigationProp<any>) {
+	private filterCompanyList(company: CompanyData): boolean {
+		if (this.state.query !== '') {
+			let queries: [boolean, string][] = this.state.query
+				.toLowerCase()
+				.split(' ')
+				.map((value) => [false, value]);
+			for (let query of queries) {
+				if (company.name.toLowerCase().includes(query[1].toLowerCase())) {
+					query[0] = true;
+					continue;
+				}
+				if (company.state.includes(query[1].toLowerCase())) {
+					query[0] = true;
+				}
+			}
+			return queries.filter((value) => value[0]).length === queries.length;
+		}
+		return true;
+	}
+
+	render(): React.JSX.Element {
 		return (
 			<ContentContainer appBar={this.AppBar()} onRefresh={(finished) => this.onRefresh(finished)}>
 				{this.state.loading ? (
@@ -109,7 +122,7 @@ class Companies extends Component<any, CompanyState> {
 											priority={info.item.priority}
 											company={info.item.name}
 											state={state}
-											onPress={() => this.onPress(info.item.name, info.item.id ?? -1, navigation)}
+											onPress={() => this.onPress(info.item.name, info.item.id ?? -1, this.props.navigation)}
 										/>
 									);
 								}}
@@ -118,45 +131,6 @@ class Companies extends Component<any, CompanyState> {
 					</ScrollView>
 				)}
 			</ContentContainer>
-		);
-	}
-
-	private filterCompanyList(company: CompanyData): boolean {
-		if (this.state.query !== '') {
-			let queries: [boolean, string][] = this.state.query
-				.toLowerCase()
-				.split(' ')
-				.map((value) => [false, value]);
-			for (let query of queries) {
-				if (company.name.toLowerCase().includes(query[1].toLowerCase())) {
-					query[0] = true;
-					continue;
-				}
-				if (company.state.includes(query[1].toLowerCase())) {
-					query[0] = true;
-				}
-			}
-			return queries.filter((value) => value[0]).length === queries.length;
-		}
-		return true;
-	}
-
-	render(): React.JSX.Element {
-		return (
-			<Stack.Navigator initialRouteName={'ServiceRender'}>
-				<Stack.Screen options={{ headerShown: false }} name="ServiceRender">
-					{(props: ScreenProps) => this.servicesRender(props.navigation)}
-				</Stack.Screen>
-				<Stack.Screen options={{ headerShown: false }} name="ServiceList">
-					{(props: ScreenProps) => <CompanyServiceList {...props} />}
-				</Stack.Screen>
-				<Stack.Screen options={{ headerShown: false }} name="IncidentCompanies">
-					{(props: ScreenProps) => <Incident {...props} />}
-				</Stack.Screen>
-				<Stack.Screen options={{ headerShown: false }} name="AlarmCompanies">
-					{(props: ScreenProps) => <Alarm {...props} />}
-				</Stack.Screen>
-			</Stack.Navigator>
 		);
 	}
 }

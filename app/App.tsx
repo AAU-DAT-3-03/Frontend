@@ -12,6 +12,10 @@ import Login from './src/screens/login/Login';
 import DataHandler from './src/utility/DataHandler';
 import Logger from './src/utility/Logger';
 import ButtonBarTabBar from './src/components/ButtonBarTabBar';
+import { createStackNavigator } from '@react-navigation/stack';
+import Incident from './src/screens/incident/Incident';
+import Alarm from './src/screens/alarm/Alarm';
+import CompanyServiceList from './src/screens/Services/sub_screens/CompanyServiceList';
 
 export interface ScreenProps {
 	navigation: NavigationProp<any>;
@@ -19,6 +23,57 @@ export interface ScreenProps {
 }
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+class NavigationBar extends Component {
+	render() {
+		return (
+			<Tab.Navigator
+				initialRouteName={'Home'}
+				screenOptions={{
+					headerShown: false
+				}}
+				tabBar={({ navigation, state, descriptors, insets }: BottomTabBarProps) => (
+					<ButtonBarTabBar navigation={navigation} state={state} descriptors={descriptors} insets={insets} />
+				)}
+			>
+				<Tab.Screen
+					name="Overview"
+					component={Companies}
+					options={{
+						headerShown: false,
+						tabBarLabel: 'Companies',
+						tabBarIcon: ({ color, size }) => {
+							return <Icon source="view-list" size={size} color={color} />;
+						}
+					}}
+				/>
+				<Tab.Screen
+					name="Home"
+					component={Home}
+					options={{
+						headerShown: false,
+						tabBarLabel: 'Incidents',
+						tabBarIcon: ({ color, size }) => {
+							return <Icon source="home" size={size} color={color} />;
+						}
+					}}
+				/>
+				<Tab.Screen
+					name="History"
+					component={History}
+					options={{
+						headerShown: false,
+						tabBarLabel: 'History',
+						tabBarIcon: ({ color, size }) => {
+							return <Icon source="history" size={size} color={color} />;
+						}
+					}}
+				/>
+			</Tab.Navigator>
+		);
+	}
+}
 
 export class AppRender extends Component {
 	private static main: AppRender;
@@ -68,49 +123,18 @@ export class AppRender extends Component {
 		return (
 			<PaperProvider>
 				<NavigationContainer theme={undefined}>
-					<Tab.Navigator
-						initialRouteName={'Home'}
-						screenOptions={{
-							headerShown: false
-						}}
-						tabBar={({ navigation, state, descriptors, insets }: BottomTabBarProps) => (
-							<ButtonBarTabBar navigation={navigation} state={state} descriptors={descriptors} insets={insets} />
-						)}
-					>
-						<Tab.Screen
-							name="Overview"
-							component={Companies}
-							options={{
-								headerShown: false,
-								tabBarLabel: 'Companies',
-								tabBarIcon: ({ color, size }) => {
-									return <Icon source="view-list" size={size} color={color} />;
-								}
-							}}
-						/>
-						<Tab.Screen
-							name="Home"
-							component={Home}
-							options={{
-								headerShown: false,
-								tabBarLabel: 'Incidents',
-								tabBarIcon: ({ color, size }) => {
-									return <Icon source="home" size={size} color={color} />;
-								}
-							}}
-						/>
-						<Tab.Screen
-							name="History"
-							component={History}
-							options={{
-								headerShown: false,
-								tabBarLabel: 'History',
-								tabBarIcon: ({ color, size }) => {
-									return <Icon source="history" size={size} color={color} />;
-								}
-							}}
-						/>
-					</Tab.Navigator>
+					<Stack.Navigator>
+						<Stack.Screen name={'main'} options={{ headerShown: false }} component={NavigationBar} />
+						<Stack.Screen options={{ headerShown: false }} name="Incident">
+							{(props: ScreenProps) => <Incident {...props} />}
+						</Stack.Screen>
+						<Stack.Screen options={{ headerShown: false }} name="Alarm">
+							{(props: ScreenProps) => <Alarm {...props} />}
+						</Stack.Screen>
+						<Stack.Screen options={{ headerShown: false }} name="ServiceList">
+							{(props: ScreenProps) => <CompanyServiceList {...props} />}
+						</Stack.Screen>
+					</Stack.Navigator>
 				</NavigationContainer>
 			</PaperProvider>
 		);

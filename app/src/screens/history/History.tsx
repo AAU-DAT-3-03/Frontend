@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
-import Incident from '../incident/Incident';
-import Alarm from '../alarm/Alarm';
-import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationProp } from '@react-navigation/native';
-import { AppRender, ScreenProps } from '../../../App';
+import { AppRender } from '../../../App';
 import SearchBarDateSelector, { Period } from '../../components/SearchBarDateSelector';
 import IncidentCard from '../../components/incidentCard/IncidentCard';
 import { filterIncidentList } from '../home/Home';
@@ -16,8 +13,6 @@ import DataHandler from '../../utility/DataHandler';
 import { IncidentData } from '../../utility/DataHandlerTypes';
 import Logger from '../../utility/Logger';
 import Color from 'color';
-
-const Stack = createStackNavigator();
 
 interface HistoryState {
 	incidents: IncidentData[] | undefined;
@@ -96,12 +91,12 @@ class History extends Component<any, HistoryState> {
 									key={index}
 									incident={value}
 									onClickIncident={(id) =>
-										navigation.navigate('IncidentHistory', {
+										navigation.navigate('Incident', {
 											id: id
 										})
 									}
 									onClickAlarm={(id) =>
-										navigation.navigate('AlarmHistory', {
+										navigation.navigate('Alarm', {
 											id: id
 										})
 									}
@@ -146,31 +141,15 @@ class History extends Component<any, HistoryState> {
 		);
 	}
 
-	private HistoryRender(navigation: NavigationProp<any>): React.JSX.Element {
-		return (
-			<ContentContainer appBar={this.AppBar()} onRefresh={(finished) => this.onRefresh(finished)}>
-				{this.state.incidents === undefined ? this.noIncidentsRender() : this.incidentsRender(navigation)}
-			</ContentContainer>
-		);
-	}
-
 	private onRefresh(finished: () => void): void {
 		this.getIncidentData(this.state.period).then(() => finished());
 	}
 
 	render(): React.JSX.Element {
 		return (
-			<Stack.Navigator initialRouteName={'Home'}>
-				<Stack.Screen options={{ headerShown: false }} name="HomeRender">
-					{(props: ScreenProps) => this.HistoryRender(props.navigation)}
-				</Stack.Screen>
-				<Stack.Screen options={{ headerShown: false }} name="IncidentHistory">
-					{(props: ScreenProps) => <Incident {...props} />}
-				</Stack.Screen>
-				<Stack.Screen options={{ headerShown: false }} name="AlarmHistory">
-					{(props: ScreenProps) => <Alarm {...props} />}
-				</Stack.Screen>
-			</Stack.Navigator>
+			<ContentContainer appBar={this.AppBar()} onRefresh={(finished) => this.onRefresh(finished)}>
+				{this.state.incidents === undefined ? this.noIncidentsRender() : this.incidentsRender(this.props.navigation)}
+			</ContentContainer>
 		);
 	}
 }

@@ -5,16 +5,11 @@ import IncidentCard from '../../components/incidentCard/IncidentCard';
 import SettingsMenu from './components/SettingsMenu';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
-import Incident from '../incident/Incident';
-import Alarm from '../alarm/Alarm';
-import { createStackNavigator } from '@react-navigation/stack';
-import { AppRender, ScreenProps } from '../../../App';
+import { AppRender } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
 import DataHandler from '../../utility/DataHandler';
 import { IncidentData, IncidentResponse, UserResponse } from '../../utility/DataHandlerTypes';
 import Logger from '../../utility/Logger';
-
-const Stack = createStackNavigator();
 
 export const compareIncident = (a: IncidentResponse, b: IncidentResponse): number => {
 	if (a.priority > b.priority) return 1;
@@ -320,31 +315,17 @@ class Home extends Component<any, HomeState> {
 		return incidentData;
 	}
 
-	private homeRender(navigation: any): React.JSX.Element {
-		return (
-			<ContentContainer appBar={this.AppBar()} onRefresh={(finished: () => void) => this.onRefresh(finished)}>
-				{this.state.incidents === undefined ? this.noIncidentsRender() : this.incidentsRender(navigation, this.state.filter)}
-			</ContentContainer>
-		);
-	}
-
 	private onRefresh(finished: () => void): void {
 		this.getIncidentData().then(() => finished());
 	}
 
 	render(): React.JSX.Element {
 		return (
-			<Stack.Navigator initialRouteName={'Home'}>
-				<Stack.Screen options={{ headerShown: false }} name="HomeRender">
-					{(props: ScreenProps) => this.homeRender(props.navigation)}
-				</Stack.Screen>
-				<Stack.Screen options={{ headerShown: false }} name="Incident">
-					{(props: ScreenProps) => <Incident {...props} />}
-				</Stack.Screen>
-				<Stack.Screen options={{ headerShown: false }} name="Alarm">
-					{(props: ScreenProps) => <Alarm {...props} />}
-				</Stack.Screen>
-			</Stack.Navigator>
+			<ContentContainer appBar={this.AppBar()} onRefresh={(finished: () => void) => this.onRefresh(finished)}>
+				{this.state.incidents === undefined
+					? this.noIncidentsRender()
+					: this.incidentsRender(this.props.navigation, this.state.filter)}
+			</ContentContainer>
 		);
 	}
 }

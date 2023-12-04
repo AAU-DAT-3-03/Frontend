@@ -164,12 +164,23 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		let styleSheet = style(getCurrentTheme());
 		return (
 			<Portal>
-				<Modal visible={this.state.confirmVisible} style={{ alignItems: 'center', justifyContent: 'center' }}>
+				<Modal
+					visible={this.state.confirmVisible}
+					style={{ alignItems: 'center', justifyContent: 'center' }}
+					onDismiss={() => this.setState({ confirmVisible: false })}
+				>
 					<View style={styleSheet.confirmContainer}>
+						<IconButton
+							style={styleSheet.closeButton}
+							icon={'close-thick'}
+							size={20}
+							onPress={() => this.setState({ confirmVisible: false })}
+						/>
 						<Text variant={'titleMedium'}>Are you sure you want to merge?</Text>
 						<Button
 							style={{ width: '100%' }}
 							buttonColor={getCurrentTheme().colors.primary}
+							textColor={'white'}
 							onPress={() => this.mergeIncidents()}
 						>
 							Merge
@@ -228,6 +239,7 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 							<Button
 								style={{ width: '100%' }}
 								buttonColor={getCurrentTheme().colors.primary}
+								textColor={'white'}
 								onPress={() => this.setState({ confirmVisible: true })}
 							>
 								Merge
@@ -317,9 +329,10 @@ const style = (currentTheme: MD3Theme) =>
 		confirmContainer: {
 			flexDirection: 'column',
 			backgroundColor: currentTheme.colors.surface,
-			padding: 16,
+			padding: 32,
+			paddingTop: 48,
 			gap: 16,
-			maxWidth: '70%',
+			maxWidth: '80%',
 			borderRadius: 16
 		},
 		mergingContainer: {
