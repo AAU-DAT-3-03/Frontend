@@ -33,17 +33,12 @@ export const compareIncident = (a: IncidentResponse, b: IncidentResponse): numbe
 		if (aIncidentError && bIncidentAcknowledged) return -1;
 	}
 
-	if (
-		bIncidentResolved === aIncidentResolved &&
-		aIncidentAcknowledged === bIncidentAcknowledged &&
-		a.companyId !== undefined &&
-		b.companyId !== undefined
-	) {
-		if (a.companyId.toLowerCase() < b.companyId.toLowerCase()) return -1;
-		if (a.companyId.toLowerCase() > b.companyId.toLowerCase()) return 1;
+	if (bIncidentResolved === aIncidentResolved && aIncidentAcknowledged === bIncidentAcknowledged) {
+		if (a.companyPublic.id.toLowerCase() < b.companyPublic.id.toLowerCase()) return -1;
+		if (a.companyPublic.id.toLowerCase() > b.companyPublic.id.toLowerCase()) return 1;
 	}
 
-	if (a.companyId === b.companyId) {
+	if (a.companyPublic.id === b.companyPublic.id) {
 		if (a.caseNumber === undefined || b.caseNumber === undefined) return 0;
 		if (a.caseNumber > b.caseNumber) return 1;
 		return -1;
@@ -74,7 +69,7 @@ export function filterIncidentList(incident: IncidentData, query: string): boole
 			.split(' ')
 			.map((value) => [false, value]);
 		for (let query of queries) {
-			if (incident.companyName.toLowerCase().includes(query[1])) {
+			if (incident.companyPublic.name.toLowerCase().includes(query[1])) {
 				query[0] = true;
 				continue;
 			}
@@ -129,7 +124,7 @@ class Home extends Component<any, HomeState> {
 		filter: 0,
 		query: ''
 	};
-
+	private changed: boolean = false;
 	private loadingData: boolean = false;
 
 	constructor(props: any) {
@@ -157,7 +152,10 @@ class Home extends Component<any, HomeState> {
 						icon={'filter'}
 						traileringIcon={'magnify'}
 						placeholder={'Search'}
-						onChangeText={(query: string) => this.setState({ query: query })}
+						onChangeText={(query: string) => {
+							this.changed = true;
+							this.setState({ query: query });
+						}}
 						value={this.state.query}
 						onClearIconPress={() => this.setState({ query: '' })}
 					/>
@@ -169,12 +167,15 @@ class Home extends Component<any, HomeState> {
 					>
 						<Menu.Item
 							title={'All incidents'}
-							leadingIcon={'all-inclusive'}
+							leadingIcon={'view-grid-outline'}
 							style={{
 								backgroundColor: this.state.filter === Filter.NONE ? getCurrentTheme().colors.primary : undefined,
 								width: '100%'
 							}}
-							onPress={() => this.setState({ filter: Filter.NONE, filterVisible: false })}
+							onPress={() => {
+								this.changed = true;
+								this.setState({ filter: Filter.NONE, filterVisible: false });
+							}}
 						/>
 						<Menu.Item
 							title={'My calls'}
@@ -183,7 +184,10 @@ class Home extends Component<any, HomeState> {
 								backgroundColor: this.state.filter === Filter.CALLED ? getCurrentTheme().colors.primary : undefined,
 								width: '100%'
 							}}
-							onPress={() => this.setState({ filter: Filter.CALLED, filterVisible: false })}
+							onPress={() => {
+								this.changed = true;
+								this.setState({ filter: Filter.CALLED, filterVisible: false });
+							}}
 						/>
 						<Menu.Item
 							title={'Assigned incidents'}
@@ -192,7 +196,10 @@ class Home extends Component<any, HomeState> {
 								backgroundColor: this.state.filter === Filter.ASSIGNED ? getCurrentTheme().colors.primary : undefined,
 								width: '100%'
 							}}
-							onPress={() => this.setState({ filter: Filter.ASSIGNED, filterVisible: false })}
+							onPress={() => {
+								this.changed = true;
+								this.setState({ filter: Filter.ASSIGNED, filterVisible: false });
+							}}
 						/>
 					</Menu>
 				</View>
@@ -222,6 +229,7 @@ class Home extends Component<any, HomeState> {
 		this.logger.info('Sorting incident data');
 		let incidentsSorted: IncidentData[] = this.sortIncidents(incidentData.filter((value) => !value.resolved));
 		this.logger.info('Rendering incident data');
+		this.changed = true;
 		this.setState({ incidents: undefined }, () => this.setState({ loading: false, incidents: incidentsSorted }));
 		this.loadingData = false;
 	}
@@ -252,26 +260,10 @@ class Home extends Component<any, HomeState> {
 
 	private incidentsRender(navigation: any, filter: Filter): React.JSX.Element {
 		let id: string = LocalStorage.getSettingsValue('id');
-		let incidentData = this.state.incidents?.filter((incident) => {
-			let shouldShow: boolean = false;
-			if (filter === Filter.NONE) {
-				shouldShow = true;
-			} else if (filter === Filter.CALLED) {
-				shouldShow =
-					incident.calls !== undefined && incident.calls?.filter((user: UserResponse): boolean => user.id === id).length > 0;
-			} else if (filter === Filter.ASSIGNED) {
-				shouldShow =
-					incident.users !== undefined &&
-					incident.users.filter((user: UserResponse): boolean => {
-						return user.id === id;
-					}).length > 0;
-			}
-			if (shouldShow) {
-				return filterIncidentList(incident, this.state.query);
-			}
-			return false;
-		});
-		this.logger.info('Re-rendering list', incidentData?.length ?? -1, this.state.incidents?.length);
+		let incidentData = this.state.incidents;
+		if (this.changed) {
+			incidentData = this.filterIncidentList(incidentData, filter, id);
+		}
 
 		return (
 			<ScrollView
@@ -301,6 +293,34 @@ class Home extends Component<any, HomeState> {
 				/>
 			</ScrollView>
 		);
+	}
+
+	private filterIncidentList(incidentData: IncidentData[] | undefined, filter: Filter, id: string): IncidentData[] | undefined {
+		if (incidentData !== undefined) {
+			incidentData = incidentData.filter((incident) => {
+				let shouldShow: boolean = false;
+				if (filter === Filter.NONE) {
+					shouldShow = true;
+				} else if (filter === Filter.CALLED) {
+					shouldShow =
+						incident.calls !== undefined && incident.calls?.filter((user: UserResponse): boolean => user.id === id).length > 0;
+				} else if (filter === Filter.ASSIGNED) {
+					shouldShow =
+						incident.users !== undefined &&
+						incident.users.filter((user: UserResponse): boolean => {
+							return user.id === id;
+						}).length > 0;
+				}
+				if (shouldShow) {
+					return filterIncidentList(incident, this.state.query);
+				}
+				return false;
+			});
+			this.changed = false;
+			this.logger.info('Filtered list', incidentData?.length ?? -1, this.state.incidents?.length);
+		}
+
+		return incidentData;
 	}
 
 	private homeRender(navigation: any): React.JSX.Element {
