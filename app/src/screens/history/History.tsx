@@ -15,6 +15,7 @@ import { compareDatesEqual, getToday } from '../../components/TimePicker/DateHel
 import DataHandler from '../../utility/DataHandler';
 import { IncidentData } from '../../utility/DataHandlerTypes';
 import Logger from '../../utility/Logger';
+import Color from 'color';
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,7 @@ interface HistoryState {
 	loading: boolean;
 	query: string;
 	period: Period;
+	updating: boolean;
 }
 
 class History extends Component<any, HistoryState> {
@@ -31,8 +33,10 @@ class History extends Component<any, HistoryState> {
 		incidents: undefined,
 		loading: true,
 		query: '',
-		period: { start: getToday(-30), end: getToday() }
+		period: { start: getToday(-30), end: getToday() },
+		updating: false
 	};
+
 	constructor(props: any) {
 		super(props);
 		AppRender.history = this;
@@ -48,7 +52,10 @@ class History extends Component<any, HistoryState> {
 								!compareDatesEqual(this.state.period.start, period.start) ||
 								!compareDatesEqual(this.state.period.end, period.end)
 							) {
-								this.getIncidentData(period);
+								console.log('test');
+								this.setState({ updating: true }, () => {
+									this.getIncidentData(period);
+								});
 							}
 							this.setState({ period: period, query: query.toLowerCase() });
 						}}
@@ -59,7 +66,9 @@ class History extends Component<any, HistoryState> {
 	}
 
 	public refresh(): void {
-		this.getIncidentData(this.state.period);
+		this.setState({ updating: true }, () => {
+			this.getIncidentData(this.state.period);
+		});
 	}
 
 	private async getIncidentData(period: Period): Promise<void> {
@@ -68,7 +77,7 @@ class History extends Component<any, HistoryState> {
 		this.logger.info(`Getting incident date for period: ${start}-${end} - ${new Date(start)}-${new Date(end)}`);
 		let incidentData: IncidentData[] = await DataHandler.getResolvedIncidentsData(start, end);
 		this.logger.info('Rendering Incidents');
-		this.setState({ incidents: incidentData, loading: false });
+		this.setState({ incidents: incidentData, loading: false, updating: false });
 	}
 
 	componentDidMount() {
@@ -77,27 +86,50 @@ class History extends Component<any, HistoryState> {
 
 	private incidentsRender(navigation: NavigationProp<any>): React.JSX.Element {
 		return (
-			<View style={HistoryStyle().incidentContainer}>
-				{this.state.incidents
-					?.filter((incident) => filterIncidentList(incident, this.state.query))
-					?.map((value, index) => {
-						return (
-							<IncidentCard
-								key={index}
-								incident={value}
-								onClickIncident={(id) =>
-									navigation.navigate('IncidentHistory', {
-										id: id
-									})
-								}
-								onClickAlarm={(id) =>
-									navigation.navigate('AlarmHistory', {
-										id: id
-									})
-								}
-							/>
-						);
-					})}
+			<View style={{ width: '100%', height: '100%', flexDirection: 'column' }}>
+				<View style={HistoryStyle().incidentContainer}>
+					{this.state.incidents
+						?.filter((incident) => filterIncidentList(incident, this.state.query))
+						?.map((value, index) => {
+							return (
+								<IncidentCard
+									key={index}
+									incident={value}
+									onClickIncident={(id) =>
+										navigation.navigate('IncidentHistory', {
+											id: id
+										})
+									}
+									onClickAlarm={(id) =>
+										navigation.navigate('AlarmHistory', {
+											id: id
+										})
+									}
+								/>
+							);
+						})}
+				</View>
+
+				<View
+					style={{
+						position: 'absolute',
+						top: 0,
+						left: 0,
+						width: '100%',
+						paddingHorizontal: 16,
+						height: '100%',
+						display: this.state.updating ? 'flex' : 'none',
+						backgroundColor: Color(getCurrentTheme().colors.onSurface).alpha(0.2).toString(),
+						flexDirection: 'row',
+						paddingTop: 50,
+						justifyContent: 'center',
+						alignItems: 'flex-start'
+					}}
+				>
+					<View style={{ backgroundColor: getCurrentTheme().colors.surface, borderRadius: 100, padding: 5 }}>
+						<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
+					</View>
+				</View>
 			</View>
 		);
 	}
