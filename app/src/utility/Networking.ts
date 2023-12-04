@@ -135,7 +135,7 @@ class Networking {
 				let response: Response = value[1];
 				return [JSON.parse(value[0]), response];
 			})
-			.catch((reason) => console.error(reason));
+			.catch((reason) => reason);
 	}
 }
 

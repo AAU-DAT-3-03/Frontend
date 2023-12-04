@@ -20,7 +20,7 @@ const longDataCacheTime: number = 300000;
 const shortDataCacheTime: number = 5000;
 
 class DataHandler {
-	private static ip: string = 'http://10.92.0.231/';
+	public static readonly ip: string = 'http://10.92.0.231/';
 	private static users: [number, Map<string, UserResponse>] = [0, new Map<string, UserResponse>()];
 	private static companies: [number, Map<string, CompanyData>] = [0, new Map<string, CompanyData>()];
 	private static services: [number, Map<string, ServicesResponse>] = [0, new Map<string, ServicesResponse>()];
@@ -169,7 +169,7 @@ class DataHandler {
 		});
 	}
 
-	public static async login(email: string, password: string): Promise<boolean> {
+	public static async login(email: string, password: string): Promise<[boolean, object]> {
 		let networkHandler: Networking = new Networking();
 		let settings: LoginBody = {
 			email: email,
@@ -188,19 +188,19 @@ class DataHandler {
 						let response: Response = value[1];
 						let cookies: Map<string, string> | undefined = this.getCookiesMap(response);
 						if (cookies === undefined) {
-							resolve(false);
+							resolve([false, value]);
 							return;
 						}
 						let token: string | undefined = cookies.get('authToken');
 						if (token === undefined) {
-							resolve(false);
+							resolve([false, value]);
 							return;
 						}
 						LocalStorage.setSettingsValue('authKey', token);
 						await this.auth();
-						resolve(true);
+						resolve([true, value]);
 					}
-					resolve(false);
+					resolve([false, {}]);
 				}
 			);
 		});

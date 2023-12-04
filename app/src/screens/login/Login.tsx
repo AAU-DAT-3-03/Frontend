@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import ContentContainer from '../../components/ContentContainer';
-import { Button, Text } from 'react-native-paper';
+import { Button, Modal, Portal, Text } from 'react-native-paper';
 import { StyleSheet, TextInput, View } from 'react-native';
 import { Colors, getCurrentTheme } from '../../themes/ThemeManager';
 import NeticLogo from '../../assets/NeticLogo';
 import DataHandler from '../../utility/DataHandler';
+import Color from 'color';
+import Networking from '../../utility/Networking';
 
 interface LoginProps {
 	onLoggedIn: () => void;
@@ -18,7 +20,10 @@ class Login extends Component<LoginProps> {
 	state = {
 		email: 'mads.byriel@gmail.com',
 		password: 'mads.byriel123',
-		error: false
+		error: false,
+		debug: false,
+		debugText: undefined,
+		debugTestText: undefined
 	};
 
 	private handleLogin() {
@@ -26,13 +31,14 @@ class Login extends Component<LoginProps> {
 			this.setState({ error: true });
 			return;
 		}
-
-		DataHandler.login(this.state.email, this.state.password).then((value: boolean) => {
-			if (value === true) {
+		this.setState({ error: false });
+		DataHandler.login(this.state.email, this.state.password).then((value: [boolean, object]) => {
+			if (value[0] === true) {
 				this.props.onLoggedIn();
 			} else {
 				this.setState({ error: true });
 			}
+			this.setState({ debugText: value });
 		});
 	}
 
@@ -84,8 +90,36 @@ class Login extends Component<LoginProps> {
 						</Button>
 					</View>
 				</View>
+				<Portal>
+					<Modal visible={this.state.debug} onDismiss={() => this.setState({ debug: false })}>
+						<View style={{ backgroundColor: getCurrentTheme().colors.surface }}>
+							<Text>Debug info</Text>
+							<Text>{DataHandler.ip}</Text>
+							<Text>{JSON.stringify(this.state.debugText)}</Text>
+							<Text>{JSON.stringify(this.state.debugTestText)}</Text>
+							<Button onPress={() => this.testConnection()}>Test</Button>
+						</View>
+					</Modal>
+				</Portal>
+				<Button
+					style={{ position: 'absolute', top: 5, right: 5, padding: 16 }}
+					buttonColor={getCurrentTheme().colors.background}
+					textColor={Color(getCurrentTheme().colors.primary).alpha(0.1).toString()}
+					onPress={() => this.setState({ debug: true })}
+				>
+					i
+				</Button>
 			</ContentContainer>
 		);
+	}
+
+	private testConnection() {
+		let networking: Networking = new Networking();
+		networking.get(DataHandler.ip, undefined, (value) => {
+			if (value) {
+				this.setState({ debugTestText: value });
+			}
+		});
 	}
 }
 

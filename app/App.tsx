@@ -105,37 +105,40 @@ export class AppRender extends Component {
 
 	render() {
 		let key: string = LocalStorage.getSettingsValue('authKey');
+		let loggedIn = true;
 		if (key === 'null' || key === '' || key === null) {
 			this.logger.info('User needs to log in');
-			return (
-				<Login
-					onLoggedIn={() => {
-						if (!this.loadedBaseData) {
-							DataHandler.getUsers();
-							DataHandler.getCompanies();
-							this.loadedBaseData = true;
-						}
-						this.forceUpdate();
-					}}
-				/>
-			);
+			loggedIn = false;
 		}
 		return (
 			<PaperProvider>
-				<NavigationContainer theme={undefined}>
-					<Stack.Navigator>
-						<Stack.Screen name={'main'} options={{ headerShown: false }} component={NavigationBar} />
-						<Stack.Screen options={{ headerShown: false }} name="Incident">
-							{(props: ScreenProps) => <Incident {...props} />}
-						</Stack.Screen>
-						<Stack.Screen options={{ headerShown: false }} name="Alarm">
-							{(props: ScreenProps) => <Alarm {...props} />}
-						</Stack.Screen>
-						<Stack.Screen options={{ headerShown: false }} name="ServiceList">
-							{(props: ScreenProps) => <CompanyServiceList {...props} />}
-						</Stack.Screen>
-					</Stack.Navigator>
-				</NavigationContainer>
+				{loggedIn ? (
+					<NavigationContainer theme={undefined}>
+						<Stack.Navigator>
+							<Stack.Screen name={'main'} options={{ headerShown: false }} component={NavigationBar} />
+							<Stack.Screen options={{ headerShown: false }} name="Incident">
+								{(props: ScreenProps) => <Incident {...props} />}
+							</Stack.Screen>
+							<Stack.Screen options={{ headerShown: false }} name="Alarm">
+								{(props: ScreenProps) => <Alarm {...props} />}
+							</Stack.Screen>
+							<Stack.Screen options={{ headerShown: false }} name="ServiceList">
+								{(props: ScreenProps) => <CompanyServiceList {...props} />}
+							</Stack.Screen>
+						</Stack.Navigator>
+					</NavigationContainer>
+				) : (
+					<Login
+						onLoggedIn={() => {
+							if (!this.loadedBaseData) {
+								DataHandler.getUsers();
+								DataHandler.getCompanies();
+								this.loadedBaseData = true;
+							}
+							this.forceUpdate();
+						}}
+					/>
+				)}
 			</PaperProvider>
 		);
 	}
