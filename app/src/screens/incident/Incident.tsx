@@ -56,6 +56,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		DataHandler.getUsers().then((value: UserResponse[]) => {
 			this.setState({ users: value });
 		});
+
 		this.setState({
 			incidentData: incidentData,
 			loading: false
@@ -81,9 +82,9 @@ class Incident extends Component<ScreenProps, IncidentState> {
 					<View style={IncidentScreenStylesheet.insideHeader}>
 						<Appbar.BackAction
 							onPress={() => {
+								this.props.navigation.goBack();
 								AppRender.home?.refresh();
 								AppRender.history?.refresh();
-								this.props.navigation.goBack();
 							}}
 						/>
 					</View>
@@ -91,7 +92,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 						{this.state.loading ? null : (
 							<View>
 								<Text variant={'titleLarge'}>
-									{this.state.incidentData?.companyName} #{this.state.incidentData?.caseNumber}
+									{this.state.incidentData?.companyPublic.name} #{this.state.incidentData?.caseNumber}
 								</Text>
 							</View>
 						)}
@@ -190,26 +191,41 @@ class Incident extends Component<ScreenProps, IncidentState> {
 							}
 						/>
 						{editable ? (
-							<>
-								<MergeIncident
-									incident={this.state.incidentData}
-									user={this.userName}
-									id={this.state.incidentId}
-									onMerge={() => {
-										this.toast('Incident(s) merged', 'merge');
-										this.loadIncidentData();
+							<ContainerCard>
+								<View
+									style={{
+										flexDirection: 'row',
+										flexWrap: 'nowrap',
+										gap: 16,
+										width: '100%',
+										paddingHorizontal: 16,
+										justifyContent: 'space-evenly'
 									}}
-								/>
-								<FABResolved
-									onResolve={() => {
-										this.updateIncidentData(
-											{ id: this.state.incidentId, resolved: true },
-											'Incident has been resolved',
-											'check'
-										);
-									}}
-								/>
-							</>
+								>
+									<View style={{ flexGrow: 2 }}>
+										<MergeIncident
+											incident={this.state.incidentData}
+											user={this.userName}
+											id={this.state.incidentId}
+											onMerge={() => {
+												this.toast('Incident(s) merged', 'merge');
+												this.loadIncidentData();
+											}}
+										/>
+									</View>
+									<View style={{ flexGrow: 2 }}>
+										<FABResolved
+											onResolve={() => {
+												this.updateIncidentData(
+													{ id: this.state.incidentId, resolved: true },
+													'Incident has been resolved',
+													'check'
+												);
+											}}
+										/>
+									</View>
+								</View>
+							</ContainerCard>
 						) : null}
 						{this.state.incidentData.eventLog !== undefined ? (
 							<EventLogCard eventLog={this.state.incidentData?.eventLog} />

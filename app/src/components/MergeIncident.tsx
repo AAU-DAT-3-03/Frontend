@@ -63,6 +63,7 @@ interface MergeIncidentModalState {
 	confirmVisible: boolean;
 	merging: boolean;
 	mergingCount: number;
+	loading: boolean;
 }
 
 class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeIncidentModalState> {
@@ -75,7 +76,8 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		refreshing: false,
 		confirmVisible: false,
 		merging: false,
-		mergingCount: 0
+		mergingCount: 0,
+		loading: true
 	};
 
 	componentDidMount(): void {
@@ -114,15 +116,16 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 
 	private async getIncidentData(): Promise<void> {
 		let filteredIncident: IncidentData[] = [];
-		let companies: CompanyData | undefined = await DataHandler.getCompany(this.props.incident.companyId);
+		let companies: CompanyData | undefined = await DataHandler.getCompany(this.props.incident.companyPublic.id);
 		if (companies !== undefined) {
 			let activeCompanyIncidents: Map<string, IncidentData> = DataHandler.getIncidentDataNoUpdate();
 			for (let incidentReference of companies.incidentReferences) {
+				if (incidentReference.includes(this.props.id)) continue;
 				let incident: IncidentData | undefined = activeCompanyIncidents.get(incidentReference);
 				if (incident !== undefined) filteredIncident.push(incident);
 			}
 		}
-		this.setState({ incidents: filteredIncident, refreshing: false });
+		this.setState({ incidents: filteredIncident, refreshing: false, loading: false });
 	}
 
 	private onRefresh(): void {
@@ -145,12 +148,14 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 						onPress={() => this.checkBoxSelector(value.id)}
 					/>
 				</View>
-				<IncidentCardHeader
-					collapsed={false}
-					onClickButton={undefined}
-					onClickIncident={() => this.checkBoxSelector(value.id)}
-					incident={value}
-				/>
+				<View style={{ flexShrink: 2 }}>
+					<IncidentCardHeader
+						collapsed={false}
+						onClickButton={undefined}
+						onClickIncident={() => this.checkBoxSelector(value.id)}
+						incident={value}
+					/>
+				</View>
 			</View>
 		);
 	}
@@ -180,45 +185,56 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 
 		return (
 			<>
-				{this.confirmMergeRender()}
-				<View style={styleSheet.modalContainerStyle}>
-					<IconButton style={styleSheet.closeButton} icon={'close-thick'} size={20} onPress={() => this.props.onDismiss()} />
-					<Text variant={'titleLarge'}>Merge incident</Text>
-					<Searchbar
-						style={{ backgroundColor: getCurrentTheme().colors.surfaceVariant }}
-						inputMode={'text'}
-						value={this.state.query}
-						onChange={(querystring) => this.setState({ query: querystring.nativeEvent.text })}
-					/>
+				{this.state.loading ? (
+					<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onSurface} />
+				) : (
+					<>
+						{this.confirmMergeRender()}
+						<View style={styleSheet.modalContainerStyle}>
+							<IconButton
+								style={styleSheet.closeButton}
+								icon={'close-thick'}
+								size={20}
+								onPress={() => this.props.onDismiss()}
+							/>
+							<Text variant={'titleLarge'}>Merge incident</Text>
+							<Searchbar
+								style={{ backgroundColor: getCurrentTheme().colors.surfaceVariant }}
+								inputMode={'text'}
+								value={this.state.query}
+								onChange={(querystring) => this.setState({ query: querystring.nativeEvent.text })}
+							/>
 
-					{this.state.incidents.length > 0 ? (
-						<ScrollView
-							style={{ width: '100%', height: '100%' }}
-							showsVerticalScrollIndicator={false}
-							refreshControl={this.getRefreshControl()}
-						>
-							<View style={styleSheet.incidentList}>
-								{this.state.incidents
-									.filter((incident) => filterIncidentList(incident, this.state.query))
-									.sort(compareIncident)
-									.map((value: IncidentData, key: number) => this.listItemRender(key, value))}
-							</View>
-						</ScrollView>
-					) : (
-						<View style={styleSheet.noActiveText}>
-							<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.outlineVariant }}>
-								No Active Incidents
-							</Text>
+							{this.state.incidents.length > 0 ? (
+								<ScrollView
+									style={{ width: '100%', height: '100%' }}
+									showsVerticalScrollIndicator={false}
+									refreshControl={this.getRefreshControl()}
+								>
+									<View style={styleSheet.incidentList}>
+										{this.state.incidents
+											.filter((incident) => filterIncidentList(incident, this.state.query))
+											.sort(compareIncident)
+											.map((value: IncidentData, key: number) => this.listItemRender(key, value))}
+									</View>
+								</ScrollView>
+							) : (
+								<View style={styleSheet.noActiveText}>
+									<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.outlineVariant }}>
+										No Active Incidents
+									</Text>
+								</View>
+							)}
+							<Button
+								style={{ width: '100%' }}
+								buttonColor={getCurrentTheme().colors.primary}
+								onPress={() => this.setState({ confirmVisible: true })}
+							>
+								Merge
+							</Button>
 						</View>
-					)}
-					<Button
-						style={{ width: '100%' }}
-						buttonColor={getCurrentTheme().colors.primary}
-						onPress={() => this.setState({ confirmVisible: true })}
-					>
-						Merge
-					</Button>
-				</View>
+					</>
+				)}
 			</>
 		);
 	}

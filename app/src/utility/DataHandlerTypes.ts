@@ -47,24 +47,23 @@ export interface IncidentResponse {
 	header: string;
 	acknowledgedBy: string;
 	creationDate: number;
-	companyId: string;
+	companyPublic: { id: string; name: string };
 	id: string;
 	users: UserResponse[];
 	calls: UserResponse[];
 	incidentNote: string;
-	eventLog?: EventLog[];
+	eventLog: EventLog[];
 	alarms: AlarmResponse[];
-	caseNumber?: number;
+	caseNumber: number;
 }
 
-export interface IncidentData extends IncidentResponse {
-	companyName: string;
-}
+export interface IncidentData extends IncidentResponse {}
 
 export interface EventLog {
-	user: string;
+	date: number;
+	userName: string;
+	userId: string;
 	message: string;
-	dateTime: number;
 }
 
 export interface AlarmResponse {

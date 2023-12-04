@@ -4,12 +4,7 @@ import { getCurrentTheme } from '../themes/ThemeManager';
 import { StyleSheet, View } from 'react-native';
 import Color from 'color';
 import ContainerCard from './ContainerCard';
-
-type EventLog = {
-	dateTime: number;
-	user: string;
-	message: string;
-};
+import { EventLog } from '../utility/DataHandlerTypes';
 
 interface EventLogProps {
 	eventLog: EventLog[];
@@ -44,14 +39,14 @@ class EventLogCardContent extends Component<EventLogContentProps> {
 	}
 
 	private header(): React.JSX.Element {
-		let date: Date = new Date(this.props.eventLog.dateTime);
+		let date: Date = new Date(this.props.eventLog.date);
 		let formattedDate: string = `${this.formatNumber(date.getDate())}/${this.formatNumber(date.getMonth() + 1)}/${date.getFullYear()}`;
 		let formattedTime: string = `${this.formatNumber(date.getHours())}:${this.formatNumber(date.getMinutes())}`;
 		return (
 			<View style={eventLogStyleSheet().logHeader}>
 				<View style={eventLogStyleSheet().avatarContainer}>
 					<Icon size={18} source={'account'} color={'white'} />
-					<Text style={eventLogStyleSheet().avatarText}>{this.props.eventLog.user}</Text>
+					<Text style={eventLogStyleSheet().avatarText}>{this.props.eventLog.userName}</Text>
 				</View>
 				<Text variant={'titleSmall'}>
 					{formattedDate} - {formattedTime}
@@ -115,7 +110,7 @@ class EventLogCard extends Component<EventLogProps> {
 					) : null}
 					{this.props.eventLog
 						.sort((a, b) => {
-							if (a.dateTime < b.dateTime) return 1;
+							if (a.date < b.date) return 1;
 							return -1;
 						})
 						.map((log: EventLog, key: number) => {

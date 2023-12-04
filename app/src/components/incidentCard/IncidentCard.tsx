@@ -101,7 +101,7 @@ export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 							</View>
 							<View style={{ flexShrink: 2 }}>
 								<Text variant={'titleMedium'} adjustsFontSizeToFit={true} allowFontScaling={true} style={{ width: '100%' }}>
-									{this.props.incident.companyName} #{this.props.incident.caseNumber}
+									{this.props.incident.companyPublic.name} #{this.props.incident.caseNumber}
 								</Text>
 								<Text style={{ color: PriorityColor(this.props.incident.priority) }} variant={'bodyMedium'}>
 									Priority {this.props.incident.priority}

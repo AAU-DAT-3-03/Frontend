@@ -51,30 +51,16 @@ class DataHandler {
 	private static async createIncidentMap(value: [Object, Response]): Promise<Map<string, IncidentData>> {
 		let response: ServerResponse<IncidentResponse[]> = JSON.parse(JSON.stringify(value[0]));
 		let incidentMap: Map<string, IncidentData> = new Map<string, IncidentData>();
-		let companyMap: Map<string, string> = new Map<string, string>();
-		let servicesMap: Map<string, string> = new Map<string, string>();
-
-		let companyDataPromise: Promise<void> = new Promise(async (resolve) => {
-			let companyData: CompanyResponse[] = await this.getCompanyData();
-			companyData.forEach((value: CompanyResponse) => {
-				companyMap.set(value.id, value.name);
-			});
-			resolve();
-		});
-		let servicesDataPromise: Promise<void> = new Promise(async (resolve) => {
-			let servicesData: ServicesResponse[] = await this.getServicesData();
-			servicesData.forEach((value: ServicesResponse) => {
-				servicesMap.set(value.id, value.companyId);
-			});
-			resolve();
-		});
-		await Promise.all([servicesDataPromise, companyDataPromise]);
 
 		response.msg.forEach((value: IncidentResponse): void => {
-			let companyId: string = servicesMap.get(value.alarms.at(0)?.serviceId ?? '') ?? '';
-			incidentMap.set(value.id, { ...value, companyId: companyId, companyName: companyMap.get(companyId) ?? '' });
+			incidentMap.set(value.id, value);
 		});
 		return incidentMap;
+	}
+
+	public static async getIncidentsDataMap(): Promise<Map<string, IncidentData>> {
+		await this.getIncidentsData();
+		return this.activeIncidents[1];
 	}
 
 	public static async getIncidentsData(): Promise<IncidentData[]> {
@@ -120,34 +106,10 @@ class DataHandler {
 			networkHandler.get(DataHandler.ip + `incidents?id=${id}`, undefined, async (value) => {
 				this.logger.info(`Got data from: incidents?id=${id}`);
 				if (value) {
+					this.logger.info(`Data from incident ${id}`, value);
 					let response: ServerResponse<IncidentResponse[]> = JSON.parse(JSON.stringify(value[0]));
 					if (response.statusCode === 200 || response.statusCode === 0) {
-						let companyMap: Map<string, string> = new Map<string, string>();
-						let servicesMap: Map<string, string> = new Map<string, string>();
-
-						let companyDataPromise: Promise<void> = new Promise(async (resolve) => {
-							let companyData: CompanyResponse[] = await this.getCompanyData();
-							companyData.forEach((value: CompanyResponse) => {
-								companyMap.set(value.id, value.name);
-							});
-							resolve();
-						});
-						let servicesDataPromise: Promise<void> = new Promise(async (resolve) => {
-							let servicesData: ServicesResponse[] = await this.getServicesData();
-							servicesData.forEach((value: ServicesResponse) => {
-								servicesMap.set(value.id, value.companyId);
-							});
-							resolve();
-						});
-						await Promise.all([servicesDataPromise, companyDataPromise]);
-
-						let companyId: string = servicesMap.get(response.msg[0].alarms.at(0)?.serviceId ?? '') ?? '';
-
-						let incidentData: IncidentData = {
-							...response.msg[0],
-							companyId: companyId,
-							companyName: companyMap.get(companyId) ?? ''
-						};
+						let incidentData: IncidentData = response.msg[0];
 						this.activeIncidents[1].set(incidentData.id, incidentData);
 						resolve(incidentData);
 						return;
@@ -327,7 +289,8 @@ class DataHandler {
 	}
 
 	public static async getCompanies(): Promise<CompanyData[]> {
-		if (Date.now() - this.companies[0] < longDataCacheTime && this.companies[1].size > 0) return Array.from(this.companies[1].values());
+		if (Date.now() - this.companies[0] < shortDataCacheTime && this.companies[1].size > 0)
+			return Array.from(this.companies[1].values());
 
 		let companies: CompanyResponse[] = [];
 		let incidentData: IncidentData[] = [];
@@ -352,7 +315,7 @@ class DataHandler {
 			for (let incidentsKey in incidentData) {
 				let incident: IncidentResponse = incidentData[incidentsKey];
 
-				if (incident.companyId !== companies[i].id) continue;
+				if (incident.companyPublic.id !== companies[i].id) continue;
 				incidentReferences.push(incident.id);
 				if (priority > incident.priority) priority = incident.priority;
 				if (stateFound) continue;

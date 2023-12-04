@@ -14,6 +14,7 @@ interface CompanyServiceLisState {
 	id: string;
 	loading: boolean;
 	incidents: IncidentData[];
+	updating: boolean;
 }
 
 class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> {
@@ -21,7 +22,8 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 		company: this.props.route.params?.company,
 		id: this.props.route.params?.id,
 		loading: true,
-		incidents: []
+		incidents: [],
+		updating: true
 	};
 
 	private AppBar(): React.JSX.Element {
@@ -32,10 +34,13 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 						this.props.navigation.goBack();
 					}}
 				/>
-				<View>
+				<View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 32, alignItems: 'center' }}>
 					<Text style={cslStyle().headerText} variant={'titleLarge'}>
 						{this.state.company}
 					</Text>
+					{this.state.updating && !this.state.loading ? (
+						<ActivityIndicator size={'small'} color={getCurrentTheme().colors.onSurface} />
+					) : null}
 				</View>
 			</>
 		);
@@ -43,6 +48,9 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 
 	componentDidMount() {
 		this.getIncidentData();
+		this.props.navigation.addListener('focus', () => {
+			this.getIncidentData();
+		});
 	}
 
 	public refresh(): void {
@@ -51,18 +59,20 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 
 	private async getIncidentData(): Promise<void> {
 		let filteredIncident: IncidentData[] = [];
+		this.setState({ updating: true });
 		let companies: CompanyData | undefined = await DataHandler.getCompany(this.state.id);
 		if (companies !== undefined) {
-			let activeCompanyIncidents: Map<string, IncidentData> = DataHandler.getIncidentDataNoUpdate();
+			let activeCompanyIncidents: Map<string, IncidentData> = await DataHandler.getIncidentsDataMap();
 			for (let incidentReference of companies.incidentReferences) {
 				let incident: IncidentData | undefined = activeCompanyIncidents.get(incidentReference);
 				if (incident !== undefined) filteredIncident.push(incident);
 			}
 		}
-		this.setState({ incidents: filteredIncident, loading: false });
+		this.setState({ incidents: filteredIncident, loading: false, updating: false });
 	}
 
 	private onRefresh(finished: () => void): void {
+		this.setState({ loading: true });
 		this.getIncidentData().then(() => finished());
 	}
 
@@ -131,8 +141,6 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 const cslStyle = () => {
 	return StyleSheet.create({
 		headerText: {
-			width: '100%',
-			paddingRight: 110,
 			textAlign: 'center'
 		},
 		noIncidentContainer: {
