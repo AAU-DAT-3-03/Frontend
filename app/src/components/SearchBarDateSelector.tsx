@@ -30,10 +30,11 @@ class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, Search
 	};
 
 	private onChangeSearch(query: string) {
-		this.setState({ query: query });
-		if (this.props.onChange !== undefined) {
-			this.props.onChange(query, { start: this.state.startDate, end: this.state.endDate });
-		}
+		this.setState({ query: query }, () => {
+			if (this.props.onChange !== undefined) {
+				this.props.onChange(query, { start: this.state.startDate, end: this.state.endDate });
+			}
+		});
 	}
 
 	private async onDismiss(date: [PickerDate, PickerDate]): Promise<void> {
@@ -44,12 +45,16 @@ class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, Search
 		if (compareDatesLessThanOrEqual(today, date[1])) {
 			date[1] = today;
 		}
-		this.setState({
-			startDate: date[0],
-			endDate: date[1],
-			timePickerVisible: false
-		});
-		this.onChangeSearch(this.state.query);
+		this.setState(
+			{
+				startDate: date[0],
+				endDate: date[1],
+				timePickerVisible: false
+			},
+			() => {
+				this.onChangeSearch(this.state.query);
+			}
+		);
 	}
 
 	render(): React.JSX.Element {
