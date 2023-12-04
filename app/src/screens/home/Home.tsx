@@ -217,10 +217,6 @@ class Home extends Component<any, HomeState> {
 		this.getIncidentData();
 	}
 
-	/**
-	 * @todo Get data from server instead
-	 * @private
-	 */
 	private async getIncidentData() {
 		if (this.loadingData) return;
 		this.loadingData = true;
