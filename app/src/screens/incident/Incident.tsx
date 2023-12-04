@@ -174,7 +174,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 								</Text>
 								<IncidentCardList
 									alarms={this.state.incidentData?.alarms}
-									onClickAlarm={(id) => this.props.navigation.navigate('Alarm', { id: id })}
+									onClickAlarm={(id, alarm) => this.props.navigation.navigate('Alarm', { id: id, alarm: alarm })}
 								/>
 							</ContainerCard.Content>
 						</ContainerCard>

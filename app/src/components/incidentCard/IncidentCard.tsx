@@ -158,7 +158,7 @@ class IncidentCardListItem extends Component<IncidentCardListItemProps> {
 }
 interface IncidentCardListProps {
 	alarms: AlarmResponse[];
-	onClickAlarm: (id: string) => void;
+	onClickAlarm: (id: string, alarm: AlarmResponse) => void;
 }
 
 export class IncidentCardList extends Component<IncidentCardListProps> {
@@ -171,7 +171,7 @@ export class IncidentCardList extends Component<IncidentCardListProps> {
 								key={key}
 								alarm={alarm}
 								alternate={key % 2 === 0}
-								onClickAlarm={(id: string) => this.props.onClickAlarm(id)}
+								onClickAlarm={(id: string) => this.props.onClickAlarm(id, alarm)}
 							/>
 					  ))
 					: null}
@@ -183,7 +183,7 @@ export class IncidentCardList extends Component<IncidentCardListProps> {
 interface IncidentCardProps {
 	incident: IncidentData;
 	onClickIncident: (id: string) => void;
-	onClickAlarm: (id: string) => void;
+	onClickAlarm: (id: string, alarm: AlarmResponse) => void;
 }
 
 interface IncidentCardState {
@@ -209,7 +209,7 @@ class IncidentCard extends Component<IncidentCardProps, IncidentCardState> {
 						{this.state.collapsed ? null : (
 							<IncidentCardList
 								alarms={this.props.incident.alarms}
-								onClickAlarm={(id: string) => this.props.onClickAlarm(id)}
+								onClickAlarm={(id: string, alarm: AlarmResponse) => this.props.onClickAlarm(id, alarm)}
 							/>
 						)}
 					</View>

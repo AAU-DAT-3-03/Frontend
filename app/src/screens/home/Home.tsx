@@ -279,9 +279,10 @@ class Home extends Component<any, HomeState> {
 									id: id
 								})
 							}
-							onClickAlarm={(id) =>
+							onClickAlarm={(id, alarm) =>
 								navigation.navigate('Alarm', {
-									id: id
+									id: id,
+									alarm: alarm
 								})
 							}
 						/>
