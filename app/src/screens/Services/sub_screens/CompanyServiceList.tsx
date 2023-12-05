@@ -8,6 +8,7 @@ import { getCurrentTheme } from '../../../themes/ThemeManager';
 import { compareIncident } from '../../home/Home';
 import { CompanyData, IncidentData } from '../../../utility/DataHandlerTypes';
 import DataHandler from '../../../utility/DataHandler';
+import LoadingScreen from '../../../components/LoadingScreen';
 
 interface CompanyServiceLisState {
 	company: string;
@@ -88,15 +89,17 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 
 	private noIncidentsRender(): React.JSX.Element {
 		return (
-			<View style={cslStyle().noIncidentContainer}>
+			<>
 				{this.state.loading ? (
-					<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
+					<LoadingScreen />
 				) : (
-					<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.elevation.level4 }}>
-						No active incidents
-					</Text>
+					<View style={cslStyle().noIncidentContainer}>
+						<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.elevation.level4 }}>
+							No active incidents
+						</Text>
+					</View>
 				)}
-			</View>
+			</>
 		);
 	}
 

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import { AppRender, ScreenProps } from '../../../App';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import PrioritySelector from '../../components/PrioritySelector';
 import EventLogCard from '../../components/EventLogCard';
 import NoteCard from '../../components/NoteCard';
@@ -17,6 +17,8 @@ import DataHandler from '../../utility/DataHandler';
 import LocalStorage from '../../utility/LocalStorage';
 import Logger from '../../utility/Logger';
 import Toast from '../../components/Toast';
+import LoadingIcon from '../../components/LoadingIcon';
+import LoadingScreen from '../../components/LoadingScreen';
 
 interface IncidentState {
 	incidentId: string;
@@ -26,6 +28,7 @@ interface IncidentState {
 	toastMessage: string;
 	toastVisible: boolean;
 	toastIcon?: string;
+	updatingServer: boolean;
 }
 
 class Incident extends Component<ScreenProps, IncidentState> {
@@ -40,7 +43,8 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		users: [],
 		toastMessage: '',
 		toastVisible: false,
-		toastIcon: undefined
+		toastIcon: undefined,
+		updatingServer: false
 	};
 
 	private async loadIncidentData(): Promise<void> {
@@ -106,8 +110,10 @@ class Incident extends Component<ScreenProps, IncidentState> {
 	}
 
 	private updateIncidentData(data: UpdateIncident, toastText: string, toastIcon?: string): void {
+		this.setState({ updatingServer: true });
 		DataHandler.updateIncidentData(data).then(() => {
 			this.toast(toastText, toastIcon);
+			this.setState({ updatingServer: false });
 			this.loadIncidentData();
 		});
 	}
@@ -207,9 +213,9 @@ class Incident extends Component<ScreenProps, IncidentState> {
 											incident={this.state.incidentData}
 											user={this.userName}
 											id={this.state.incidentId}
-											onMerge={() => {
+											onMerge={(id: string): void => {
 												this.toast('Incident(s) merged', 'merge');
-												this.loadIncidentData();
+												this.setState({ incidentId: id }, () => this.loadIncidentData());
 											}}
 										/>
 									</View>
@@ -258,7 +264,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 					onDismiss={() => this.toastOnDismiss()}
 					icon={this.state.toastIcon}
 				/>
-
+				<LoadingIcon visible={this.state.updatingServer} verticalOffset={60} />
 				<ContentContainer
 					appBar={this.AppBar()}
 					onRefresh={async (finished) => {
@@ -266,13 +272,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 						finished();
 					}}
 				>
-					{this.state.loading ? (
-						<View style={IncidentScreenStylesheet.activity}>
-							<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
-						</View>
-					) : (
-						this.incidentsRender()
-					)}
+					{this.state.loading ? <LoadingScreen /> : this.incidentsRender()}
 				</ContentContainer>
 			</View>
 		);
@@ -306,13 +306,6 @@ const IncidentScreenStylesheet = StyleSheet.create({
 	text: {
 		alignSelf: 'center',
 		paddingBottom: 8
-	},
-	activity: {
-		height: '100%',
-		width: '100%',
-		flexDirection: 'column',
-		alignItems: 'center',
-		justifyContent: 'center'
 	}
 });
 

@@ -4,24 +4,24 @@ import { getCurrentTheme } from '../themes/ThemeManager';
 
 interface LoadingIconProps {
 	visible: boolean;
+	verticalOffset?: number;
 }
 class LoadingIcon extends Component<LoadingIconProps> {
 	render() {
 		return (
 			<View
 				style={{
-					position: 'absolute',
-					top: 0,
-					left: 0,
-					width: '100%',
-					paddingHorizontal: 16,
-					height: '100%',
 					display: this.props.visible ? 'flex' : 'none',
-					backgroundColor: undefined,
 					flexDirection: 'row',
-					paddingTop: 32,
+					flexWrap: 'nowrap',
+					alignItems: 'center',
 					justifyContent: 'center',
-					alignItems: 'flex-start'
+					zIndex: 100,
+					width: '100%',
+					padding: 16,
+					position: 'absolute',
+					top: 0 + (this.props.verticalOffset ?? 0),
+					right: 0
 				}}
 			>
 				<View style={{ backgroundColor: getCurrentTheme().colors.onSurface, borderRadius: 100, padding: 7 }}>

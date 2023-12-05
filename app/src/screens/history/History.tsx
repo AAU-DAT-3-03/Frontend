@@ -6,13 +6,14 @@ import { AppRender } from '../../../App';
 import SearchBarDateSelector, { Period } from '../../components/SearchBarDateSelector';
 import IncidentCard from '../../components/incidentCard/IncidentCard';
 import { filterIncidentList } from '../home/Home';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { compareDatesEqual, getToday } from '../../components/TimePicker/DateHelper';
 import DataHandler from '../../utility/DataHandler';
 import { IncidentData } from '../../utility/DataHandlerTypes';
 import Logger from '../../utility/Logger';
 import LoadingIcon from '../../components/LoadingIcon';
+import LoadingScreen from '../../components/LoadingScreen';
 
 interface HistoryState {
 	incidents: IncidentData[] | undefined;
@@ -104,21 +105,21 @@ class History extends Component<any, HistoryState> {
 							);
 						})}
 				</View>
-
-				<LoadingIcon visible={this.state.updating} />
 			</View>
 		);
 	}
 
 	private noIncidentsRender(): React.JSX.Element {
 		return (
-			<View style={HistoryStyle().noIncidentContainer}>
+			<>
 				{this.state.loading ? (
-					<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
+					<LoadingScreen />
 				) : (
-					<Text variant={'titleLarge'}>No active incidents</Text>
+					<View style={HistoryStyle().noIncidentContainer}>
+						<Text variant={'titleLarge'}>No active incidents</Text>
+					</View>
 				)}
-			</View>
+			</>
 		);
 	}
 
@@ -128,9 +129,13 @@ class History extends Component<any, HistoryState> {
 
 	render(): React.JSX.Element {
 		return (
-			<ContentContainer appBar={this.AppBar()} onRefresh={(finished) => this.onRefresh(finished)}>
-				{this.state.incidents === undefined ? this.noIncidentsRender() : this.incidentsRender(this.props.navigation)}
-			</ContentContainer>
+			<View>
+				<LoadingIcon visible={this.state.updating} verticalOffset={60} />
+
+				<ContentContainer appBar={this.AppBar()} onRefresh={(finished) => this.onRefresh(finished)}>
+					{this.state.incidents === undefined ? this.noIncidentsRender() : this.incidentsRender(this.props.navigation)}
+				</ContentContainer>
+			</View>
 		);
 	}
 }

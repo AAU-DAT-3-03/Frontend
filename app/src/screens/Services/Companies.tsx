@@ -3,10 +3,11 @@ import { Appbar, Searchbar } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import CompanyCard from '../../components/CompanyCard';
 import { NavigationProp } from '@react-navigation/native';
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import DataHandler from '../../utility/DataHandler';
 import { CompanyData } from '../../utility/DataHandlerTypes';
+import LoadingScreen from '../../components/LoadingScreen';
 
 let stateList = ['none', 'acknowledged', 'error'];
 
@@ -102,9 +103,7 @@ class Companies extends Component<any, CompanyState> {
 		return (
 			<ContentContainer appBar={this.AppBar()} onRefresh={(finished) => this.onRefresh(finished)}>
 				{this.state.loading ? (
-					<View style={styles.activity}>
-						<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
-					</View>
+					<LoadingScreen />
 				) : (
 					<ScrollView contentContainerStyle={styles.contentContainer} style={styles.view} horizontal={true}>
 						<View style={{ width: '100%' }}>

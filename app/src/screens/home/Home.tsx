@@ -3,7 +3,7 @@ import { Appbar, IconButton, Menu, Searchbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import IncidentCard from '../../components/incidentCard/IncidentCard';
 import SettingsMenu from './components/SettingsMenu';
-import { ActivityIndicator, FlatList, ListRenderItemInfo, ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, ListRenderItemInfo, ScrollView, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { AppRender } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
@@ -11,6 +11,7 @@ import DataHandler from '../../utility/DataHandler';
 import { AlarmResponse, IncidentData, IncidentResponse, UserResponse } from '../../utility/DataHandlerTypes';
 import Logger from '../../utility/Logger';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import LoadingScreen from '../../components/LoadingScreen';
 
 export const compareIncident = (a: IncidentResponse, b: IncidentResponse): number => {
 	if (a.priority > b.priority) return 1;
@@ -266,15 +267,17 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 
 	private noIncidentsRender(): React.JSX.Element {
 		return (
-			<View style={HomeStyle().noIncidentContainer}>
+			<>
 				{this.state.loading ? (
-					<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
+					<LoadingScreen />
 				) : (
-					<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.elevation.level2 }}>
-						No active incidents
-					</Text>
+					<View style={HomeStyle().noIncidentContainer}>
+						<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.elevation.level2 }}>
+							No active incidents
+						</Text>
+					</View>
 				)}
-			</View>
+			</>
 		);
 	}
 

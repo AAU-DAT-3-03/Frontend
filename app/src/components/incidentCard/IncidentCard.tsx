@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
+import { IconButton, MD3Theme, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import StatusIcon from '../StatusIcon';
 import UserAvatar from './UserAvatar';
@@ -35,24 +35,56 @@ export const PriorityColor = (priority: number): string => {
 	}
 };
 
-class UserList extends Component<UserListProps> {
+interface UserListState {
+	userInfoVisible: boolean;
+	selectedUser: UserResponse | undefined;
+}
+
+class UserList extends Component<UserListProps, UserListState> {
+	state: UserListState = {
+		userInfoVisible: false,
+		selectedUser: undefined
+	};
 	render(): React.JSX.Element {
+		let style = UserListStyle(getCurrentTheme());
+		let emptyRender = (): null => {
+			this.setState({ userInfoVisible: false });
+			return null;
+		};
 		return (
 			<Portal>
-				<Modal
-					style={{
-						flex: 1,
-						alignItems: 'center',
-						justifyContent: 'center',
-						backgroundColor: undefined,
-						position: 'absolute'
-					}}
-					visible={this.props.visible}
-					onDismiss={() => this.props.onDismiss()}
-				>
-					<View style={{ backgroundColor: getCurrentTheme().colors.surface, borderRadius: 20, padding: 16, gap: 16 }}>
+				<Modal style={style.modal} visible={this.props.visible} onDismiss={() => this.props.onDismiss()}>
+					{this.state.userInfoVisible ? (
+						<Portal>
+							<Modal
+								visible={this.state.userInfoVisible}
+								onDismiss={() => this.setState({ userInfoVisible: false })}
+								style={style.modal}
+							>
+								{this.state.selectedUser === undefined ? (
+									emptyRender()
+								) : (
+									<View style={style.listContainer}>
+										<Text variant={'titleMedium'}>{this.state.selectedUser.name}</Text>
+										<Text>Team - {this.state.selectedUser.team}</Text>
+										<Text>Phone - {this.state.selectedUser.phoneNumber}</Text>
+										<Text>Email - {this.state.selectedUser.email}</Text>
+									</View>
+								)}
+							</Modal>
+						</Portal>
+					) : null}
+					<View style={style.listContainer}>
 						{this.props.users?.map((value, key) => {
-							return <UserAvatar key={key} name={value.name} />;
+							return (
+								<UserAvatar
+									key={key}
+									name={value.name}
+									onPress={() => {
+										this.setState({ userInfoVisible: true, selectedUser: value });
+									}}
+								/>
+							);
 						})}
 					</View>
 				</Modal>
@@ -60,6 +92,25 @@ class UserList extends Component<UserListProps> {
 		);
 	}
 }
+
+const UserListStyle = (theme: MD3Theme) => {
+	return StyleSheet.create({
+		listContainer: {
+			maxWidth: '90%',
+			backgroundColor: theme.colors.surface,
+			borderRadius: 20,
+			padding: 16,
+			gap: 16
+		},
+		modal: {
+			flex: 1,
+			alignItems: 'center',
+			justifyContent: 'center',
+			backgroundColor: undefined,
+			position: 'absolute'
+		}
+	});
+};
 
 export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
 	state = {
