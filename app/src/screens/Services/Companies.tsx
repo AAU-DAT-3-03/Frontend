@@ -32,6 +32,7 @@ class Companies extends Component<any, CompanyState> {
 
 	private async getCompanyData(): Promise<void> {
 		let data: CompanyData[] = await DataHandler.getCompanies();
+		console.log(data);
 		data = data.sort((a, b) => {
 			if (a.priority === -1) return 1;
 			if (b.priority === -1) return -1;

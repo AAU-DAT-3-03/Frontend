@@ -84,10 +84,6 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		this.getIncidentData();
 	}
 
-	/**
-	 * @todo Make de mergings work
-	 * @private
-	 */
 	private async mergeIncidents(): Promise<void> {
 		this.setState({ confirmVisible: false, merging: true });
 		let id: string = this.props.id;
@@ -257,8 +253,9 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		return (
 			<View style={styleSheet.modalContainerStyle}>
 				<View style={styleSheet.mergingContainer}>
+					<Text variant={'titleLarge'}>Merging incidents</Text>
 					<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
-					<Text>
+					<Text variant={'titleMedium'}>
 						{this.state.mergingCount}/{this.state.selectedIds.size}
 					</Text>
 				</View>

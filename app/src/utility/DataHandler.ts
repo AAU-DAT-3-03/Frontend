@@ -302,6 +302,7 @@ class DataHandler {
 			incidentData = await this.getIncidentsData();
 			resolve();
 		});
+
 		await Promise.all([companiesPromise, incidentDataPromise]);
 
 		if (companies.length === 0) return [];
