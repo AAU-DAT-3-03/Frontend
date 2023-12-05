@@ -1,22 +1,20 @@
 import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
-import { NavigationProp } from '@react-navigation/native';
 import { AppRender } from '../../../App';
 import SearchBarDateSelector, { Period } from '../../components/SearchBarDateSelector';
 import IncidentCard from '../../components/incidentCard/IncidentCard';
-import { StyleSheet, View } from 'react-native';
+import { FlatList, ListRenderItemInfo, ScrollView, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { compareDatesEqual, getToday } from '../../components/TimePicker/DateHelper';
 import DataHandler from '../../utility/DataHandler';
-import { IncidentResponse } from '../../utility/DataHandlerTypes';
+import { AlarmResponse, IncidentResponse } from '../../utility/DataHandlerTypes';
 import Logger from '../../utility/Logger';
 import LoadingIcon from '../../components/LoadingIcon';
 import LoadingScreen from '../../components/LoadingScreen';
 import { filterIncidentList } from '../../utility/IncidentSort';
 
 interface HistoryState {
-	incidents: IncidentResponse[] | undefined;
 	loading: boolean;
 	query: string;
 	period: Period;
@@ -25,8 +23,9 @@ interface HistoryState {
 
 class History extends Component<any, HistoryState> {
 	private logger: Logger = new Logger('HistoryScreen');
+	private incidents: IncidentResponse[] | undefined;
+
 	state: HistoryState = {
-		incidents: undefined,
 		loading: true,
 		query: '',
 		period: { start: getToday(-30), end: getToday() },
@@ -73,39 +72,54 @@ class History extends Component<any, HistoryState> {
 		this.logger.info(`Getting incident date for period: ${start}-${end} - ${new Date(start)}-${new Date(end)}`);
 		let incidentData: IncidentResponse[] = await DataHandler.getResolvedIncidentsData(start, end);
 		this.logger.info('Rendering Incidents');
-		this.setState({ incidents: incidentData, loading: false, updating: false });
+		this.incidents = incidentData;
+		this.setState({ loading: false, updating: false });
 	}
 
 	componentDidMount() {
 		this.getIncidentResponse(this.state.period);
 	}
 
-	private incidentsRender(navigation: NavigationProp<any>): React.JSX.Element {
+	private filterIncidentList(incidentData: IncidentResponse[] | undefined): IncidentResponse[] | undefined {
+		if (incidentData !== undefined) {
+			incidentData = incidentData.filter((incident) => {
+				return filterIncidentList(incident, this.state.query);
+			});
+		}
+
+		return incidentData;
+	}
+
+	private incidentCardRender(info: ListRenderItemInfo<IncidentResponse>): React.JSX.Element {
+		let navigation = this.props.navigation;
+		let onClickIncident = (id: string) =>
+			navigation.navigate('Incident', {
+				id: id
+			});
+		let onClickAlarm = (id: string, alarm: AlarmResponse) =>
+			navigation.navigate('Alarm', {
+				id: id,
+				alarm: alarm
+			});
+		return <IncidentCard incident={info.item} onClickIncident={onClickIncident.bind(this)} onClickAlarm={onClickAlarm.bind(this)} />;
+	}
+
+	private incidentsRender(): React.JSX.Element {
+		let incidentData = this.filterIncidentList(this.incidents);
 		return (
-			<View style={{ width: '100%', height: '100%', flexDirection: 'column' }}>
-				<View style={HistoryStyle().incidentContainer}>
-					{this.state.incidents
-						?.filter((incident) => filterIncidentList(incident, this.state.query))
-						?.map((value, index) => {
-							return (
-								<IncidentCard
-									key={index}
-									incident={value}
-									onClickIncident={(id) =>
-										navigation.navigate('Incident', {
-											id: id
-										})
-									}
-									onClickAlarm={(id) =>
-										navigation.navigate('Alarm', {
-											id: id
-										})
-									}
-								/>
-							);
-						})}
-				</View>
-			</View>
+			<ScrollView
+				horizontal={true}
+				showsVerticalScrollIndicator={false}
+				contentContainerStyle={{ width: '100%', height: '100%', margin: 0, padding: 0 }}
+			>
+				<FlatList
+					data={incidentData}
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={HistoryStyle().incidentContainer}
+					renderItem={this.incidentCardRender.bind(this)}
+					windowSize={2}
+				/>
+			</ScrollView>
 		);
 	}
 
@@ -133,7 +147,7 @@ class History extends Component<any, HistoryState> {
 				<LoadingIcon visible={this.state.updating} verticalOffset={60} />
 
 				<ContentContainer appBar={this.AppBar()} onRefresh={(finished) => this.onRefresh(finished)}>
-					{this.state.incidents === undefined ? this.noIncidentsRender() : this.incidentsRender(this.props.navigation)}
+					{this.incidents === undefined ? this.noIncidentsRender() : this.incidentsRender()}
 				</ContentContainer>
 			</View>
 		);

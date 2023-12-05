@@ -103,7 +103,7 @@ class FABResolved extends Component<FABResolvedProps> {
 				<ResolvedConfirm
 					onResolve={() => {
 						this.props.onResolve();
-						this.setState({ resolvedActive: false });
+						this.setState({ resolvedActive: false, assignVisible: false });
 					}}
 					timer={this.state.timer}
 					visible={this.state.assignVisible}

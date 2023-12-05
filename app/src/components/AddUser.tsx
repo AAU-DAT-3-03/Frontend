@@ -107,8 +107,9 @@ interface AddUserState {
 class AddUser extends Component<AddUserProps, AddUserState> {
 	state: AddUserState = { assignVisible: false, users: this.props.users };
 
-	private onDeleteUser(user: string, name: string): void {
-		if (this.props.onRemove !== undefined) this.props.onRemove(user, name);
+	private onDeleteUser(user: UserResponse): void {
+		this.setState({ users: this.state.users.filter((value) => value.id !== user.id) });
+		if (this.props.onRemove !== undefined) this.props.onRemove(user.id, user.name);
 	}
 
 	render(): React.JSX.Element {
@@ -126,8 +127,8 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 									user={user}
 									onDelete={
 										this.props.removable && this.props.editable
-											? (user: string, name: string) => {
-													this.onDeleteUser(user, name);
+											? (user: UserResponse) => {
+													this.onDeleteUser(user);
 											  }
 											: undefined
 									}

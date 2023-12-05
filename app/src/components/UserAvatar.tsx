@@ -7,7 +7,7 @@ import { UserResponse } from '../utility/DataHandlerTypes';
 
 interface UserAvatarProps {
 	user: UserResponse;
-	onDelete?: (user: string, name: string) => void;
+	onDelete?: (user: UserResponse) => void;
 }
 
 interface UserAvatarConfirmProps {
@@ -67,7 +67,7 @@ class UserAvatar extends Component<UserAvatarProps> {
 	render(): React.JSX.Element {
 		let onDelete = () => {
 			if (this.props.onDelete !== undefined) {
-				this.props.onDelete(this.props.user.id, this.props.user.name);
+				this.props.onDelete(this.props.user);
 			}
 		};
 		return (
