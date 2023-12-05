@@ -12,7 +12,7 @@ import { compareDatesEqual, getToday } from '../../components/TimePicker/DateHel
 import DataHandler from '../../utility/DataHandler';
 import { IncidentData } from '../../utility/DataHandlerTypes';
 import Logger from '../../utility/Logger';
-import Color from 'color';
+import LoadingIcon from '../../components/LoadingIcon';
 
 interface HistoryState {
 	incidents: IncidentData[] | undefined;
@@ -105,26 +105,7 @@ class History extends Component<any, HistoryState> {
 						})}
 				</View>
 
-				<View
-					style={{
-						position: 'absolute',
-						top: 0,
-						left: 0,
-						width: '100%',
-						paddingHorizontal: 16,
-						height: '100%',
-						display: this.state.updating ? 'flex' : 'none',
-						backgroundColor: Color(getCurrentTheme().colors.onSurface).alpha(0.2).toString(),
-						flexDirection: 'row',
-						paddingTop: 50,
-						justifyContent: 'center',
-						alignItems: 'flex-start'
-					}}
-				>
-					<View style={{ backgroundColor: getCurrentTheme().colors.surface, borderRadius: 100, padding: 5 }}>
-						<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
-					</View>
-				</View>
+				<LoadingIcon visible={this.state.updating} />
 			</View>
 		);
 	}

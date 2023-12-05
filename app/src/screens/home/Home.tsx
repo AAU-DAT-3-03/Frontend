@@ -3,13 +3,14 @@ import { Appbar, IconButton, Menu, Searchbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
 import IncidentCard from '../../components/incidentCard/IncidentCard';
 import SettingsMenu from './components/SettingsMenu';
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, ListRenderItemInfo, ScrollView, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { AppRender } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
 import DataHandler from '../../utility/DataHandler';
-import { IncidentData, IncidentResponse, UserResponse } from '../../utility/DataHandlerTypes';
+import { AlarmResponse, IncidentData, IncidentResponse, UserResponse } from '../../utility/DataHandlerTypes';
 import Logger from '../../utility/Logger';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 export const compareIncident = (a: IncidentResponse, b: IncidentResponse): number => {
 	if (a.priority > b.priority) return 1;
@@ -49,10 +50,8 @@ enum Filter {
 }
 
 interface HomeState {
-	menuVisible: boolean;
-	incidents: IncidentData[] | undefined;
+	hasIncidents: boolean;
 	loading: boolean;
-	filterVisible: boolean;
 	filter: Filter;
 	query: string;
 }
@@ -108,26 +107,20 @@ export function filterIncidentList(incident: IncidentData, query: string): boole
 	return true;
 }
 
-class Home extends Component<any, HomeState> {
-	private logger: Logger = new Logger('HomeScreen');
+interface HomeAppBar {
+	onFilterChange: (filter: Filter) => void;
+	onQueryChange: (query: string) => void;
+}
 
-	state: HomeState = {
-		menuVisible: false,
-		incidents: undefined,
-		loading: true,
+class HomeAppbar extends Component<HomeAppBar, any> {
+	state = {
+		query: '',
 		filterVisible: false,
-		filter: 0,
-		query: ''
+		filter: Filter.NONE,
+		menuVisible: false
 	};
-	private changed: boolean = false;
-	private loadingData: boolean = false;
 
-	constructor(props: any) {
-		super(props);
-		AppRender.home = this;
-	}
-
-	private AppBar(): React.JSX.Element {
+	render(): React.JSX.Element {
 		return (
 			<Appbar.Header style={{ backgroundColor: getCurrentTheme().colors.surface }}>
 				<View
@@ -148,8 +141,9 @@ class Home extends Component<any, HomeState> {
 						traileringIcon={'magnify'}
 						placeholder={'Search'}
 						onChangeText={(query: string) => {
-							this.changed = true;
+							if (query === this.state.query) return;
 							this.setState({ query: query });
+							this.props.onQueryChange(query);
 						}}
 						value={this.state.query}
 						onClearIconPress={() => this.setState({ query: '' })}
@@ -168,8 +162,11 @@ class Home extends Component<any, HomeState> {
 								width: '100%'
 							}}
 							onPress={() => {
-								this.changed = true;
-								this.setState({ filter: Filter.NONE, filterVisible: false });
+								if (this.state.filter === Filter.NONE) {
+									this.setState({ filterVisible: false });
+									return;
+								}
+								this.setState({ filter: Filter.NONE, filterVisible: false }, () => this.props.onFilterChange(Filter.NONE));
 							}}
 						/>
 						<Menu.Item
@@ -180,8 +177,13 @@ class Home extends Component<any, HomeState> {
 								width: '100%'
 							}}
 							onPress={() => {
-								this.changed = true;
-								this.setState({ filter: Filter.CALLED, filterVisible: false });
+								if (this.state.filter === Filter.CALLED) {
+									this.setState({ filterVisible: false });
+									return;
+								}
+								this.setState({ filter: Filter.CALLED, filterVisible: false }, () =>
+									this.props.onFilterChange(Filter.CALLED)
+								);
 							}}
 						/>
 						<Menu.Item
@@ -192,8 +194,13 @@ class Home extends Component<any, HomeState> {
 								width: '100%'
 							}}
 							onPress={() => {
-								this.changed = true;
-								this.setState({ filter: Filter.ASSIGNED, filterVisible: false });
+								if (this.state.filter === Filter.ASSIGNED) {
+									this.setState({ filterVisible: false });
+									return;
+								}
+								this.setState({ filter: Filter.ASSIGNED, filterVisible: false }, () =>
+									this.props.onFilterChange(Filter.ASSIGNED)
+								);
 							}}
 						/>
 					</Menu>
@@ -202,6 +209,28 @@ class Home extends Component<any, HomeState> {
 				<SettingsMenu visible={this.state.menuVisible} onDismiss={() => this.setState({ menuVisible: false })} />
 			</Appbar.Header>
 		);
+	}
+}
+
+interface HomeRenderProps {
+	navigation: NavigationProp<any>;
+}
+
+class HomeRender extends Component<HomeRenderProps, HomeState> {
+	private logger: Logger = new Logger('HomeScreen');
+	private incidentData: IncidentResponse[] | undefined;
+
+	state: HomeState = {
+		hasIncidents: false,
+		loading: true,
+		filter: 0,
+		query: ''
+	};
+	private loadingData: boolean = false;
+
+	constructor(props: any) {
+		super(props);
+		AppRender.home = this;
 	}
 
 	componentDidMount() {
@@ -220,8 +249,8 @@ class Home extends Component<any, HomeState> {
 		this.logger.info('Sorting incident data');
 		let incidentsSorted: IncidentData[] = this.sortIncidents(incidentData.filter((value) => !value.resolved));
 		this.logger.info('Rendering incident data');
-		this.changed = true;
-		this.setState({ incidents: undefined }, () => this.setState({ loading: false, incidents: incidentsSorted }));
+		this.incidentData = incidentsSorted;
+		this.setState({ loading: false, hasIncidents: true });
 		this.loadingData = false;
 	}
 
@@ -249,12 +278,9 @@ class Home extends Component<any, HomeState> {
 		);
 	}
 
-	private incidentsRender(navigation: any, filter: Filter): React.JSX.Element {
+	private incidentsRender(filter: Filter): React.JSX.Element {
 		let id: string = LocalStorage.getSettingsValue('id');
-		let incidentData = this.state.incidents;
-		if (this.changed) {
-			incidentData = this.filterIncidentList(incidentData, filter, id);
-		}
+		let incidentData: IncidentData[] | undefined = this.filterIncidentList(this.incidentData, filter, id);
 
 		return (
 			<ScrollView
@@ -266,25 +292,25 @@ class Home extends Component<any, HomeState> {
 					data={incidentData}
 					showsVerticalScrollIndicator={false}
 					contentContainerStyle={HomeStyle().incidentContainer}
-					renderItem={(info) => (
-						<IncidentCard
-							incident={info.item}
-							onClickIncident={(id) =>
-								navigation.navigate('Incident', {
-									id: id
-								})
-							}
-							onClickAlarm={(id, alarm) =>
-								navigation.navigate('Alarm', {
-									id: id,
-									alarm: alarm
-								})
-							}
-						/>
-					)}
+					renderItem={this.incidentCardRender.bind(this)}
+					windowSize={2}
 				/>
 			</ScrollView>
 		);
+	}
+
+	private incidentCardRender(info: ListRenderItemInfo<IncidentResponse>): React.JSX.Element {
+		let navigation = this.props.navigation;
+		let onClickIncident = (id: string) =>
+			navigation.navigate('Incident', {
+				id: id
+			});
+		let onClickAlarm = (id: string, alarm: AlarmResponse) =>
+			navigation.navigate('Alarm', {
+				id: id,
+				alarm: alarm
+			});
+		return <IncidentCard incident={info.item} onClickIncident={onClickIncident.bind(this)} onClickAlarm={onClickAlarm.bind(this)} />;
 	}
 
 	private filterIncidentList(incidentData: IncidentData[] | undefined, filter: Filter, id: string): IncidentData[] | undefined {
@@ -308,8 +334,7 @@ class Home extends Component<any, HomeState> {
 				}
 				return false;
 			});
-			this.changed = false;
-			this.logger.info('Filtered list', incidentData?.length ?? -1, this.state.incidents?.length);
+			this.logger.info('Filtered list', incidentData?.length ?? -1, this.incidentData?.length);
 		}
 
 		return incidentData;
@@ -321,14 +346,25 @@ class Home extends Component<any, HomeState> {
 
 	render(): React.JSX.Element {
 		return (
-			<ContentContainer appBar={this.AppBar()} onRefresh={(finished: () => void) => this.onRefresh(finished)}>
-				{this.state.incidents === undefined
-					? this.noIncidentsRender()
-					: this.incidentsRender(this.props.navigation, this.state.filter)}
+			<ContentContainer
+				appBar={
+					<HomeAppbar
+						onFilterChange={(filter) => this.setState({ filter: filter })}
+						onQueryChange={(query) => this.setState({ query: query })}
+					/>
+				}
+				onRefresh={(finished: () => void) => this.onRefresh(finished)}
+			>
+				{this.state.hasIncidents === false ? this.noIncidentsRender() : this.incidentsRender(this.state.filter)}
 			</ContentContainer>
 		);
 	}
 }
+
+const Home = () => {
+	let navigation: NavigationProp<any> = useNavigation();
+	return <HomeRender navigation={navigation} />;
+};
 
 const HomeStyle = () => {
 	return StyleSheet.create({

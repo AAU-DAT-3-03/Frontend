@@ -195,6 +195,11 @@ class IncidentCard extends Component<IncidentCardProps, IncidentCardState> {
 		collapsed: true
 	};
 
+	shouldComponentUpdate(nextProps: Readonly<IncidentCardProps>, nextState: Readonly<IncidentCardState>, nextContext: any): boolean {
+		if (nextState.collapsed !== this.state.collapsed) return true;
+		return false;
+	}
+
 	render(): React.JSX.Element {
 		return (
 			<ContainerCard style={{ paddingBottom: 0 }}>
