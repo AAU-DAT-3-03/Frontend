@@ -6,6 +6,7 @@ import UserAvatar from './UserAvatar';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import ContainerCard from '../ContainerCard';
 import { AlarmResponse, IncidentData, UserResponse } from '../../utility/DataHandlerTypes';
+import UserInformation from '../UserInformation';
 
 interface IncidentCardHeaderProps {
 	collapsed: boolean;
@@ -47,32 +48,15 @@ class UserList extends Component<UserListProps, UserListState> {
 	};
 	render(): React.JSX.Element {
 		let style = UserListStyle(getCurrentTheme());
-		let emptyRender = (): null => {
-			this.setState({ userInfoVisible: false });
-			return null;
-		};
 		return (
 			<Portal>
 				<Modal style={style.modal} visible={this.props.visible} onDismiss={() => this.props.onDismiss()}>
-					{this.state.userInfoVisible ? (
-						<Portal>
-							<Modal
-								visible={this.state.userInfoVisible}
-								onDismiss={() => this.setState({ userInfoVisible: false })}
-								style={style.modal}
-							>
-								{this.state.selectedUser === undefined ? (
-									emptyRender()
-								) : (
-									<View style={style.listContainer}>
-										<Text variant={'titleMedium'}>{this.state.selectedUser.name}</Text>
-										<Text>Team - {this.state.selectedUser.team}</Text>
-										<Text>Phone - {this.state.selectedUser.phoneNumber}</Text>
-										<Text>Email - {this.state.selectedUser.email}</Text>
-									</View>
-								)}
-							</Modal>
-						</Portal>
+					{this.state.userInfoVisible && this.state.selectedUser !== undefined ? (
+						<UserInformation
+							user={this.state.selectedUser}
+							visible={this.state.userInfoVisible}
+							onDismiss={() => this.setState({ userInfoVisible: false })}
+						/>
 					) : null}
 					<View style={style.listContainer}>
 						{this.props.users?.map((value, key) => {

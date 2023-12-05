@@ -3,11 +3,11 @@ import { Button, Checkbox, IconButton, MD3Theme, Modal, Portal, Searchbar, Text 
 import { getCurrentTheme } from '../themes/ThemeManager';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { IncidentCardHeader } from './incidentCard/IncidentCard';
-import { compareIncident, filterIncidentList } from '../screens/home/Home';
 import Color from 'color';
 import { CompanyData, IncidentData } from '../utility/DataHandlerTypes';
 import DataHandler from '../utility/DataHandler';
 import Logger from '../utility/Logger';
+import { compareIncident, filterIncidentList } from '../utility/IncidentSort';
 
 interface MergeIncidentProps {
 	id: string;

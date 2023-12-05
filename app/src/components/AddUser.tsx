@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Card, IconButton, Portal, Text, Modal, Searchbar, TouchableRipple, Icon } from 'react-native-paper';
 import { getCurrentTheme } from '../themes/ThemeManager';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { Dimensions, FlatList, StyleSheet, View } from 'react-native';
 import UserAvatar from './UserAvatar';
 import { UserResponse } from '../utility/DataHandlerTypes';
 
@@ -18,8 +18,8 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		borderRadius: 20,
 		backgroundColor: getCurrentTheme().colors.elevation.level2,
-		width: 256,
-		height: 512
+		maxWidth: '80%',
+		height: Dimensions.get('window').height - 150
 	},
 	separator: {
 		marginVertical: 30,
@@ -32,7 +32,6 @@ interface AssignUserProps {
 	users: UserResponse[];
 	visible: boolean;
 	onDismiss: (user: UserResponse | undefined) => void;
-	removable: boolean;
 }
 
 class AssignUser extends Component<AssignUserProps> {
@@ -45,15 +44,19 @@ class AssignUser extends Component<AssignUserProps> {
 			<Portal>
 				<Modal style={styles.container} visible={this.props.visible} onDismiss={() => this.props.onDismiss(undefined)}>
 					<View style={styles.view}>
-						<Searchbar
-							style={addUserStyle.searchbar}
-							placeholder={'Search User'}
-							mode={'view'}
-							icon={'account-search'}
-							showDivider={true}
-							value={this.state.query}
-							onChange={(e) => this.setState({ query: e.nativeEvent.text })}
-						/>
+						<View style={{ width: '100%', backgroundColor: getCurrentTheme().colors.elevation.level4 }}>
+							<Searchbar
+								style={addUserStyle.searchbar}
+								placeholder={'Search User'}
+								icon={'account-search'}
+								showDivider={true}
+								value={this.state.query}
+								traileringIcon={'close'}
+								onTraileringIconPress={() => this.props.onDismiss(undefined)}
+								onChange={(e) => this.setState({ query: e.nativeEvent.text })}
+							/>
+						</View>
+
 						<FlatList
 							style={{ width: '100%' }}
 							data={this.props.users
@@ -102,11 +105,7 @@ interface AddUserState {
 }
 
 class AddUser extends Component<AddUserProps, AddUserState> {
-	state: AddUserState = { assignVisible: false, users: [] };
-
-	constructor(props: AddUserProps) {
-		super(props);
-	}
+	state: AddUserState = { assignVisible: false, users: this.props.users };
 
 	private onDeleteUser(user: string, name: string): void {
 		if (this.props.onRemove !== undefined) this.props.onRemove(user, name);
@@ -120,14 +119,11 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 						{this.props.type}
 					</Text>
 					<View style={addUserStyle.users}>
-						{this.props.users?.map((user: UserResponse, key: number) => {
+						{this.state.users?.map((user: UserResponse, key: number) => {
 							return (
 								<UserAvatar
-									id={user.id}
-									team={user.team ?? ''}
 									key={key}
-									name={user.name}
-									phoneNr={user.phoneNumber}
+									user={user}
 									onDelete={
 										this.props.removable && this.props.editable
 											? (user: string, name: string) => {
@@ -150,13 +146,14 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 								style={{}}
 							/>
 							<AssignUser
-								removable={this.props.removable}
 								visible={this.state.assignVisible}
 								onDismiss={(user: UserResponse | undefined): void => {
 									if (user !== undefined) this.addUser(user);
 									this.setState({ assignVisible: false });
 								}}
-								users={this.props.usersAll}
+								users={this.props.usersAll.filter((user) => {
+									return this.state.users.filter((value) => value.id === user.id).length === 0;
+								})}
 							/>
 						</>
 					) : null}
@@ -170,7 +167,10 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 			return value.name === user.name && value.phoneNumber === user.phoneNumber;
 		});
 		if (users.length > 0) return;
-		if (this.props.onAdd !== undefined) this.props.onAdd(user.id, user.name);
+		if (this.props.onAdd !== undefined) {
+			this.setState({ users: [...this.state.users, user] });
+			this.props.onAdd(user.id, user.name);
+		}
 	}
 }
 
@@ -209,6 +209,7 @@ const addUserStyle = StyleSheet.create({
 		marginLeft: 6
 	},
 	searchbar: {
+		maxWidth: '100%',
 		borderTopRightRadius: 16,
 		borderTopLeftRadius: 16,
 		backgroundColor: getCurrentTheme().colors.elevation.level4

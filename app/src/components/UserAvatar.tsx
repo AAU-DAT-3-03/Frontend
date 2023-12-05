@@ -2,12 +2,11 @@ import React, { Component } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
 import { Icon, IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
+import UserInformation from './UserInformation';
+import { UserResponse } from '../utility/DataHandlerTypes';
 
 interface UserAvatarProps {
-	team: string;
-	name: string;
-	phoneNr: string;
-	id: string;
+	user: UserResponse;
 	onDelete?: (user: string, name: string) => void;
 }
 
@@ -18,7 +17,7 @@ interface UserAvatarConfirmProps {
 	user: string;
 }
 
-class UserAvatarConfirm extends Component<UserAvatarConfirmProps> {
+export class UserAvatarConfirm extends Component<UserAvatarConfirmProps> {
 	render() {
 		let buttonStyle = {
 			...styles.resolveButton,
@@ -68,29 +67,34 @@ class UserAvatar extends Component<UserAvatarProps> {
 	render(): React.JSX.Element {
 		let onDelete = () => {
 			if (this.props.onDelete !== undefined) {
-				this.props.onDelete(this.props.id, this.props.name);
+				this.props.onDelete(this.props.user.id, this.props.user.name);
 			}
 		};
 		return (
 			<View>
-				<UserAvatarConfirm
-					user={this.props.name}
-					onConfirm={() => {
-						this.setState({ confirmVisible: false });
-						onDelete();
-					}}
-					onDismiss={() => this.setState({ confirmVisible: false })}
-					visible={this.state.confirmVisible}
-				/>
+				{this.state.confirmVisible ? (
+					<UserInformation
+						user={this.props.user}
+						visible={this.state.confirmVisible}
+						onDismiss={() => this.setState({ confirmVisible: false })}
+						onRemove={
+							this.props.onDelete !== undefined
+								? () => {
+										this.setState({ confirmVisible: false });
+										onDelete();
+								  }
+								: undefined
+						}
+					/>
+				) : null}
 				<TouchableRipple
 					style={{ borderRadius: userAvatarStyle.container.borderRadius }}
 					onPress={() => this.setState({ confirmVisible: true })}
 					borderless={true}
-					disabled={this.props.onDelete === undefined}
 				>
 					<View style={userAvatarStyle.container}>
 						<Icon color={userAvatarStyle.contentText.color} size={18} source={'account'} />
-						<Text style={userAvatarStyle.contentText}>{this.props.name}</Text>
+						<Text style={userAvatarStyle.contentText}>{this.props.user.name}</Text>
 					</View>
 				</TouchableRipple>
 				{this.props.onDelete === undefined ? null : (
