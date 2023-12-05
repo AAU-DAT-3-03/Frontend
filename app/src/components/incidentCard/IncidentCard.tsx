@@ -231,6 +231,7 @@ class IncidentCard extends Component<IncidentCardProps, IncidentCardState> {
 	};
 
 	shouldComponentUpdate(nextProps: Readonly<IncidentCardProps>, nextState: Readonly<IncidentCardState>, nextContext: any): boolean {
+		if (nextProps.incident !== this.props.incident) return true;
 		if (nextState.collapsed !== this.state.collapsed) return true;
 		return false;
 	}

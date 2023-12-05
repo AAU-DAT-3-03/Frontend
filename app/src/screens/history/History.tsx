@@ -47,7 +47,6 @@ class History extends Component<any, HistoryState> {
 								!compareDatesEqual(this.state.period.start, period.start) ||
 								!compareDatesEqual(this.state.period.end, period.end)
 							) {
-								console.log('test');
 								this.setState({ updating: true }, () => {
 									this.getIncidentResponse(period);
 								});

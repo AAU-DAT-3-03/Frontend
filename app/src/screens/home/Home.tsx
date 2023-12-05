@@ -13,6 +13,7 @@ import Logger from '../../utility/Logger';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import LoadingScreen from '../../components/LoadingScreen';
 import { compareIncident, filterIncidentList } from '../../utility/IncidentSort';
+import LoadingIcon from '../../components/LoadingIcon';
 
 enum Filter {
 	NONE,
@@ -25,6 +26,7 @@ interface HomeState {
 	loading: boolean;
 	filter: Filter;
 	query: string;
+	updating: boolean;
 }
 
 interface HomeAppBar {
@@ -143,7 +145,8 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 		hasIncidents: false,
 		loading: true,
 		filter: 0,
-		query: ''
+		query: '',
+		updating: false
 	};
 	private loadingData: boolean = false;
 
@@ -157,6 +160,7 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 	}
 
 	public refresh(): void {
+		this.setState({ updating: true });
 		this.getIncidentResponse();
 	}
 
@@ -169,7 +173,7 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 		let incidentsSorted: IncidentResponse[] = this.sortIncidents(incidentData.filter((value) => !value.resolved));
 		this.logger.info('Rendering incident data');
 		this.incidentData = incidentsSorted;
-		this.setState({ loading: false, hasIncidents: true });
+		this.setState({ loading: false, hasIncidents: true, updating: false });
 		this.loadingData = false;
 	}
 
@@ -267,17 +271,21 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 
 	render(): React.JSX.Element {
 		return (
-			<ContentContainer
-				appBar={
-					<HomeAppbar
-						onFilterChange={(filter) => this.setState({ filter: filter })}
-						onQueryChange={(query) => this.setState({ query: query })}
-					/>
-				}
-				onRefresh={(finished: () => void) => this.onRefresh(finished)}
-			>
-				{this.state.hasIncidents === false ? this.noIncidentsRender() : this.incidentsRender(this.state.filter)}
-			</ContentContainer>
+			<View>
+				<LoadingIcon visible={this.state.updating} verticalOffset={60} />
+
+				<ContentContainer
+					appBar={
+						<HomeAppbar
+							onFilterChange={(filter) => this.setState({ filter: filter })}
+							onQueryChange={(query) => this.setState({ query: query })}
+						/>
+					}
+					onRefresh={(finished: () => void) => this.onRefresh(finished)}
+				>
+					{this.state.hasIncidents === false ? this.noIncidentsRender() : this.incidentsRender(this.state.filter)}
+				</ContentContainer>
+			</View>
 		);
 	}
 }
