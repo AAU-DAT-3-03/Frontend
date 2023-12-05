@@ -64,7 +64,6 @@ class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, Search
 					onIconPress={() => this.setState({ timePickerVisible: true })}
 					style={{ backgroundColor: getCurrentTheme().colors.surfaceVariant }}
 					icon={'calendar-edit'}
-					traileringIcon={'magnify'}
 					placeholder={this.props.placeholder ?? 'Search'}
 					onChangeText={(query: string) => this.onChangeSearch(query)}
 					value={this.state.query}

@@ -5,7 +5,6 @@ import { NavigationProp } from '@react-navigation/native';
 import { AppRender } from '../../../App';
 import SearchBarDateSelector, { Period } from '../../components/SearchBarDateSelector';
 import IncidentCard from '../../components/incidentCard/IncidentCard';
-import { filterIncidentList } from '../home/Home';
 import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { compareDatesEqual, getToday } from '../../components/TimePicker/DateHelper';
@@ -14,6 +13,7 @@ import { IncidentData } from '../../utility/DataHandlerTypes';
 import Logger from '../../utility/Logger';
 import LoadingIcon from '../../components/LoadingIcon';
 import LoadingScreen from '../../components/LoadingScreen';
+import { filterIncidentList } from '../../utility/IncidentSort';
 
 interface HistoryState {
 	incidents: IncidentData[] | undefined;
