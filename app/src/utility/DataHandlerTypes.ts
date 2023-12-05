@@ -75,6 +75,7 @@ export interface AlarmResponse {
 export interface UpdateIncident {
 	id: string;
 	priority?: number;
+	priorityNote?: string;
 	resolved?: boolean;
 	addUsers?: string[];
 	addCalls?: string[];

@@ -5,24 +5,29 @@ import { getCurrentTheme } from '../themes/ThemeManager';
 import ContainerCard from './ContainerCard';
 
 interface PrioritySelectorProps {
-	onPress: (value: number | undefined) => void;
-	state: number | undefined;
+	onPress: (value: number, text: string) => void;
+	state: number;
 	editable?: boolean;
 }
 interface PrioritySelectorState {
-	selectedButton: number | undefined;
+	selectedButton: number;
 	visible: boolean;
-	selectedValue: number | undefined;
+	selectedValue: number;
 }
 
 interface PriorityConfirmProps {
-	onConfirm: () => void;
+	onConfirm: (text: string) => void;
 	visible: boolean;
 	onDismiss: () => void;
 }
 
 class PriorityConfirm extends Component<PriorityConfirmProps> {
-	state = { assignVisible: false, resolvedActive: false, disable: true, text: '' };
+	state = {
+		assignVisible: false,
+		resolvedActive: false,
+		disable: true,
+		text: ''
+	};
 
 	render(): React.JSX.Element {
 		return (
@@ -47,22 +52,26 @@ class PriorityConfirm extends Component<PriorityConfirmProps> {
 								}}
 							/>
 						</View>
-						<Text style={styles.fabtext}>Are you sure you want to change the Priority of this? </Text>
+						<Text variant={'bodyLarge'} style={styles.header}>
+							Are you sure you want to change the Priority of this?{' '}
+						</Text>
 
 						<TextInput
 							underlineColor={'#0000000'}
-							style={styles.input}
 							value={this.state.text}
-							onChange={(e) => this.setState({ text: e.nativeEvent.text })}
-							placeholder={'REQUIRED'}
-							numberOfLines={2}
-							dense={true}
+							onChange={(e) => {
+								let text = e.nativeEvent.text;
+								this.setState({ text: text });
+							}}
+							placeholder={'Required'}
+							numberOfLines={0}
+							multiline={true}
 						/>
 						{this.state.text.trim().length < 10 ? (this.state.disable = true) : (this.state.disable = false)}
 						<View style={styles.textinput}>
 							<Button
 								onPress={() => {
-									this.props.onConfirm();
+									this.props.onConfirm(this.state.text);
 									this.setState({ text: '' });
 								}}
 								disabled={this.state.disable}
@@ -89,9 +98,9 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 		return (
 			<ContainerCard>
 				<PriorityConfirm
-					onConfirm={() => {
+					onConfirm={(text: string) => {
 						this.setState({ selectedValue: this.state.selectedButton, visible: false });
-						this.props.onPress(this.state.selectedButton);
+						this.props.onPress(this.state.selectedButton, text);
 					}}
 					visible={this.state.visible}
 					onDismiss={() => {
@@ -167,14 +176,16 @@ const changeButtonStyle = (buttonValue: number, selectedValue: number | undefine
 };
 
 const styles = StyleSheet.create({
-	input: {
-		backgroundColor: getCurrentTheme().colors.secondaryContainer
-	},
 	textinput: {
 		justifyContent: 'center',
 		flexWrap: 'wrap',
 		alignItems: 'center',
 		flexDirection: 'row'
+	},
+	header: {
+		textAlign: 'center',
+		padding: 16,
+		paddingTop: 0
 	},
 	card: {
 		alignItems: 'center',
@@ -192,18 +203,16 @@ const styles = StyleSheet.create({
 	},
 
 	container: {
+		flexDirection: 'column',
 		alignItems: 'center',
 		justifyContent: 'center',
 		backgroundColor: 'none'
 	},
-	fabtext: {
-		paddingBottom: 10,
-		textAlign: 'center'
-	},
 	view: {
 		borderRadius: 20,
 		backgroundColor: getCurrentTheme().colors.surface,
-		width: '50%',
+		maxWidth: '80%',
+		padding: 16,
 		height: 'auto'
 	},
 	button: {

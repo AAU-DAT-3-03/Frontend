@@ -151,9 +151,9 @@ class Incident extends Component<ScreenProps, IncidentState> {
 						<PrioritySelector
 							editable={editable}
 							state={this.state.incidentData?.priority}
-							onPress={(value) =>
+							onPress={(value: number, text: string) =>
 								this.updateIncidentData(
-									{ id: this.state.incidentId, priority: value },
+									{ id: this.state.incidentId, priority: value, priorityNote: text },
 									`Priority has been set to ${value}`,
 									'clipboard-list-outline'
 								)
