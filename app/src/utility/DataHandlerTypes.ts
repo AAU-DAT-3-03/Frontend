@@ -57,8 +57,6 @@ export interface IncidentResponse {
 	caseNumber: number;
 }
 
-export interface IncidentData extends IncidentResponse {}
-
 export interface EventLog {
 	date: number;
 	userName: string;

@@ -4,7 +4,7 @@ import { getCurrentTheme } from '../themes/ThemeManager';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { IncidentCardHeader } from './incidentCard/IncidentCard';
 import Color from 'color';
-import { CompanyData, IncidentData } from '../utility/DataHandlerTypes';
+import { CompanyData, IncidentResponse } from '../utility/DataHandlerTypes';
 import DataHandler from '../utility/DataHandler';
 import Logger from '../utility/Logger';
 import { compareIncident, filterIncidentList } from '../utility/IncidentSort';
@@ -13,7 +13,7 @@ interface MergeIncidentProps {
 	id: string;
 	onMerge: (id: string) => void;
 	user: string;
-	incident: IncidentData;
+	incident: IncidentResponse;
 }
 
 class MergeIncident extends Component<MergeIncidentProps> {
@@ -51,14 +51,14 @@ interface MergeIncidentModalProps {
 	visible: boolean;
 	onDismiss: (id?: string) => void;
 	id: string;
-	incident: IncidentData;
+	incident: IncidentResponse;
 	user: string;
 }
 
 interface MergeIncidentModalState {
 	query: string;
 	selectedIds: Set<string>;
-	incidents: IncidentData[];
+	incidents: IncidentResponse[];
 	refreshing: boolean;
 	confirmVisible: boolean;
 	merging: boolean;
@@ -81,14 +81,14 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 	};
 
 	componentDidMount(): void {
-		this.getIncidentData();
+		this.getIncidentResponse();
 	}
 
 	private async mergeIncidents(): Promise<void> {
 		this.setState({ confirmVisible: false, merging: true });
 		let id: string = this.props.id;
 		for (let selectedId of this.state.selectedIds) {
-			let data: IncidentData | undefined = await DataHandler.mergeIncidents(id, selectedId);
+			let data: IncidentResponse | undefined = await DataHandler.mergeIncidents(id, selectedId);
 			this.setState({ mergingCount: this.state.mergingCount + 1 });
 			if (data === undefined) {
 				this.logger.error(`Error occurred while merging incidents: ${id} with ${selectedId}, skipping this merge`);
@@ -110,14 +110,14 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		}
 	}
 
-	private async getIncidentData(): Promise<void> {
-		let filteredIncident: IncidentData[] = [];
+	private async getIncidentResponse(): Promise<void> {
+		let filteredIncident: IncidentResponse[] = [];
 		let companies: CompanyData | undefined = await DataHandler.getCompany(this.props.incident.companyPublic.id);
 		if (companies !== undefined) {
-			let activeCompanyIncidents: Map<string, IncidentData> = DataHandler.getIncidentDataNoUpdate();
+			let activeCompanyIncidents: Map<string, IncidentResponse> = DataHandler.getIncidentResponseNoUpdate();
 			for (let incidentReference of companies.incidentReferences) {
 				if (incidentReference.includes(this.props.id)) continue;
-				let incident: IncidentData | undefined = activeCompanyIncidents.get(incidentReference);
+				let incident: IncidentResponse | undefined = activeCompanyIncidents.get(incidentReference);
 				if (incident !== undefined) filteredIncident.push(incident);
 			}
 		}
@@ -126,14 +126,14 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 
 	private onRefresh(): void {
 		this.setState({ refreshing: true });
-		this.getIncidentData();
+		this.getIncidentResponse();
 	}
 
 	private getRefreshControl(): React.JSX.Element | undefined {
 		return <RefreshControl refreshing={this.state.refreshing} onRefresh={() => this.onRefresh()} />;
 	}
 
-	private listItemRender(key: number, value: IncidentData): React.JSX.Element {
+	private listItemRender(key: number, value: IncidentResponse): React.JSX.Element {
 		let styleSheet = style(getCurrentTheme());
 
 		return (
@@ -222,7 +222,7 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 										{this.state.incidents
 											.filter((incident) => filterIncidentList(incident, this.state.query))
 											.sort(compareIncident)
-											.map((value: IncidentData, key: number) => this.listItemRender(key, value))}
+											.map((value: IncidentResponse, key: number) => this.listItemRender(key, value))}
 									</View>
 								</ScrollView>
 							) : (

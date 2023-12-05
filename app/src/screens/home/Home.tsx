@@ -8,7 +8,7 @@ import { getCurrentTheme } from '../../themes/ThemeManager';
 import { AppRender } from '../../../App';
 import LocalStorage from '../../utility/LocalStorage';
 import DataHandler from '../../utility/DataHandler';
-import { AlarmResponse, IncidentData, IncidentResponse, UserResponse } from '../../utility/DataHandlerTypes';
+import { AlarmResponse, IncidentResponse, UserResponse } from '../../utility/DataHandlerTypes';
 import Logger from '../../utility/Logger';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import LoadingScreen from '../../components/LoadingScreen';
@@ -153,20 +153,20 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 	}
 
 	componentDidMount() {
-		this.getIncidentData();
+		this.getIncidentResponse();
 	}
 
 	public refresh(): void {
-		this.getIncidentData();
+		this.getIncidentResponse();
 	}
 
-	private async getIncidentData() {
+	private async getIncidentResponse() {
 		if (this.loadingData) return;
 		this.loadingData = true;
 		this.logger.info('Getting incident data');
-		let incidentData: IncidentData[] = await DataHandler.getIncidentsData();
+		let incidentData: IncidentResponse[] = await DataHandler.getIncidentsData();
 		this.logger.info('Sorting incident data');
-		let incidentsSorted: IncidentData[] = this.sortIncidents(incidentData.filter((value) => !value.resolved));
+		let incidentsSorted: IncidentResponse[] = this.sortIncidents(incidentData.filter((value) => !value.resolved));
 		this.logger.info('Rendering incident data');
 		this.incidentData = incidentsSorted;
 		this.setState({ loading: false, hasIncidents: true });
@@ -175,11 +175,11 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 
 	/**
 	 * This is messy, but it sorts everything in the proper order using QSort
-	 * @param {IncidentData[]} incidents - List of incidents to sort
+	 * @param {IncidentResponse[]} incidents - List of incidents to sort
 	 * @private
-	 * @return {IncidentData[]} - The sorted list
+	 * @return {IncidentResponse[]} - The sorted list
 	 */
-	private sortIncidents(incidents: IncidentData[]): IncidentData[] {
+	private sortIncidents(incidents: IncidentResponse[]): IncidentResponse[] {
 		return incidents.sort(compareIncident);
 	}
 
@@ -201,7 +201,7 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 
 	private incidentsRender(filter: Filter): React.JSX.Element {
 		let id: string = LocalStorage.getSettingsValue('id');
-		let incidentData: IncidentData[] | undefined = this.filterIncidentList(this.incidentData, filter, id);
+		let incidentData: IncidentResponse[] | undefined = this.filterIncidentList(this.incidentData, filter, id);
 
 		return (
 			<ScrollView
@@ -234,7 +234,7 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 		return <IncidentCard incident={info.item} onClickIncident={onClickIncident.bind(this)} onClickAlarm={onClickAlarm.bind(this)} />;
 	}
 
-	private filterIncidentList(incidentData: IncidentData[] | undefined, filter: Filter, id: string): IncidentData[] | undefined {
+	private filterIncidentList(incidentData: IncidentResponse[] | undefined, filter: Filter, id: string): IncidentResponse[] | undefined {
 		if (incidentData !== undefined) {
 			incidentData = incidentData.filter((incident) => {
 				let shouldShow: boolean = false;
@@ -262,7 +262,7 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 	}
 
 	private onRefresh(finished: () => void): void {
-		this.getIncidentData().then(() => finished());
+		this.getIncidentResponse().then(() => finished());
 	}
 
 	render(): React.JSX.Element {

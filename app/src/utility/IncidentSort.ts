@@ -1,11 +1,11 @@
-import { IncidentData, IncidentResponse, UserResponse } from './DataHandlerTypes';
+import { IncidentResponse, UserResponse } from './DataHandlerTypes';
 
-export function filterIncidentList(incident: IncidentData, query: string): boolean {
+export function filterIncidentList(incident: IncidentResponse, query: string): boolean {
 	if (query !== '') {
 		let queries: [boolean, string][] = query
 			.toLowerCase()
 			.split(' ')
-			.map((value) => [false, value]);
+			.map((value: string) => [false, value]);
 		for (let query of queries) {
 			if (incident.companyPublic.name.toLowerCase().includes(query[1])) {
 				query[0] = true;
@@ -42,7 +42,7 @@ export function filterIncidentList(incident: IncidentData, query: string): boole
 				query[0] = true;
 			}
 		}
-		let queriesHit: number = queries.filter((value) => value[0] === true).length;
+		let queriesHit: number = queries.filter((value: [boolean, string]): boolean => value[0] === true).length;
 		if (queriesHit === queries.length) {
 			return true;
 		}

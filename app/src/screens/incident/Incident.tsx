@@ -12,7 +12,7 @@ import { IncidentCardList } from '../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import ContainerCard from '../../components/ContainerCard';
 import MergeIncident from '../../components/MergeIncident';
-import { IncidentData, UpdateIncident, UserResponse } from '../../utility/DataHandlerTypes';
+import { IncidentResponse, UpdateIncident, UserResponse } from '../../utility/DataHandlerTypes';
 import DataHandler from '../../utility/DataHandler';
 import LocalStorage from '../../utility/LocalStorage';
 import Logger from '../../utility/Logger';
@@ -22,7 +22,7 @@ import LoadingScreen from '../../components/LoadingScreen';
 
 interface IncidentState {
 	incidentId: string;
-	incidentData: IncidentData | undefined;
+	incidentData: IncidentResponse | undefined;
 	loading: boolean;
 	users: UserResponse[];
 	toastMessage: string;
@@ -47,9 +47,9 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		updatingServer: false
 	};
 
-	private async loadIncidentData(): Promise<void> {
+	private async loadIncidentResponse(): Promise<void> {
 		this.logger.info(`Loading data for: ${this.state.incidentId}`);
-		let incidentData: IncidentData | undefined = await DataHandler.getIncidentData(this.state.incidentId);
+		let incidentData: IncidentResponse | undefined = await DataHandler.getIncidentResponse(this.state.incidentId);
 		if (incidentData === undefined) {
 			this.logger.error('No data received');
 			this.setState({ loading: false });
@@ -70,7 +70,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 	componentDidMount(): void {
 		requestAnimationFrame(() => {
 			setTimeout(() => {
-				this.loadIncidentData();
+				this.loadIncidentResponse();
 			}, 0);
 		});
 	}
@@ -109,12 +109,12 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		);
 	}
 
-	private updateIncidentData(data: UpdateIncident, toastText: string, toastIcon?: string): void {
+	private updateIncidentResponse(data: UpdateIncident, toastText: string, toastIcon?: string): void {
 		this.setState({ updatingServer: true });
-		DataHandler.updateIncidentData(data).then(() => {
+		DataHandler.updateIncidentResponse(data).then(() => {
 			this.toast(toastText, toastIcon);
 			this.setState({ updatingServer: false });
-			this.loadIncidentData();
+			this.loadIncidentResponse();
 		});
 	}
 
@@ -134,14 +134,14 @@ class Incident extends Component<ScreenProps, IncidentState> {
 							usersAll={this.state.users}
 							removable={true}
 							onAdd={(user, name) => {
-								this.updateIncidentData(
+								this.updateIncidentResponse(
 									{ id: this.state.incidentId, addUsers: [user] },
 									`${name} has been assigned`,
 									'account'
 								);
 							}}
 							onRemove={(user, name) =>
-								this.updateIncidentData(
+								this.updateIncidentResponse(
 									{ id: this.state.incidentId, removeUsers: [user] },
 									`${name} has been removed`,
 									'account'
@@ -152,7 +152,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 							editable={editable}
 							state={this.state.incidentData?.priority}
 							onPress={(value: number, text: string) =>
-								this.updateIncidentData(
+								this.updateIncidentResponse(
 									{ id: this.state.incidentId, priority: value, priorityNote: text },
 									`Priority has been set to ${value}`,
 									'clipboard-list-outline'
@@ -166,7 +166,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 							usersAll={this.state.users}
 							removable={false}
 							onAdd={(user, name) =>
-								this.updateIncidentData(
+								this.updateIncidentResponse(
 									{ id: this.state.incidentId, addCalls: [user] },
 									`${name} has been called`,
 									'account'
@@ -189,7 +189,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 							editable={editable}
 							noteInfo={this.state.incidentData?.incidentNote}
 							onChange={(text) =>
-								this.updateIncidentData(
+								this.updateIncidentResponse(
 									{ id: this.state.incidentId, incidentNote: text },
 									`Note has been updated to: ${text.slice(0, Math.min(text.length, 10))}${text.length > 10 ? '...' : ''}`,
 									'note-outline'
@@ -215,14 +215,14 @@ class Incident extends Component<ScreenProps, IncidentState> {
 											id={this.state.incidentId}
 											onMerge={(id: string): void => {
 												this.toast('Incident(s) merged', 'merge');
-												this.setState({ incidentId: id }, () => this.loadIncidentData());
+												this.setState({ incidentId: id }, () => this.loadIncidentResponse());
 											}}
 										/>
 									</View>
 									<View style={{ flexGrow: 2 }}>
 										<FABResolved
 											onResolve={() => {
-												this.updateIncidentData(
+												this.updateIncidentResponse(
 													{ id: this.state.incidentId, resolved: true },
 													'Incident has been resolved',
 													'check'
@@ -268,7 +268,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 				<ContentContainer
 					appBar={this.AppBar()}
 					onRefresh={async (finished) => {
-						await this.loadIncidentData();
+						await this.loadIncidentResponse();
 						finished();
 					}}
 				>

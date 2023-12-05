@@ -5,8 +5,7 @@ import { ScreenProps } from '../../../../App';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import IncidentCard from '../../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../../themes/ThemeManager';
-import { compareIncident } from '../../home/Home';
-import { CompanyData, IncidentData } from '../../../utility/DataHandlerTypes';
+import { CompanyData, IncidentResponse } from '../../../utility/DataHandlerTypes';
 import DataHandler from '../../../utility/DataHandler';
 import LoadingScreen from '../../../components/LoadingScreen';
 
@@ -14,7 +13,7 @@ interface CompanyServiceLisState {
 	company: string;
 	id: string;
 	loading: boolean;
-	incidents: IncidentData[];
+	incidents: IncidentResponse[];
 	updating: boolean;
 }
 
@@ -48,24 +47,24 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 	}
 
 	componentDidMount() {
-		this.getIncidentData();
+		this.getIncidentResponse();
 		this.props.navigation.addListener('focus', () => {
-			this.getIncidentData();
+			this.getIncidentResponse();
 		});
 	}
 
 	public refresh(): void {
-		this.getIncidentData();
+		this.getIncidentResponse();
 	}
 
-	private async getIncidentData(): Promise<void> {
-		let filteredIncident: IncidentData[] = [];
+	private async getIncidentResponse(): Promise<void> {
+		let filteredIncident: IncidentResponse[] = [];
 		this.setState({ updating: true });
 		let companies: CompanyData | undefined = await DataHandler.getCompany(this.state.id);
 		if (companies !== undefined) {
-			let activeCompanyIncidents: Map<string, IncidentData> = await DataHandler.getIncidentsDataMap();
+			let activeCompanyIncidents: Map<string, IncidentResponse> = await DataHandler.getIncidentsDataMap();
 			for (let incidentReference of companies.incidentReferences) {
-				let incident: IncidentData | undefined = activeCompanyIncidents.get(incidentReference);
+				let incident: IncidentResponse | undefined = activeCompanyIncidents.get(incidentReference);
 				if (incident !== undefined) filteredIncident.push(incident);
 			}
 		}
@@ -74,17 +73,7 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 
 	private onRefresh(finished: () => void): void {
 		this.setState({ loading: true });
-		this.getIncidentData().then(() => finished());
-	}
-
-	/**
-	 * This is messy, but it sorts everything in the proper order using QSort
-	 * @param {IncidentData[]} incidents - List of incidents to sort
-	 * @private
-	 * @return {IncidentData[]} - The sorted list
-	 */
-	private sortIncidents(incidents: IncidentData[]): IncidentData[] {
-		return incidents.sort(compareIncident);
+		this.getIncidentResponse().then(() => finished());
 	}
 
 	private noIncidentsRender(): React.JSX.Element {

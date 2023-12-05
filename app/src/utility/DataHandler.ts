@@ -3,7 +3,6 @@ import {
 	AuthResponse,
 	CompanyData,
 	CompanyResponse,
-	IncidentData,
 	IncidentResponse,
 	LoginBody,
 	MergeIncident,
@@ -24,8 +23,8 @@ class DataHandler {
 	private static users: [number, Map<string, UserResponse>] = [0, new Map<string, UserResponse>()];
 	private static companies: [number, Map<string, CompanyData>] = [0, new Map<string, CompanyData>()];
 	private static services: [number, Map<string, ServicesResponse>] = [0, new Map<string, ServicesResponse>()];
-	private static activeIncidents: [number, Map<string, IncidentData>] = [0, new Map<string, IncidentData>()];
-	private static resolvedIncidents: [number, Map<string, IncidentData>] = [0, new Map<string, IncidentData>()];
+	private static activeIncidents: [number, Map<string, IncidentResponse>] = [0, new Map<string, IncidentResponse>()];
+	private static resolvedIncidents: [number, Map<string, IncidentResponse>] = [0, new Map<string, IncidentResponse>()];
 	private static logger: Logger = new Logger('DataHandler');
 
 	public static getCookiesMap(response: Response): Map<string, string> | undefined {
@@ -48,9 +47,9 @@ class DataHandler {
 		return cookies;
 	}
 
-	private static async createIncidentMap(value: [Object, Response]): Promise<Map<string, IncidentData>> {
+	private static async createIncidentMap(value: [Object, Response]): Promise<Map<string, IncidentResponse>> {
 		let response: ServerResponse<IncidentResponse[]> = JSON.parse(JSON.stringify(value[0]));
-		let incidentMap: Map<string, IncidentData> = new Map<string, IncidentData>();
+		let incidentMap: Map<string, IncidentResponse> = new Map<string, IncidentResponse>();
 
 		response.msg.forEach((value: IncidentResponse): void => {
 			incidentMap.set(value.id, value);
@@ -58,19 +57,19 @@ class DataHandler {
 		return incidentMap;
 	}
 
-	public static async getIncidentsDataMap(): Promise<Map<string, IncidentData>> {
+	public static async getIncidentsDataMap(): Promise<Map<string, IncidentResponse>> {
 		await this.getIncidentsData();
 		return this.activeIncidents[1];
 	}
 
-	public static async getIncidentsData(): Promise<IncidentData[]> {
+	public static async getIncidentsData(): Promise<IncidentResponse[]> {
 		if (Date.now() - this.activeIncidents[0] < shortDataCacheTime && this.activeIncidents[1].size > 0)
 			return Array.from(this.activeIncidents[1].values());
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
 			networkHandler.get(DataHandler.ip + 'incidents?resolved=false', undefined, async (value) => {
 				if (value) {
-					let incidentMap: Map<string, IncidentData> = await this.createIncidentMap(value);
+					let incidentMap: Map<string, IncidentResponse> = await this.createIncidentMap(value);
 					this.activeIncidents = [Date.now(), incidentMap];
 					resolve(Array.from(incidentMap.values()));
 				}
@@ -79,14 +78,14 @@ class DataHandler {
 		});
 	}
 
-	public static async getResolvedIncidentsData(start: number, end: number): Promise<IncidentData[]> {
+	public static async getResolvedIncidentsData(start: number, end: number): Promise<IncidentResponse[]> {
 		if (Date.now() - this.resolvedIncidents[0] < shortDataCacheTime && this.resolvedIncidents[1].size > 0)
 			return Array.from(this.resolvedIncidents[1].values());
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
 			networkHandler.get(DataHandler.ip + `incidents?resolved=true&start=${start}&end=${end}`, undefined, async (value) => {
 				if (value) {
-					let incidentMap: Map<string, IncidentData> = await this.createIncidentMap(value);
+					let incidentMap: Map<string, IncidentResponse> = await this.createIncidentMap(value);
 					this.resolvedIncidents = [Date.now(), incidentMap];
 					resolve(Array.from(incidentMap.values()));
 				}
@@ -95,9 +94,9 @@ class DataHandler {
 		});
 	}
 
-	public static async getIncidentData(id: string): Promise<IncidentData | undefined> {
+	public static async getIncidentResponse(id: string): Promise<IncidentResponse | undefined> {
 		if (Date.now() - this.activeIncidents[0] < shortDataCacheTime && this.activeIncidents[1].size > 0) {
-			let data: IncidentData | undefined = this.activeIncidents[1].get(id);
+			let data: IncidentResponse | undefined = this.activeIncidents[1].get(id);
 			if (data !== undefined) return data;
 		}
 		this.logger.info(`Loading a single incident with id: ${id}`);
@@ -109,7 +108,7 @@ class DataHandler {
 					this.logger.info(`Data from incident ${id}`, value);
 					let response: ServerResponse<IncidentResponse[]> = JSON.parse(JSON.stringify(value[0]));
 					if (response.statusCode === 200 || response.statusCode === 0) {
-						let incidentData: IncidentData = response.msg[0];
+						let incidentData: IncidentResponse = response.msg[0];
 						this.activeIncidents[1].set(incidentData.id, incidentData);
 						resolve(incidentData);
 						return;
@@ -122,7 +121,7 @@ class DataHandler {
 		});
 	}
 
-	public static async updateIncidentData(data: UpdateIncident): Promise<void> {
+	public static async updateIncidentResponse(data: UpdateIncident): Promise<void> {
 		let networkHandler: Networking = new Networking();
 		return await new Promise((resolve) => {
 			networkHandler.put(
@@ -142,7 +141,7 @@ class DataHandler {
 		});
 	}
 
-	public static getIncidentDataNoUpdate(): Map<string, IncidentData> {
+	public static getIncidentResponseNoUpdate(): Map<string, IncidentResponse> {
 		return this.activeIncidents[1];
 	}
 
@@ -293,7 +292,7 @@ class DataHandler {
 			return Array.from(this.companies[1].values());
 
 		let companies: CompanyResponse[] = [];
-		let incidentData: IncidentData[] = [];
+		let incidentData: IncidentResponse[] = [];
 		let companiesPromise: Promise<void> = new Promise(async (resolve) => {
 			companies = await this.getCompanyData();
 			resolve();
@@ -352,16 +351,16 @@ class DataHandler {
 		return Array.from(companiesData.values());
 	}
 
-	public static async mergeIncidents(first: string, second: string): Promise<IncidentData | undefined> {
+	public static async mergeIncidents(first: string, second: string): Promise<IncidentResponse | undefined> {
 		let networking: Networking = new Networking();
 		let body: MergeIncident = {
 			first: first,
 			second: second
 		};
-		let promise: Promise<IncidentData | undefined> = new Promise((resolve) => {
+		return new Promise((resolve) => {
 			networking.post(DataHandler.ip + 'merge', { body: body }, (value) => {
 				if (value) {
-					let data: ServerResponse<IncidentData> = JSON.parse(JSON.stringify(value[0]));
+					let data: ServerResponse<IncidentResponse> = JSON.parse(JSON.stringify(value[0]));
 					if (data.statusCode === 200 || data.statusCode === 0) {
 						resolve(data.msg);
 						return;
@@ -370,7 +369,6 @@ class DataHandler {
 				resolve(undefined);
 			});
 		});
-		return promise;
 	}
 }
 

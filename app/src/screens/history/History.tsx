@@ -9,14 +9,14 @@ import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { compareDatesEqual, getToday } from '../../components/TimePicker/DateHelper';
 import DataHandler from '../../utility/DataHandler';
-import { IncidentData } from '../../utility/DataHandlerTypes';
+import { IncidentResponse } from '../../utility/DataHandlerTypes';
 import Logger from '../../utility/Logger';
 import LoadingIcon from '../../components/LoadingIcon';
 import LoadingScreen from '../../components/LoadingScreen';
 import { filterIncidentList } from '../../utility/IncidentSort';
 
 interface HistoryState {
-	incidents: IncidentData[] | undefined;
+	incidents: IncidentResponse[] | undefined;
 	loading: boolean;
 	query: string;
 	period: Period;
@@ -50,7 +50,7 @@ class History extends Component<any, HistoryState> {
 							) {
 								console.log('test');
 								this.setState({ updating: true }, () => {
-									this.getIncidentData(period);
+									this.getIncidentResponse(period);
 								});
 							}
 							this.setState({ period: period, query: query.toLowerCase() });
@@ -63,21 +63,21 @@ class History extends Component<any, HistoryState> {
 
 	public refresh(): void {
 		this.setState({ updating: true }, () => {
-			this.getIncidentData(this.state.period);
+			this.getIncidentResponse(this.state.period);
 		});
 	}
 
-	private async getIncidentData(period: Period): Promise<void> {
+	private async getIncidentResponse(period: Period): Promise<void> {
 		let start: number = new Date(period.start[2], period.start[1] - 1, period.start[0]).getTime();
 		let end: number = new Date(period.end[2], period.end[1] - 1, period.end[0]).getTime() + 86399999;
 		this.logger.info(`Getting incident date for period: ${start}-${end} - ${new Date(start)}-${new Date(end)}`);
-		let incidentData: IncidentData[] = await DataHandler.getResolvedIncidentsData(start, end);
+		let incidentData: IncidentResponse[] = await DataHandler.getResolvedIncidentsData(start, end);
 		this.logger.info('Rendering Incidents');
 		this.setState({ incidents: incidentData, loading: false, updating: false });
 	}
 
 	componentDidMount() {
-		this.getIncidentData(this.state.period);
+		this.getIncidentResponse(this.state.period);
 	}
 
 	private incidentsRender(navigation: NavigationProp<any>): React.JSX.Element {
@@ -124,7 +124,7 @@ class History extends Component<any, HistoryState> {
 	}
 
 	private onRefresh(finished: () => void): void {
-		this.getIncidentData(this.state.period).then(() => finished());
+		this.getIncidentResponse(this.state.period).then(() => finished());
 	}
 
 	render(): React.JSX.Element {

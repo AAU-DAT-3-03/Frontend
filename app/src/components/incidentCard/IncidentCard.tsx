@@ -5,14 +5,14 @@ import StatusIcon from '../StatusIcon';
 import UserAvatar from './UserAvatar';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import ContainerCard from '../ContainerCard';
-import { AlarmResponse, IncidentData, UserResponse } from '../../utility/DataHandlerTypes';
+import { AlarmResponse, IncidentResponse, UserResponse } from '../../utility/DataHandlerTypes';
 import UserInformation from '../UserInformation';
 
 interface IncidentCardHeaderProps {
 	collapsed: boolean;
 	onClickButton?: () => void;
 	onClickIncident: () => void;
-	incident: IncidentData;
+	incident: IncidentResponse;
 }
 
 interface UserListProps {
@@ -216,7 +216,7 @@ export class IncidentCardList extends Component<IncidentCardListProps> {
 }
 
 interface IncidentCardProps {
-	incident: IncidentData;
+	incident: IncidentResponse;
 	onClickIncident: (id: string) => void;
 	onClickAlarm: (id: string, alarm: AlarmResponse) => void;
 }

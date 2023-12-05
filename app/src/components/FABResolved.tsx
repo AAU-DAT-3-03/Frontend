@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Icon, IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
-import { Colors, getCurrentTheme } from '../themes/ThemeManager';
+import { getCurrentTheme } from '../themes/ThemeManager';
 
 interface ResolvedProps {
 	onResolve: () => void;
