@@ -153,6 +153,7 @@ export class HomeRender extends Component<HomeRenderProps, HomeState> {
 	constructor(props: any) {
 		super(props);
 		AppRender.home = this;
+		AppRender.navigation = this.props.navigation;
 	}
 
 	componentDidMount() {

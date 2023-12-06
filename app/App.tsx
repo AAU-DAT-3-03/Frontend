@@ -18,6 +18,7 @@ import Alarm from './src/screens/alarm/Alarm';
 import CompanyServiceList from './src/screens/Services/sub_screens/CompanyServiceList';
 import NotificationHandler from './src/utility/NotificationHandler';
 import Toast from './src/components/Toast';
+import { Notification } from 'react-native-notifications';
 
 export interface ScreenProps {
 	navigation: NavigationProp<any>;
@@ -90,6 +91,7 @@ export class AppRender extends Component {
 	private loadedBaseData: boolean = false;
 	public static home: HomeRender;
 	public static history: History;
+	public static navigation: NavigationProp<any>;
 
 	state: AppRenderState = {
 		toastVisible: false,
@@ -114,11 +116,19 @@ export class AppRender extends Component {
 
 	public static onLogOut(): void {
 		AppRender.main.forceUpdate();
+		AppRender.main.loadedBaseData = false;
 	}
 
 	private loadBaseData(): void {
 		if (!this.loadedBaseData) {
-			new NotificationHandler();
+			let notificationHandler: NotificationHandler = new NotificationHandler();
+			notificationHandler.openedByNotification().then((value: Notification | undefined) => {
+				if (value !== undefined && value.payload.incidentId) {
+					AppRender.navigation.navigate('Incident', {
+						id: value.payload.incidentId
+					});
+				}
+			});
 
 			DataHandler.getUsers();
 			DataHandler.getCompanies();
