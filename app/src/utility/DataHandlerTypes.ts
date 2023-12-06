@@ -26,7 +26,7 @@ export interface UserResponse {
 	phoneNumber: string;
 	onCall: boolean;
 	onDuty: boolean;
-	team?: string;
+	team: string;
 }
 
 export interface CompanyResponse {
@@ -91,4 +91,8 @@ export interface ServicesResponse {
 	id: string;
 	name: string;
 	companyId: string;
+}
+
+export interface NotificationBody {
+	registrationToken: string | null;
 }

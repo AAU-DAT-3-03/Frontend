@@ -15,7 +15,6 @@ interface LoginProps {
 /**
  * @todo slet login imformation
  */
-
 class Login extends Component<LoginProps> {
 	state = {
 		email: 'mads.byriel@gmail.com',
@@ -26,7 +25,7 @@ class Login extends Component<LoginProps> {
 		debugTestText: undefined
 	};
 
-	private handleLogin() {
+	private handleLogin(): void {
 		if (this.state.email.length === 0 || this.state.password.length === 0) {
 			this.setState({ error: true });
 			return;
@@ -63,7 +62,7 @@ class Login extends Component<LoginProps> {
 								paddingHorizontal: 8
 							}}
 							underlineColorAndroid={Colors.error}
-							onChangeText={(text: string) => {
+							onChangeText={(text: string): void => {
 								this.setState({ email: text });
 							}}
 							inputMode={'email'}
@@ -113,9 +112,9 @@ class Login extends Component<LoginProps> {
 		);
 	}
 
-	private testConnection() {
+	private testConnection(): void {
 		let networking: Networking = new Networking();
-		networking.get(DataHandler.ip, undefined, (value) => {
+		networking.get(DataHandler.ip, undefined, (value: void | [object, Response]): void => {
 			if (value) {
 				this.setState({ debugTestText: value });
 			}

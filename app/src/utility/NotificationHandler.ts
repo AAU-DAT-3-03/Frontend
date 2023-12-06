@@ -7,38 +7,14 @@ import {
 	Notifications,
 	Registered
 } from 'react-native-notifications';
-import Networking from './Networking';
-
-/**
- * Temp success message
- * @todo Integrate with actual server
- */
-type RegisterSuccess = {
-	success: boolean;
-};
-
-class Logger {
-	private static tag(): string {
-		let date: Date = new Date(Date.now());
-		return `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}/NotificationHandler] `;
-	}
-
-	public static info(...msg: string[]): void {
-		console.log(this.tag(), msg.join(','));
-	}
-
-	public static warn(...msg: string[]): void {
-		console.warn(this.tag(), msg.join(','));
-	}
-
-	public static error(...msg: string[]): void {
-		console.error(this.tag(), msg.join(','));
-	}
-}
+import DataHandler from './DataHandler';
+import { AppRender } from '../../App';
+import Logger from './Logger';
 
 class NotificationHandler {
 	// Is device registered with Google Firebase
 	static registered: boolean = false;
+	private logger: Logger = new Logger('NotificationHandler');
 
 	constructor() {
 		this.init();
@@ -51,7 +27,7 @@ class NotificationHandler {
 	private async init(): Promise<void> {
 		if (NotificationHandler.registered) return;
 		let allowNotifications: Boolean = await this.getPushNotificationPermissionsAndroid();
-		if (!allowNotifications) return Logger.warn("User doesn't allow notifications, bye!");
+		if (!allowNotifications) return this.logger.warn("User doesn't allow notifications, bye!");
 		await this.registerRemote();
 		this.handleForegroundNotifications();
 		this.handleBackgroundNotifications();
@@ -98,21 +74,8 @@ class NotificationHandler {
 				// Ensure token is given
 				if (event.deviceToken === undefined || event.deviceToken.length === 0) return;
 
-				let network: Networking = new Networking();
-				// Set content type to JSON
-				network.setHeader('Content-Type', 'application/json');
-
-				// Send token to server
-				network.post('http://10.0.2.2:8888', { body: { key: event.deviceToken } }, (value: void | [Object, Response]) => {
-					if (value) {
-						let success: RegisterSuccess = JSON.parse(JSON.stringify(value[0]));
-						Logger.info('Token register to local server: ' + success.success ? 'true' : 'false');
-						NotificationHandler.registered = success.success;
-
-						// Finish promise
-						resolve(true);
-					}
-				});
+				DataHandler.registerNotification(event.deviceToken);
+				resolve(true);
 			});
 		});
 	}
@@ -123,11 +86,12 @@ class NotificationHandler {
 	private handleForegroundNotifications(): void {
 		Notifications.events().registerNotificationReceivedForeground(
 			(notification: Notification, completion: (response: NotificationCompletion) => void) => {
-				Logger.info('Notification Received - Foreground', notification.payload.toString());
+				this.logger.info('Notification Received - Foreground', notification.payload);
+				AppRender.Toast(notification.body, notification.payload.incindentId ?? undefined, 'exclamation');
 				completion({ alert: true, sound: true, badge: true });
 			}
 		);
-		Logger.info('Foreground notification registered');
+		this.logger.info('Foreground notification registered');
 	}
 
 	/**
@@ -136,11 +100,11 @@ class NotificationHandler {
 	private handleBackgroundNotifications(): void {
 		Notifications.events().registerNotificationReceivedBackground(
 			(notification: Notification, completion: (response: NotificationBackgroundFetchResult) => void) => {
-				Logger.info(notification.payload.toString());
+				this.logger.info(notification.payload.toString());
 				completion(NotificationBackgroundFetchResult.NEW_DATA);
 			}
 		);
-		Logger.info('Background notification registered');
+		this.logger.info('Background notification registered');
 	}
 
 	/**

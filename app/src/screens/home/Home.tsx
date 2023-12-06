@@ -61,7 +61,7 @@ class HomeAppbar extends Component<HomeAppBar, any> {
 						mode={'bar'}
 						icon={'filter'}
 						placeholder={'Search'}
-						onChangeText={(query: string) => {
+						onChangeText={(query: string): void => {
 							if (query === this.state.query) return;
 							this.setState({ query: query });
 							this.props.onQueryChange(query);
@@ -97,7 +97,7 @@ class HomeAppbar extends Component<HomeAppBar, any> {
 								backgroundColor: this.state.filter === Filter.CALLED ? getCurrentTheme().colors.primary : undefined,
 								width: '100%'
 							}}
-							onPress={() => {
+							onPress={(): void => {
 								if (this.state.filter === Filter.CALLED) {
 									this.setState({ filterVisible: false });
 									return;
@@ -114,7 +114,7 @@ class HomeAppbar extends Component<HomeAppBar, any> {
 								backgroundColor: this.state.filter === Filter.ASSIGNED ? getCurrentTheme().colors.primary : undefined,
 								width: '100%'
 							}}
-							onPress={() => {
+							onPress={(): void => {
 								if (this.state.filter === Filter.ASSIGNED) {
 									this.setState({ filterVisible: false });
 									return;
@@ -137,7 +137,7 @@ interface HomeRenderProps {
 	navigation: NavigationProp<any>;
 }
 
-class HomeRender extends Component<HomeRenderProps, HomeState> {
+export class HomeRender extends Component<HomeRenderProps, HomeState> {
 	private logger: Logger = new Logger('HomeScreen');
 	private incidentData: IncidentResponse[] | undefined;
 
@@ -164,13 +164,13 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 		this.getIncidentResponse();
 	}
 
-	private async getIncidentResponse() {
+	private async getIncidentResponse(): Promise<void> {
 		if (this.loadingData) return;
 		this.loadingData = true;
 		this.logger.info('Getting incident data');
 		let incidentData: IncidentResponse[] = await DataHandler.getIncidentsData();
 		this.logger.info('Sorting incident data');
-		let incidentsSorted: IncidentResponse[] = this.sortIncidents(incidentData.filter((value) => !value.resolved));
+		let incidentsSorted: IncidentResponse[] = this.sortIncidents(incidentData.filter((value: IncidentResponse) => !value.resolved));
 		this.logger.info('Rendering incident data');
 		this.incidentData = incidentsSorted;
 		this.setState({ loading: false, hasIncidents: true, updating: false });
@@ -240,7 +240,7 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 
 	private filterIncidentList(incidentData: IncidentResponse[] | undefined, filter: Filter, id: string): IncidentResponse[] | undefined {
 		if (incidentData !== undefined) {
-			incidentData = incidentData.filter((incident) => {
+			incidentData = incidentData.filter((incident: IncidentResponse): boolean => {
 				let shouldShow: boolean = false;
 				if (filter === Filter.NONE) {
 					shouldShow = true;
@@ -277,8 +277,8 @@ class HomeRender extends Component<HomeRenderProps, HomeState> {
 				<ContentContainer
 					appBar={
 						<HomeAppbar
-							onFilterChange={(filter) => this.setState({ filter: filter })}
-							onQueryChange={(query) => this.setState({ query: query })}
+							onFilterChange={(filter: Filter) => this.setState({ filter: filter })}
+							onQueryChange={(query: string) => this.setState({ query: query })}
 						/>
 					}
 					onRefresh={(finished: () => void) => this.onRefresh(finished)}

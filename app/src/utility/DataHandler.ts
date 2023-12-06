@@ -6,6 +6,7 @@ import {
 	IncidentResponse,
 	LoginBody,
 	MergeIncident,
+	NotificationBody,
 	ServerResponse,
 	ServicesResponse,
 	UpdateIncident,
@@ -14,6 +15,7 @@ import {
 import LocalStorage from './LocalStorage';
 import { IncidentState } from '../components/StatusIcon';
 import Logger from './Logger';
+import NotificationHandler from './NotificationHandler';
 
 const longDataCacheTime: number = 300000;
 const shortDataCacheTime: number = 5000;
@@ -26,6 +28,37 @@ class DataHandler {
 	private static activeIncidents: [number, Map<string, IncidentResponse>] = [0, new Map<string, IncidentResponse>()];
 	private static resolvedIncidents: [number, Map<string, IncidentResponse>] = [0, new Map<string, IncidentResponse>()];
 	private static logger: Logger = new Logger('DataHandler');
+	private static notificationRegistered: boolean = false;
+
+	public static async registerNotification(token: string | null): Promise<boolean> {
+		if (DataHandler.notificationRegistered && token !== null) return true;
+		let networking: Networking = new Networking();
+		let body: NotificationBody = {
+			registrationToken: token
+		};
+		let promise: Promise<boolean> = new Promise((resolve): void => {
+			networking.post(DataHandler.ip + 'notification', { body: body }, (value: void | [object, Response]): void => {
+				if (value) {
+					let response: { statusCode: number; msg: string } = JSON.parse(JSON.stringify(value[0]));
+					if (response.statusCode === 0) {
+						this.logger.info('Successfully set notification token');
+						if (token === null) {
+							NotificationHandler.registered = false;
+							DataHandler.notificationRegistered = false;
+						} else {
+							DataHandler.notificationRegistered = true;
+						}
+						resolve(true);
+						return;
+					}
+					resolve(false);
+					return;
+				}
+				resolve(false);
+			});
+		});
+		return promise;
+	}
 
 	public static getCookiesMap(response: Response): Map<string, string> | undefined {
 		if (!response.headers.has('set-cookie')) return undefined;
@@ -67,14 +100,18 @@ class DataHandler {
 			return Array.from(this.activeIncidents[1].values());
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
-			networkHandler.get(DataHandler.ip + 'incidents?resolved=false', undefined, async (value) => {
-				if (value) {
-					let incidentMap: Map<string, IncidentResponse> = await this.createIncidentMap(value);
-					this.activeIncidents = [Date.now(), incidentMap];
-					resolve(Array.from(incidentMap.values()));
+			networkHandler.get(
+				DataHandler.ip + 'incidents?resolved=false',
+				undefined,
+				async (value: void | [object, Response]): Promise<void> => {
+					if (value) {
+						let incidentMap: Map<string, IncidentResponse> = await this.createIncidentMap(value);
+						this.activeIncidents = [Date.now(), incidentMap];
+						resolve(Array.from(incidentMap.values()));
+					}
+					resolve([]);
 				}
-				resolve([]);
-			});
+			);
 		});
 	}
 
@@ -82,15 +119,19 @@ class DataHandler {
 		if (Date.now() - this.resolvedIncidents[0] < shortDataCacheTime && this.resolvedIncidents[1].size > 0)
 			return Array.from(this.resolvedIncidents[1].values());
 		let networkHandler: Networking = new Networking();
-		return new Promise((resolve) => {
-			networkHandler.get(DataHandler.ip + `incidents?resolved=true&start=${start}&end=${end}`, undefined, async (value) => {
-				if (value) {
-					let incidentMap: Map<string, IncidentResponse> = await this.createIncidentMap(value);
-					this.resolvedIncidents = [Date.now(), incidentMap];
-					resolve(Array.from(incidentMap.values()));
+		return new Promise((resolve): void => {
+			networkHandler.get(
+				DataHandler.ip + `incidents?resolved=true&start=${start}&end=${end}`,
+				undefined,
+				async (value: void | [object, Response]): Promise<void> => {
+					if (value) {
+						let incidentMap: Map<string, IncidentResponse> = await this.createIncidentMap(value);
+						this.resolvedIncidents = [Date.now(), incidentMap];
+						resolve(Array.from(incidentMap.values()));
+					}
+					resolve([]);
 				}
-				resolve([]);
-			});
+			);
 		});
 	}
 
@@ -101,35 +142,39 @@ class DataHandler {
 		}
 		this.logger.info(`Loading a single incident with id: ${id}`);
 		let networkHandler: Networking = new Networking();
-		return new Promise((resolve) => {
-			networkHandler.get(DataHandler.ip + `incidents?id=${id}`, undefined, async (value) => {
-				this.logger.info(`Got data from: incidents?id=${id}`);
-				if (value) {
-					this.logger.info(`Data from incident ${id}`, value);
-					let response: ServerResponse<IncidentResponse[]> = JSON.parse(JSON.stringify(value[0]));
-					if (response.statusCode === 200 || response.statusCode === 0) {
-						let incidentData: IncidentResponse = response.msg[0];
-						this.activeIncidents[1].set(incidentData.id, incidentData);
-						resolve(incidentData);
-						return;
+		return new Promise((resolve): void => {
+			networkHandler.get(
+				DataHandler.ip + `incidents?id=${id}`,
+				undefined,
+				async (value: void | [Object, Response]): Promise<void> => {
+					this.logger.info(`Got data from: incidents?id=${id}`);
+					if (value) {
+						this.logger.info(`Data from incident ${id}`, value);
+						let response: ServerResponse<IncidentResponse[]> = JSON.parse(JSON.stringify(value[0]));
+						if (response.statusCode === 200 || response.statusCode === 0) {
+							let incidentData: IncidentResponse = response.msg[0];
+							this.activeIncidents[1].set(incidentData.id, incidentData);
+							resolve(incidentData);
+							return;
+						}
+					} else {
+						this.logger.warn('Get single incident result: no data');
 					}
-				} else {
-					this.logger.warn('Get single incident result: no data');
+					resolve(undefined);
 				}
-				resolve(undefined);
-			});
+			);
 		});
 	}
 
 	public static async updateIncidentResponse(data: UpdateIncident): Promise<void> {
 		let networkHandler: Networking = new Networking();
-		return await new Promise((resolve) => {
+		return await new Promise((resolve): void => {
 			networkHandler.put(
 				DataHandler.ip + 'incidents',
 				{
 					body: data
 				},
-				(value) => {
+				(value: void | [object, Response]): void => {
 					if (value) {
 						this.logger.info(value[0]);
 					} else {
@@ -153,7 +198,7 @@ class DataHandler {
 	public static async auth(): Promise<boolean> {
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
-			networkHandler.get(DataHandler.ip + 'auth', undefined, (value) => {
+			networkHandler.get(DataHandler.ip + 'auth', undefined, (value: void | [object, Response]): void => {
 				if (value) {
 					let response: ServerResponse<AuthResponse> = JSON.parse(JSON.stringify(value[0]));
 					LocalStorage.setSettingsValue('username', response.msg.name);
@@ -175,14 +220,14 @@ class DataHandler {
 			password: password
 		};
 
-		return new Promise((resolve) => {
+		return new Promise((resolve): void => {
 			networkHandler.post(
 				DataHandler.ip + 'login',
 				{
 					body: settings,
 					sendAuthKey: false
 				},
-				async (value): Promise<void> => {
+				async (value: void | [object, Response]): Promise<void> => {
 					if (value) {
 						let response: Response = value[1];
 						let cookies: Map<string, string> | undefined = this.getCookiesMap(response);
@@ -219,12 +264,12 @@ class DataHandler {
 		if (Date.now() - this.users[0] < longDataCacheTime && this.users[1].size > 0) return Array.from(this.users[1].values());
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
-			networkHandler.get(DataHandler.ip + 'users?id=*', undefined, (value) => {
+			networkHandler.get(DataHandler.ip + 'users?id=*', undefined, (value: void | [object, Response]): void => {
 				if (value) {
 					this.logger.info('Loaded user data');
 					let users: ServerResponse<UserResponse[]> = JSON.parse(JSON.stringify(value[0]));
 					let usersMap: Map<string, UserResponse> = new Map<string, UserResponse>();
-					users.msg.forEach((value) => {
+					users.msg.forEach((value: UserResponse): void => {
 						usersMap.set(value.id, value);
 					});
 					this.users = [Date.now(), usersMap];
@@ -245,12 +290,12 @@ class DataHandler {
 		if (Date.now() - this.services[0] < longDataCacheTime && this.services[1].size > 0) return Array.from(this.services[1].values());
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
-			networkHandler.get(DataHandler.ip + 'services?id=*', undefined, (value) => {
+			networkHandler.get(DataHandler.ip + 'services?id=*', undefined, (value: void | [object, Response]): void => {
 				if (value) {
 					this.logger.info('Loaded user data');
 					let services: ServerResponse<ServicesResponse[]> = JSON.parse(JSON.stringify(value[0]));
 					let servicesMap: Map<string, ServicesResponse> = new Map<string, ServicesResponse>();
-					services.msg.forEach((value) => {
+					services.msg.forEach((value: ServicesResponse): void => {
 						servicesMap.set(value.id, value);
 					});
 					this.services = [Date.now(), servicesMap];
@@ -277,7 +322,7 @@ class DataHandler {
 
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
-			networkHandler.get(DataHandler.ip + 'companies?id=*', undefined, async (value) => {
+			networkHandler.get(DataHandler.ip + 'companies?id=*', undefined, async (value: void | [object, Response]): Promise<void> => {
 				if (value) {
 					let companies: ServerResponse<CompanyResponse[]> = JSON.parse(JSON.stringify(value[0]));
 					resolve(companies.msg);
@@ -293,11 +338,11 @@ class DataHandler {
 
 		let companies: CompanyResponse[] = [];
 		let incidentData: IncidentResponse[] = [];
-		let companiesPromise: Promise<void> = new Promise(async (resolve) => {
+		let companiesPromise: Promise<void> = new Promise(async (resolve): Promise<void> => {
 			companies = await this.getCompanyData();
 			resolve();
 		});
-		let incidentDataPromise: Promise<void> = new Promise(async (resolve) => {
+		let incidentDataPromise: Promise<void> = new Promise(async (resolve): Promise<void> => {
 			incidentData = await this.getIncidentsData();
 			resolve();
 		});
@@ -357,8 +402,8 @@ class DataHandler {
 			first: first,
 			second: second
 		};
-		return new Promise((resolve) => {
-			networking.post(DataHandler.ip + 'merge', { body: body }, (value) => {
+		return new Promise((resolve): void => {
+			networking.post(DataHandler.ip + 'merge', { body: body }, (value: void | [object, Response]): void => {
 				if (value) {
 					let data: ServerResponse<IncidentResponse> = JSON.parse(JSON.stringify(value[0]));
 					if (data.statusCode === 200 || data.statusCode === 0) {

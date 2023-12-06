@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { AppRegistry } from 'react-native';
-import { NavigationContainer, NavigationProp, RouteProp } from '@react-navigation/native';
+import { NavigationContainer, NavigationProp, RouteProp, useNavigation } from '@react-navigation/native';
 import 'react-native-gesture-handler';
-import Home from './src/screens/home/Home';
+import Home, { HomeRender } from './src/screens/home/Home';
 import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Icon, PaperProvider } from 'react-native-paper';
 import History from './src/screens/history/History';
@@ -16,6 +16,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Incident from './src/screens/incident/Incident';
 import Alarm from './src/screens/alarm/Alarm';
 import CompanyServiceList from './src/screens/Services/sub_screens/CompanyServiceList';
+import NotificationHandler from './src/utility/NotificationHandler';
+import Toast from './src/components/Toast';
 
 export interface ScreenProps {
 	navigation: NavigationProp<any>;
@@ -26,7 +28,7 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 class NavigationBar extends Component {
-	render() {
+	render(): React.JSX.Element {
 		return (
 			<Tab.Navigator
 				initialRouteName={'Home'}
@@ -43,7 +45,7 @@ class NavigationBar extends Component {
 					options={{
 						headerShown: false,
 						tabBarLabel: 'Companies',
-						tabBarIcon: ({ color, size }) => {
+						tabBarIcon: ({ color, size }: { color: string; size: number }) => {
 							return <Icon source="view-list" size={size} color={color} />;
 						}
 					}}
@@ -54,7 +56,7 @@ class NavigationBar extends Component {
 					options={{
 						headerShown: false,
 						tabBarLabel: 'Incidents',
-						tabBarIcon: ({ color, size }) => {
+						tabBarIcon: ({ color, size }: { color: string; size: number }) => {
 							return <Icon source="home" size={size} color={color} />;
 						}
 					}}
@@ -65,7 +67,7 @@ class NavigationBar extends Component {
 					options={{
 						headerShown: false,
 						tabBarLabel: 'History',
-						tabBarIcon: ({ color, size }) => {
+						tabBarIcon: ({ color, size }: { color: string; size: number }) => {
 							return <Icon source="history" size={size} color={color} />;
 						}
 					}}
@@ -75,12 +77,35 @@ class NavigationBar extends Component {
 	}
 }
 
+interface AppRenderState {
+	toastVisible: boolean;
+	toastMessage: string;
+	toastIcon: string | undefined;
+	toastId: string | undefined;
+}
+
 export class AppRender extends Component {
 	private static main: AppRender;
 	private logger: Logger = new Logger('App');
 	private loadedBaseData: boolean = false;
-	public static home: Home;
+	public static home: HomeRender;
 	public static history: History;
+
+	state: AppRenderState = {
+		toastVisible: false,
+		toastMessage: '',
+		toastIcon: undefined,
+		toastId: undefined
+	};
+
+	public static Toast(toastMessage: string, toastId?: string, toastIcon?: string): void {
+		AppRender.main.setState({
+			toastVisible: true,
+			toastMessage: toastMessage,
+			toastIcon: toastIcon,
+			toastId: toastId
+		});
+	}
 
 	constructor(props: any) {
 		super(props);
@@ -91,21 +116,27 @@ export class AppRender extends Component {
 		AppRender.main.forceUpdate();
 	}
 
-	componentDidMount() {
-		let key: string = LocalStorage.getSettingsValue('authKey');
-		if (key === 'null' || key === '' || key === null) {
-			return;
-		}
+	private loadBaseData(): void {
 		if (!this.loadedBaseData) {
+			new NotificationHandler();
+
 			DataHandler.getUsers();
 			DataHandler.getCompanies();
 			this.loadedBaseData = true;
 		}
 	}
 
-	render() {
+	componentDidMount(): void {
 		let key: string = LocalStorage.getSettingsValue('authKey');
-		let loggedIn = true;
+		if (key === 'null' || key === '' || key === null) {
+			return;
+		}
+		this.loadBaseData();
+	}
+
+	render(): React.JSX.Element {
+		let key: string = LocalStorage.getSettingsValue('authKey');
+		let loggedIn: boolean = true;
 		if (key === 'null' || key === '' || key === null) {
 			this.logger.info('User needs to log in');
 			loggedIn = false;
@@ -126,15 +157,18 @@ export class AppRender extends Component {
 								{(props: ScreenProps) => <CompanyServiceList {...props} />}
 							</Stack.Screen>
 						</Stack.Navigator>
+						<ForegroundNotification
+							onDismiss={() => this.setState({ toastVisible: false })}
+							toastVisible={this.state.toastVisible}
+							toastMessage={this.state.toastMessage}
+							toastIcon={this.state.toastIcon}
+							toastId={this.state.toastId}
+						/>
 					</NavigationContainer>
 				) : (
 					<Login
 						onLoggedIn={() => {
-							if (!this.loadedBaseData) {
-								DataHandler.getUsers();
-								DataHandler.getCompanies();
-								this.loadedBaseData = true;
-							}
+							this.loadBaseData();
 							this.forceUpdate();
 						}}
 					/>
@@ -142,6 +176,30 @@ export class AppRender extends Component {
 			</PaperProvider>
 		);
 	}
+}
+
+interface ForegroundNotificationProps extends AppRenderState {
+	onDismiss: () => void;
+}
+
+function ForegroundNotification(props: ForegroundNotificationProps): React.JSX.Element {
+	let navigation: NavigationProp<any> = useNavigation();
+	const onDismiss = (): void => {
+		props.toastVisible = false;
+		if (props.toastId !== undefined) {
+			navigation.navigate('Incident', { id: props.toastId });
+		}
+		props.onDismiss();
+	};
+	return (
+		<Toast
+			message={props.toastMessage}
+			visible={props.toastVisible}
+			icon={props.toastIcon}
+			onDismiss={() => onDismiss()}
+			yOffset={100}
+		/>
+	);
 }
 
 function App(): React.JSX.Element {

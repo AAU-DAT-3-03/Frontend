@@ -6,13 +6,14 @@ import { getCurrentTheme } from '../themes/ThemeManager';
 interface ToastProps {
 	message: string;
 	icon?: string;
+	yOffset?: number;
 	visible: boolean;
 	onDismiss?: () => void;
 }
 
 class Toast extends Component<ToastProps> {
 	render(): React.JSX.Element {
-		let stylesheet = style(getCurrentTheme(), this.props.visible);
+		let stylesheet = style(getCurrentTheme(), this.props.visible, this.props.yOffset ?? 0);
 		return (
 			<View style={stylesheet.wrapper}>
 				<TouchableRipple style={stylesheet.container} onPress={this.props.onDismiss} borderless={true}>
@@ -32,7 +33,7 @@ class Toast extends Component<ToastProps> {
 
 export default Toast;
 
-const style = (theme: MD3Theme, visible: boolean) => {
+const style = (theme: MD3Theme, visible: boolean, yOffset: number) => {
 	return StyleSheet.create({
 		flexContainer: {
 			flexDirection: 'row',
@@ -51,11 +52,11 @@ const style = (theme: MD3Theme, visible: boolean) => {
 			flexWrap: 'nowrap',
 			alignItems: 'center',
 			justifyContent: 'center',
-			zIndex: 100,
+			zIndex: 99999999,
 			width: '100%',
 			padding: 16,
 			position: 'absolute',
-			bottom: 0,
+			bottom: 0 + yOffset,
 			right: 0
 		}
 	});

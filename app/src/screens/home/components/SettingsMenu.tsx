@@ -4,6 +4,8 @@ import { StyleSheet, View } from 'react-native';
 import { Colors, getCurrentTheme } from '../../../themes/ThemeManager';
 import LocalStorage from '../../../utility/LocalStorage';
 import { AppRender } from '../../../../App';
+import DataHandler from '../../../utility/DataHandler';
+import NotificationHandler from '../../../utility/NotificationHandler';
 
 interface MenuProps {
 	visible: boolean;
@@ -42,6 +44,11 @@ class SettingsMenu extends Component<MenuProps> {
 										value={this.state.notification}
 										onValueChange={(value: boolean): void => {
 											LocalStorage.setSettingsValue('notification', value ? 'true' : 'false');
+											if (value) {
+												new NotificationHandler();
+											} else {
+												DataHandler.registerNotification(null);
+											}
 											this.setState({ notification: value });
 										}}
 									/>
@@ -60,9 +67,11 @@ class SettingsMenu extends Component<MenuProps> {
 							<Button
 								buttonColor={Colors.error}
 								textColor={'white'}
-								onPress={() => {
-									LocalStorage.setSettingsValue('authKey', 'null');
-									AppRender.onLogOut();
+								onPress={(): void => {
+									DataHandler.registerNotification(null).then(() => {
+										LocalStorage.setSettingsValue('authKey', 'null');
+										AppRender.onLogOut();
+									});
 								}}
 							>
 								Log out
