@@ -27,12 +27,13 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 						this.props.navigation.goBack();
 					}}
 				/>
-				<Appbar.Content title={`${this.state.alarm?.name}`} />
+				<Appbar.Content title={`${this.state.alarm?.serviceName}`} />
 			</>
 		);
 	}
 
 	render(): React.JSX.Element {
+		console.log(this.state.alarm);
 		return (
 			<ContentContainer appBar={this.AppBar()}>
 				<View style={container.padding}>

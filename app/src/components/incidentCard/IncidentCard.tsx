@@ -185,7 +185,9 @@ class IncidentCardListItem extends Component<IncidentCardListItemProps> {
 		return (
 			<TouchableRipple onPress={() => this.props.onClickAlarm(this.props.alarm.id)} borderless={true}>
 				<View style={this.props.alternate ? incidentCardStyle().listItemAlternate : incidentCardStyle().listItem}>
-					<Text>{this.props.alarm.name}</Text>
+					<Text>
+						{this.props.alarm.serviceName} - {this.props.alarm.name}
+					</Text>
 				</View>
 			</TouchableRipple>
 		);

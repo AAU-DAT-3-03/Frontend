@@ -68,6 +68,7 @@ export interface AlarmResponse {
 	id: string;
 	name: string;
 	serviceId: string;
+	serviceName: string;
 }
 
 export interface UpdateIncident {

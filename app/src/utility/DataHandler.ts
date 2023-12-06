@@ -90,80 +90,91 @@ class DataHandler {
 		return incidentMap;
 	}
 
+	private static async createIncidentMapFromArray(value: IncidentResponse[]): Promise<Map<string, IncidentResponse>> {
+		let incidentMap: Map<string, IncidentResponse> = new Map<string, IncidentResponse>();
+
+		value.forEach((value: IncidentResponse): void => {
+			incidentMap.set(value.id, value);
+		});
+		return incidentMap;
+	}
+
 	public static async getIncidentsDataMap(): Promise<Map<string, IncidentResponse>> {
 		await this.getIncidentsData();
 		return this.activeIncidents[1];
 	}
 
-	public static async getIncidentsData(): Promise<IncidentResponse[]> {
-		if (Date.now() - this.activeIncidents[0] < shortDataCacheTime && this.activeIncidents[1].size > 0)
-			return Array.from(this.activeIncidents[1].values());
+	private static async getAllIncidentsData(params: string): Promise<Map<string, IncidentResponse>> {
 		let networkHandler: Networking = new Networking();
-		return new Promise((resolve) => {
+		let incidentPromise: Promise<IncidentResponse[]> = new Promise((resolve): void => {
 			networkHandler.get(
-				DataHandler.ip + 'incidents?resolved=false',
+				DataHandler.ip + `incidents${params}`,
 				undefined,
 				async (value: void | [object, Response]): Promise<void> => {
 					if (value) {
-						let incidentMap: Map<string, IncidentResponse> = await this.createIncidentMap(value);
-						this.activeIncidents = [Date.now(), incidentMap];
-						resolve(Array.from(incidentMap.values()));
+						let response: ServerResponse<IncidentResponse[]> = JSON.parse(JSON.stringify(value[0]));
+						resolve(response.msg);
 					}
 					resolve([]);
 				}
 			);
 		});
+		let servicePromise: Promise<Map<string, ServicesResponse>> = new Promise(async (resolve): Promise<void> => {
+			resolve(await this.getServicesMap());
+		});
+
+		return new Promise<Map<string, IncidentResponse>>((resolve) =>
+			Promise.all([incidentPromise, servicePromise]).then(
+				async (value: [IncidentResponse[], Map<string, ServicesResponse>]): Promise<void> => {
+					let incidents: IncidentResponse[] = value[0];
+					let services: Map<string, ServicesResponse> = value[1];
+					for (let i = incidents.length - 1; i >= 0; i--) {
+						for (let j = incidents[i].alarms.length - 1; j >= 0; j--) {
+							let serviceName: string = services.get(incidents[i].alarms[j].serviceId)?.name ?? '';
+							incidents[i].alarms[j].serviceName = serviceName;
+						}
+					}
+					let incidentMap: Map<string, IncidentResponse> = await this.createIncidentMapFromArray(incidents);
+					resolve(incidentMap);
+				}
+			)
+		);
+	}
+
+	public static async getIncidentsData(): Promise<IncidentResponse[]> {
+		if (Date.now() - this.activeIncidents[0] > shortDataCacheTime || this.activeIncidents[1].size === 0) {
+			let incidents: Map<string, IncidentResponse> = await DataHandler.getAllIncidentsData('?resolved=false');
+			this.activeIncidents = [Date.now(), incidents];
+		}
+
+		return Array.from(this.activeIncidents[1].values());
 	}
 
 	public static async getResolvedIncidentsData(start: number, end: number): Promise<IncidentResponse[]> {
-		if (Date.now() - this.resolvedIncidents[0] < shortDataCacheTime && this.resolvedIncidents[1].size > 0)
-			return Array.from(this.resolvedIncidents[1].values());
-		let networkHandler: Networking = new Networking();
-		return new Promise((resolve): void => {
-			networkHandler.get(
-				DataHandler.ip + `incidents?resolved=true&start=${start}&end=${end}`,
-				undefined,
-				async (value: void | [object, Response]): Promise<void> => {
-					if (value) {
-						let incidentMap: Map<string, IncidentResponse> = await this.createIncidentMap(value);
-						this.resolvedIncidents = [Date.now(), incidentMap];
-						resolve(Array.from(incidentMap.values()));
-					}
-					resolve([]);
-				}
+		if (Date.now() - this.resolvedIncidents[0] > shortDataCacheTime || this.resolvedIncidents[1].size === 0) {
+			let incidents: Map<string, IncidentResponse> = await DataHandler.getAllIncidentsData(
+				`?resolved=true&start=${start}&end=${end}`
 			);
-		});
+			this.resolvedIncidents = [Date.now(), incidents];
+		}
+
+		return Array.from(this.resolvedIncidents[1].values());
 	}
 
 	public static async getIncidentResponse(id: string): Promise<IncidentResponse | undefined> {
-		if (Date.now() - this.activeIncidents[0] < shortDataCacheTime && this.activeIncidents[1].size > 0) {
+		if (Date.now() - this.activeIncidents[0] > shortDataCacheTime || this.activeIncidents[1].size === 0) {
 			let data: IncidentResponse | undefined = this.activeIncidents[1].get(id);
 			if (data !== undefined) return data;
 		}
-		this.logger.info(`Loading a single incident with id: ${id}`);
-		let networkHandler: Networking = new Networking();
-		return new Promise((resolve): void => {
-			networkHandler.get(
-				DataHandler.ip + `incidents?id=${id}`,
-				undefined,
-				async (value: void | [Object, Response]): Promise<void> => {
-					this.logger.info(`Got data from: incidents?id=${id}`);
-					if (value) {
-						this.logger.info(`Data from incident ${id}`, value);
-						let response: ServerResponse<IncidentResponse[]> = JSON.parse(JSON.stringify(value[0]));
-						if (response.statusCode === 200 || response.statusCode === 0) {
-							let incidentData: IncidentResponse = response.msg[0];
-							this.activeIncidents[1].set(incidentData.id, incidentData);
-							resolve(incidentData);
-							return;
-						}
-					} else {
-						this.logger.warn('Get single incident result: no data');
-					}
-					resolve(undefined);
-				}
-			);
-		});
+
+		this.logger.info(`Getting a single incident with id: ${id}`);
+		let incidents: Map<string, IncidentResponse> = await DataHandler.getAllIncidentsData(`?id=${id}`);
+		let incidentData: IncidentResponse | undefined = incidents.get(id);
+		if (incidentData !== undefined) {
+			this.logger.info(`Data received for incident: ${id}`);
+			this.activeIncidents[1].set(incidentData.id, incidentData);
+		}
+		return incidentData;
 	}
 
 	public static async updateIncidentResponse(data: UpdateIncident): Promise<void> {
