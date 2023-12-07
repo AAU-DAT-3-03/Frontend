@@ -63,20 +63,21 @@ class Incident extends Component<ScreenProps, IncidentState> {
 
 		this.setState({
 			incidentData: incidentData,
-			loading: false
+			loading: false,
+			updatingServer: false
 		});
 	}
 
 	componentDidMount(): void {
 		requestAnimationFrame(() => {
 			setTimeout(() => {
-				this.loadIncidentResponse();
+				this.loadIncidentResponse().then(() => this.logger.info(this.state.incidentData));
 			}, 0);
 		});
 	}
 
 	private AppBar(): React.JSX.Element {
-		const formattedDate = this.state.incidentData
+		const formattedDate: string | null = this.state.incidentData
 			? new Date(this.state.incidentData.creationDate).toLocaleDateString([], { hour: '2-digit', minute: '2-digit', hour12: false })
 			: null;
 
@@ -215,7 +216,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 											id={this.state.incidentId}
 											onMerge={(id: string): void => {
 												this.toast('Incident(s) merged', 'merge');
-												this.setState({ incidentId: id }, () => this.loadIncidentResponse());
+												this.setState({ incidentId: id, updatingServer: true }, () => this.loadIncidentResponse());
 											}}
 										/>
 									</View>

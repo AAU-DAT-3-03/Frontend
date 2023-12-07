@@ -86,8 +86,13 @@ class NotificationHandler {
 	private handleForegroundNotifications(): void {
 		Notifications.events().registerNotificationReceivedForeground(
 			(notification: Notification, completion: (response: NotificationCompletion) => void) => {
-				this.logger.info('Notification Received - Foreground', notification.payload);
-				AppRender.Toast(notification.body, notification.payload.incindentId ?? undefined, 'exclamation');
+				this.logger.info(
+					'Notification Received - Foreground',
+					notification.payload.incidentId,
+					notification.payload['gcm.notification.body']
+				);
+				AppRender.Toast(notification.payload['gcm.notification.body'], notification.payload.incidentId ?? undefined, 'exclamation');
+				AppRender.home.refresh();
 				completion({ alert: true, sound: true, badge: true });
 			}
 		);

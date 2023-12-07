@@ -17,8 +17,8 @@ interface LoginProps {
  */
 class Login extends Component<LoginProps> {
 	state = {
-		email: 'mads.byriel@gmail.com',
-		password: 'mads.byriel123',
+		email: '',
+		password: '',
 		error: false,
 		debug: false,
 		debugText: undefined,
@@ -61,6 +61,7 @@ class Login extends Component<LoginProps> {
 								color: getCurrentTheme().colors.onSurface,
 								paddingHorizontal: 8
 							}}
+							autoCapitalize={'none'}
 							underlineColorAndroid={Colors.error}
 							onChangeText={(text: string): void => {
 								this.setState({ email: text });
@@ -77,6 +78,7 @@ class Login extends Component<LoginProps> {
 								paddingHorizontal: 8
 							}}
 							underlineColorAndroid={Colors.error}
+							autoCapitalize={'none'}
 							onChangeText={(text: string) => {
 								this.setState({ password: text });
 							}}

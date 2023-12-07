@@ -100,6 +100,12 @@ export class AppRender extends Component {
 		toastId: undefined
 	};
 
+	public static updateToast(toastMessage: string): void {
+		AppRender.main.setState({
+			toastMessage: toastMessage
+		});
+	}
+
 	public static Toast(toastMessage: string, toastId?: string, toastIcon?: string): void {
 		AppRender.main.setState({
 			toastVisible: true,
@@ -123,10 +129,14 @@ export class AppRender extends Component {
 		if (!this.loadedBaseData) {
 			let notificationHandler: NotificationHandler = new NotificationHandler();
 			notificationHandler.openedByNotification().then((value: Notification | undefined) => {
-				if (value !== undefined && value.payload.incidentId) {
-					AppRender.navigation.navigate('Incident', {
-						id: value.payload.incidentId
-					});
+				if (value !== undefined) {
+					this.logger.info('Opened by notification', value);
+					if (value.payload.incidentId) {
+						this.logger.info(`Opened with incident id: ${value.payload.incidentId}`);
+						AppRender.navigation.navigate('Incident', {
+							id: value.payload.incidentId
+						});
+					}
 				}
 			});
 
