@@ -16,7 +16,8 @@ class SettingsMenu extends Component<MenuProps> {
 	state = {
 		notification: false,
 		phoneNr: '',
-		username: ''
+		username: '',
+		filterVisible: false
 	};
 
 	constructor(props: MenuProps) {

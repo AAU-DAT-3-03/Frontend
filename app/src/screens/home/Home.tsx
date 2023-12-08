@@ -38,8 +38,9 @@ class HomeAppbar extends Component<HomeAppBar, any> {
 	state = {
 		query: '',
 		filterVisible: false,
-		filter: Filter.NONE,
-		menuVisible: false
+		filter: Filter.CALLED,
+		menuVisible: false,
+		icon: 'phone'
 	};
 
 	render(): React.JSX.Element {
@@ -59,7 +60,7 @@ class HomeAppbar extends Component<HomeAppBar, any> {
 						style={{ flexShrink: 2, backgroundColor: getCurrentTheme().colors.surfaceVariant }}
 						onIconPress={() => this.setState({ filterVisible: true })}
 						mode={'bar'}
-						icon={'filter'}
+						icon={this.state.icon}
 						placeholder={'Search'}
 						onChangeText={(query: string): void => {
 							if (query === this.state.query) return;
@@ -87,7 +88,9 @@ class HomeAppbar extends Component<HomeAppBar, any> {
 									this.setState({ filterVisible: false });
 									return;
 								}
-								this.setState({ filter: Filter.NONE, filterVisible: false }, () => this.props.onFilterChange(Filter.NONE));
+								this.setState({ filter: Filter.NONE, filterVisible: false, icon: 'view-grid-outline' }, () =>
+									this.props.onFilterChange(Filter.NONE)
+								);
 							}}
 						/>
 						<Menu.Item
@@ -102,7 +105,7 @@ class HomeAppbar extends Component<HomeAppBar, any> {
 									this.setState({ filterVisible: false });
 									return;
 								}
-								this.setState({ filter: Filter.CALLED, filterVisible: false }, () =>
+								this.setState({ filter: Filter.CALLED, filterVisible: false, icon: 'phone' }, () =>
 									this.props.onFilterChange(Filter.CALLED)
 								);
 							}}
@@ -119,7 +122,7 @@ class HomeAppbar extends Component<HomeAppBar, any> {
 									this.setState({ filterVisible: false });
 									return;
 								}
-								this.setState({ filter: Filter.ASSIGNED, filterVisible: false }, () =>
+								this.setState({ filter: Filter.ASSIGNED, filterVisible: false, icon: 'account-check' }, () =>
 									this.props.onFilterChange(Filter.ASSIGNED)
 								);
 							}}

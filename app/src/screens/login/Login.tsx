@@ -31,7 +31,7 @@ class Login extends Component<LoginProps> {
 			return;
 		}
 		this.setState({ error: false });
-		DataHandler.login(this.state.email, this.state.password).then((value: [boolean, object]) => {
+		DataHandler.login(this.state.email.toLowerCase(), this.state.password).then((value: [boolean, object]) => {
 			if (value[0] === true) {
 				this.props.onLoggedIn();
 			} else {

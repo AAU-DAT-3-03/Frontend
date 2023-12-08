@@ -63,11 +63,11 @@ class PriorityConfirm extends Component<PriorityConfirmProps> {
 								let text = e.nativeEvent.text;
 								this.setState({ text: text });
 							}}
-							placeholder={'Required'}
+							placeholder={'Reason required'}
 							numberOfLines={0}
 							multiline={true}
 						/>
-						{this.state.text.trim().length < 10 ? (this.state.disable = true) : (this.state.disable = false)}
+						{this.state.text.trim().length < 1 ? (this.state.disable = true) : (this.state.disable = false)}
 						<View style={styles.textinput}>
 							<Button
 								onPress={() => {
