@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { Button, Drawer, IconButton, Modal, Portal, Switch, Text, TextInput } from 'react-native-paper';
+import { Button, Drawer, IconButton, Modal, Portal, Switch, Text } from 'react-native-paper';
 import { StyleSheet, View } from 'react-native';
 import { Colors, getCurrentTheme } from '../../../themes/ThemeManager';
 import LocalStorage from '../../../utility/LocalStorage';
 import { AppRender } from '../../../../App';
+import DataHandler from '../../../utility/DataHandler';
+import NotificationHandler from '../../../utility/NotificationHandler';
 
 interface MenuProps {
 	visible: boolean;
@@ -14,7 +16,8 @@ class SettingsMenu extends Component<MenuProps> {
 	state = {
 		notification: false,
 		phoneNr: '',
-		username: ''
+		username: '',
+		filterVisible: false
 	};
 
 	constructor(props: MenuProps) {
@@ -42,47 +45,22 @@ class SettingsMenu extends Component<MenuProps> {
 										value={this.state.notification}
 										onValueChange={(value: boolean): void => {
 											LocalStorage.setSettingsValue('notification', value ? 'true' : 'false');
+											if (value) {
+												new NotificationHandler();
+											} else {
+												DataHandler.registerNotification(null);
+											}
 											this.setState({ notification: value });
 										}}
 									/>
 								</View>
 								<View style={MenuStyle().row}>
-									<Text>Phone Nr.</Text>
-									<TextInput
-										style={{ flexGrow: 2, backgroundColor: undefined }}
-										onKeyPress={(e) => {
-											if (this.state.phoneNr === null) {
-												this.state.phoneNr = '';
-											}
-											let text: string = e.nativeEvent.key;
-											if (text === 'Backspace') {
-												return;
-											}
-											let number: number = parseInt(text, 10);
-											if (isNaN(number) || this.state.phoneNr.length > 7) {
-												e.preventDefault();
-												return;
-											}
-										}}
-										onChangeText={(text) => {
-											this.setState({ phoneNr: text });
-											LocalStorage.setSettingsValue('phoneNr', text);
-										}}
-										inputMode={'numeric'}
-										value={this.state.phoneNr}
-									/>
+									<Text>Phone number</Text>
+									<Text>{this.state.phoneNr}</Text>
 								</View>
 								<View style={MenuStyle().row}>
 									<Text>Name</Text>
-									<TextInput
-										style={{ flexGrow: 2, backgroundColor: undefined }}
-										onChangeText={(text) => {
-											this.setState({ username: text });
-											LocalStorage.setSettingsValue('username', text);
-										}}
-										inputMode={'text'}
-										value={this.state.username}
-									/>
+									<Text>{this.state.username}</Text>
 								</View>
 							</Drawer.Section>
 						</View>
@@ -90,9 +68,11 @@ class SettingsMenu extends Component<MenuProps> {
 							<Button
 								buttonColor={Colors.error}
 								textColor={'white'}
-								onPress={() => {
-									LocalStorage.setSettingsValue('authKey', 'null');
-									AppRender.onLogOut();
+								onPress={(): void => {
+									DataHandler.registerNotification(null).then(() => {
+										LocalStorage.setSettingsValue('authKey', 'null');
+										AppRender.onLogOut();
+									});
 								}}
 							>
 								Log out
@@ -122,6 +102,7 @@ const MenuStyle = () => {
 		row: {
 			width: '100%',
 			paddingHorizontal: 16,
+			paddingTop: 16,
 			gap: 16,
 			flexDirection: 'row',
 			justifyContent: 'space-between',

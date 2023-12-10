@@ -1,62 +1,83 @@
 import React, { Component } from 'react';
-import { Card, IconButton, Modal, Portal, SegmentedButtons, Text, TouchableRipple } from 'react-native-paper';
+import { Button, Card, IconButton, Modal, Portal, SegmentedButtons, Text, TextInput } from 'react-native-paper';
 import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
 import ContainerCard from './ContainerCard';
 
 interface PrioritySelectorProps {
-	onPress: (value: number | undefined) => void;
-	state: number | undefined;
+	onPress: (value: number, text: string) => void;
+	state: number;
 	editable?: boolean;
 }
 interface PrioritySelectorState {
-	selectedButton: number | undefined;
+	selectedButton: number;
 	visible: boolean;
-	selectedValue: number | undefined;
+	selectedValue: number;
 }
 
 interface PriorityConfirmProps {
-	onConfirm: () => void;
+	onConfirm: (text: string) => void;
 	visible: boolean;
 	onDismiss: () => void;
 }
 
 class PriorityConfirm extends Component<PriorityConfirmProps> {
-	state = { assignVisible: false, resolvedActive: false };
+	state = {
+		assignVisible: false,
+		resolvedActive: false,
+		disable: true,
+		text: ''
+	};
 
 	render(): React.JSX.Element {
-		let buttonStyle = {
-			...styles.resolveButton,
-			backgroundColor: getCurrentTheme().colors.onPrimary
-		};
 		return (
 			<Portal>
-				<Modal style={styles.container} visible={this.props.visible} onDismiss={() => this.props.onDismiss()}>
+				<Modal
+					style={styles.container}
+					visible={this.props.visible}
+					onDismiss={() => {
+						this.props.onDismiss();
+						this.setState({ text: '' });
+					}}
+				>
 					<View style={styles.view}>
 						<View style={styles.buttonview}>
 							<IconButton
 								icon="close-thick"
 								iconColor={getCurrentTheme().colors.onBackground}
 								size={20}
-								onPress={() => this.props.onDismiss()}
+								onPress={() => {
+									this.props.onDismiss();
+									this.setState({ text: '' });
+								}}
 							/>
 						</View>
-						<Text style={styles.fabtext}>Are you sure you want to change the Priority of this? </Text>
+						<Text variant={'bodyLarge'} style={styles.header}>
+							Are you sure you want to change the Priority of this?{' '}
+						</Text>
 
-						<View>
-							<TouchableRipple
-								style={{ borderRadius: buttonStyle.borderRadius }}
+						<TextInput
+							underlineColor={'#0000000'}
+							value={this.state.text}
+							onChange={(e) => {
+								let text = e.nativeEvent.text;
+								this.setState({ text: text });
+							}}
+							placeholder={'Reason required'}
+							numberOfLines={0}
+							multiline={true}
+						/>
+						{this.state.text.trim().length < 1 ? (this.state.disable = true) : (this.state.disable = false)}
+						<View style={styles.textinput}>
+							<Button
 								onPress={() => {
-									this.props.onConfirm();
+									this.props.onConfirm(this.state.text);
+									this.setState({ text: '' });
 								}}
-								borderless={true}
+								disabled={this.state.disable}
 							>
-								<View style={buttonStyle}>
-									<Text style={styles.text} variant={'bodyLarge'}>
-										Confirm
-									</Text>
-								</View>
-							</TouchableRipple>
+								Confirm
+							</Button>
 						</View>
 					</View>
 				</Modal>
@@ -77,9 +98,9 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 		return (
 			<ContainerCard>
 				<PriorityConfirm
-					onConfirm={() => {
+					onConfirm={(text: string) => {
 						this.setState({ selectedValue: this.state.selectedButton, visible: false });
-						this.props.onPress(this.state.selectedButton);
+						this.props.onPress(this.state.selectedButton, text);
 					}}
 					visible={this.state.visible}
 					onDismiss={() => {
@@ -155,6 +176,17 @@ const changeButtonStyle = (buttonValue: number, selectedValue: number | undefine
 };
 
 const styles = StyleSheet.create({
+	textinput: {
+		justifyContent: 'center',
+		flexWrap: 'wrap',
+		alignItems: 'center',
+		flexDirection: 'row'
+	},
+	header: {
+		textAlign: 'center',
+		padding: 16,
+		paddingTop: 0
+	},
 	card: {
 		alignItems: 'center',
 		backgroundColor: getCurrentTheme().colors.elevation.level2,
@@ -171,26 +203,17 @@ const styles = StyleSheet.create({
 	},
 
 	container: {
+		flexDirection: 'column',
 		alignItems: 'center',
 		justifyContent: 'center',
-		backgroundColor: undefined,
-		position: 'absolute'
-	},
-	fabtext: {
-		paddingBottom: 10,
-		textAlign: 'center'
+		backgroundColor: 'none'
 	},
 	view: {
-		paddingLeft: 16,
-		paddingRight: 16,
-		paddingBottom: 16,
-		alignItems: 'center',
-		justifyContent: 'space-evenly',
-		flexDirection: 'column',
 		borderRadius: 20,
 		backgroundColor: getCurrentTheme().colors.surface,
-		width: 230,
-		height: 153
+		maxWidth: '80%',
+		padding: 16,
+		height: 'auto'
 	},
 	button: {
 		alignItems: 'center',

@@ -1,5 +1,5 @@
-import { Component } from 'react';
-import { Card, Text } from 'react-native-paper';
+import React, { Component } from 'react';
+import { Text } from 'react-native-paper';
 import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../themes/ThemeManager';
 import ContainerCard from './ContainerCard';

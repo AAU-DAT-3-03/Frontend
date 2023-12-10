@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Icon, IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
-import { Colors, getCurrentTheme } from '../themes/ThemeManager';
+import { getCurrentTheme } from '../themes/ThemeManager';
 
 interface ResolvedProps {
 	onResolve: () => void;
@@ -31,7 +31,7 @@ class ResolvedConfirm extends Component<ResolvedProps> {
 								onPress={() => this.props.onDismiss()}
 							/>
 						</View>
-						<Text style={styles.fabtext}>
+						<Text style={styles.fabText}>
 							Are you sure you want to resolve this incident?{' '}
 							{this.props.timer < 1 ? null : `\nWait ${this.props.timer} seconds`}
 						</Text>
@@ -89,22 +89,21 @@ class FABResolved extends Component<FABResolvedProps> {
 
 	render(): React.JSX.Element {
 		return (
-			<>
-				<View style={styles.fabcontainer}>
-					<Button
-						mode={'contained'}
-						style={styles.fabbutton}
-						icon="check-bold"
-						onPress={() => this.resolvedTimeout()}
-						rippleColor={getCurrentTheme().colors.primary}
-					>
-						Resolve
-					</Button>
-				</View>
+			<View>
+				<Button
+					mode={'contained'}
+					style={styles.fabButton}
+					icon="check-bold"
+					onPress={() => this.resolvedTimeout()}
+					rippleColor={getCurrentTheme().colors.primary}
+					textColor={'white'}
+				>
+					Resolve
+				</Button>
 				<ResolvedConfirm
 					onResolve={() => {
 						this.props.onResolve();
-						this.setState({ resolvedActive: false });
+						this.setState({ resolvedActive: false, assignVisible: false });
 					}}
 					timer={this.state.timer}
 					visible={this.state.assignVisible}
@@ -124,22 +123,15 @@ class FABResolved extends Component<FABResolvedProps> {
 						});
 					}}
 				/>
-			</>
+			</View>
 		);
 	}
 }
 
 const styles = StyleSheet.create({
-	fabcontainer: {
-		padding: 8,
-		backgroundColor: 'none',
-		width: 'auto',
-		flexDirection: 'column',
-		alignItems: 'center',
-		justifyContent: 'center'
-	},
-	fabbutton: {
-		backgroundColor: Colors.allGood
+	fabButton: {
+		backgroundColor: getCurrentTheme().colors.tertiary,
+		color: 'white'
 	},
 	fab: {
 		backgroundColor: getCurrentTheme().colors.onTertiary,
@@ -153,7 +145,7 @@ const styles = StyleSheet.create({
 		backgroundColor: undefined,
 		position: 'absolute'
 	},
-	fabtext: {
+	fabText: {
 		paddingBottom: 10,
 		textAlign: 'center'
 	},

@@ -3,24 +3,27 @@ import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../../components/ContentContainer';
 import { ScreenProps } from '../../../../App';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import IncidentCard, { IncidentType } from '../../../components/incidentCard/IncidentCard';
-import { MockDataGenerator } from '../../../utility/MockDataGenerator';
+import IncidentCard from '../../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../../themes/ThemeManager';
-import { compareIncident } from '../../home/Home';
+import { CompanyData, IncidentResponse } from '../../../utility/DataHandlerTypes';
+import DataHandler from '../../../utility/DataHandler';
+import LoadingScreen from '../../../components/LoadingScreen';
 
 interface CompanyServiceLisState {
 	company: string;
-	id: number;
+	id: string;
 	loading: boolean;
-	incidents: IncidentType[];
+	incidents: IncidentResponse[];
+	updating: boolean;
 }
 
 class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> {
 	state: CompanyServiceLisState = {
 		company: this.props.route.params?.company,
 		id: this.props.route.params?.id,
-		loading: false,
-		incidents: []
+		loading: true,
+		incidents: [],
+		updating: true
 	};
 
 	private AppBar(): React.JSX.Element {
@@ -31,67 +34,61 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 						this.props.navigation.goBack();
 					}}
 				/>
-				<View>
+				<View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 32, alignItems: 'center' }}>
 					<Text style={cslStyle().headerText} variant={'titleLarge'}>
 						{this.state.company}
 					</Text>
+					{this.state.updating && !this.state.loading ? (
+						<ActivityIndicator size={'small'} color={getCurrentTheme().colors.onSurface} />
+					) : null}
 				</View>
 			</>
 		);
 	}
 
 	componentDidMount() {
-		this.getIncidentData();
+		this.getIncidentResponse();
+		this.props.navigation.addListener('focus', () => {
+			this.getIncidentResponse();
+		});
 	}
 
 	public refresh(): void {
-		this.getIncidentData();
+		this.getIncidentResponse();
 	}
 
-	/**
-	 * @todo Get data from server instead
-	 * @private
-	 */
-	private async getIncidentData(): Promise<boolean> {
-		let promise: Promise<boolean> = new Promise((resolve): void => {
-			setTimeout(() => {
-				let incidentsSorted = this.sortIncidents(
-					MockDataGenerator.getAllIncidents().filter((value) => value.state !== 'resolved' && value.companyId === this.state.id)
-				);
-				console.log(incidentsSorted);
-				this.setState({ loading: false, incidents: incidentsSorted });
-				resolve(true);
-			}, 100);
-		});
-		return await promise;
+	private async getIncidentResponse(): Promise<void> {
+		let filteredIncident: IncidentResponse[] = [];
+		this.setState({ updating: true });
+		let companies: CompanyData | undefined = await DataHandler.getCompany(this.state.id);
+		if (companies !== undefined) {
+			let activeCompanyIncidents: Map<string, IncidentResponse> = await DataHandler.getIncidentsDataMap();
+			for (let incidentReference of companies.incidentReferences) {
+				let incident: IncidentResponse | undefined = activeCompanyIncidents.get(incidentReference);
+				if (incident !== undefined) filteredIncident.push(incident);
+			}
+		}
+		this.setState({ incidents: filteredIncident, loading: false, updating: false });
 	}
 
 	private onRefresh(finished: () => void): void {
-		MockDataGenerator.generateIncident();
-		this.getIncidentData().then(() => finished());
-	}
-
-	/**
-	 * This is messy, but it sorts everything in the proper order using QSort
-	 * @param {IncidentType[]} incidents - List of incidents to sort
-	 * @private
-	 * @return {IncidentType[]} - The sorted list
-	 */
-	private sortIncidents(incidents: IncidentType[]): IncidentType[] {
-		return incidents.sort(compareIncident);
+		this.setState({ loading: true });
+		this.getIncidentResponse().then(() => finished());
 	}
 
 	private noIncidentsRender(): React.JSX.Element {
 		return (
-			<View style={cslStyle().noIncidentContainer}>
+			<>
 				{this.state.loading ? (
-					<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
+					<LoadingScreen />
 				) : (
-					<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.elevation.level4 }}>
-						No active incidents
-					</Text>
+					<View style={cslStyle().noIncidentContainer}>
+						<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.elevation.level4 }}>
+							No active incidents
+						</Text>
+					</View>
 				)}
-			</View>
+			</>
 		);
 	}
 
@@ -104,12 +101,12 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 							key={index}
 							incident={value}
 							onClickIncident={(id) =>
-								navigation.navigate('IncidentCompanies', {
+								navigation.navigate('Incident', {
 									id: id
 								})
 							}
 							onClickAlarm={(id) =>
-								navigation.navigate('AlarmCompanies', {
+								navigation.navigate('Alarm', {
 									id: id
 								})
 							}
@@ -136,8 +133,6 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 const cslStyle = () => {
 	return StyleSheet.create({
 		headerText: {
-			width: '100%',
-			paddingRight: 110,
 			textAlign: 'center'
 		},
 		noIncidentContainer: {

@@ -1,39 +1,40 @@
 import React, { Component } from 'react';
 import { Appbar, Text } from 'react-native-paper';
 import ContentContainer from '../../components/ContentContainer';
-import Incident from '../incident/Incident';
-import Alarm from '../alarm/Alarm';
-import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationProp } from '@react-navigation/native';
-import { ScreenProps } from '../../../App';
+import { AppRender } from '../../../App';
 import SearchBarDateSelector, { Period } from '../../components/SearchBarDateSelector';
-import IncidentCard, { IncidentType } from '../../components/incidentCard/IncidentCard';
-import { compareIncident, filterIncidentList } from '../home/Home';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import IncidentCard from '../../components/incidentCard/IncidentCard';
+import { FlatList, ListRenderItemInfo, ScrollView, StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { compareDatesEqual, getToday } from '../../components/TimePicker/DateHelper';
-import { MockDataGenerator } from '../../utility/MockDataGenerator';
-
-const Stack = createStackNavigator();
+import DataHandler from '../../utility/DataHandler';
+import { AlarmResponse, IncidentResponse } from '../../utility/DataHandlerTypes';
+import Logger from '../../utility/Logger';
+import LoadingIcon from '../../components/LoadingIcon';
+import LoadingScreen from '../../components/LoadingScreen';
+import { filterIncidentList } from '../../utility/IncidentSort';
 
 interface HistoryState {
-	incidents: IncidentType[] | undefined;
 	loading: boolean;
 	query: string;
 	period: Period;
+	updating: boolean;
 }
 
 class History extends Component<any, HistoryState> {
+	private logger: Logger = new Logger('HistoryScreen');
+	private incidents: IncidentResponse[] | undefined;
+
 	state: HistoryState = {
-		incidents: undefined,
 		loading: true,
 		query: '',
-		period: { start: getToday(-30), end: getToday() }
+		period: { start: getToday(-30), end: getToday() },
+		updating: false
 	};
-	static instance: History;
+
 	constructor(props: any) {
 		super(props);
-		History.instance = this;
+		AppRender.history = this;
 	}
 
 	private AppBar(): React.JSX.Element {
@@ -46,7 +47,9 @@ class History extends Component<any, HistoryState> {
 								!compareDatesEqual(this.state.period.start, period.start) ||
 								!compareDatesEqual(this.state.period.end, period.end)
 							) {
-								this.getIncidentData(period);
+								this.setState({ updating: true }, () => {
+									this.getIncidentResponse(period);
+								});
 							}
 							this.setState({ period: period, query: query.toLowerCase() });
 						}}
@@ -56,108 +59,96 @@ class History extends Component<any, HistoryState> {
 		);
 	}
 
-	/**
-	 * This is messy, but it sorts everything in the proper order using QSort
-	 * @param {IncidentType[]} incidents - List of incidents to sort
-	 * @private
-	 * @return {IncidentType[]} - The sorted list
-	 */
-	private sortIncidents(incidents: IncidentType[]): IncidentType[] {
-		return incidents.sort((a: IncidentType, b: IncidentType) => {
-			if (a.startTime > b.startTime) return 1;
-			if (a.startTime < b.startTime) return -1;
-			return compareIncident(a, b);
-		});
-	}
-
 	public refresh(): void {
-		this.getIncidentData(this.state.period);
+		this.setState({ updating: true }, () => {
+			this.getIncidentResponse(this.state.period);
+		});
 	}
 
-	/**
-	 * @todo Get data from server instead with a period
-	 * @private
-	 */
-	private async getIncidentData(period: Period): Promise<boolean> {
-		let promise: Promise<boolean> = new Promise((resolve): void => {
-			setTimeout(() => {
-				let incidents = this.sortIncidents(MockDataGenerator.getAllIncidents().filter((value) => value.state === 'resolved'));
-				this.setState({ loading: false, incidents: incidents });
-				resolve(true);
-			}, 100);
-		});
-		return await promise;
+	private async getIncidentResponse(period: Period): Promise<void> {
+		let start: number = new Date(period.start[2], period.start[1] - 1, period.start[0]).getTime();
+		let end: number = new Date(period.end[2], period.end[1] - 1, period.end[0]).getTime() + 86399999;
+		this.logger.info(`Getting incident date for period: ${start}-${end} - ${new Date(start)}-${new Date(end)}`);
+		let incidentData: IncidentResponse[] = await DataHandler.getResolvedIncidentsData(start, end);
+		this.logger.info('Rendering Incidents');
+		this.incidents = incidentData;
+		this.setState({ loading: false, updating: false });
 	}
 
 	componentDidMount() {
-		this.getIncidentData(this.state.period);
+		this.getIncidentResponse(this.state.period);
 	}
 
-	private incidentsRender(navigation: NavigationProp<any>): React.JSX.Element {
+	private filterIncidentList(incidentData: IncidentResponse[] | undefined): IncidentResponse[] | undefined {
+		if (incidentData !== undefined) {
+			incidentData = incidentData.filter((incident) => {
+				return filterIncidentList(incident, this.state.query);
+			});
+		}
+
+		return incidentData;
+	}
+
+	private incidentCardRender(info: ListRenderItemInfo<IncidentResponse>): React.JSX.Element {
+		let navigation = this.props.navigation;
+		let onClickIncident = (id: string) =>
+			navigation.navigate('Incident', {
+				id: id
+			});
+		let onClickAlarm = (id: string, alarm: AlarmResponse) =>
+			navigation.navigate('Alarm', {
+				id: id,
+				alarm: alarm
+			});
+		return <IncidentCard incident={info.item} onClickIncident={onClickIncident.bind(this)} onClickAlarm={onClickAlarm.bind(this)} />;
+	}
+
+	private incidentsRender(): React.JSX.Element {
+		let incidentData = this.filterIncidentList(this.incidents);
 		return (
-			<View style={HistoryStyle().incidentContainer}>
-				{this.state.incidents
-					?.filter((incident) => filterIncidentList(incident, this.state.query))
-					?.map((value, index) => {
-						return (
-							<IncidentCard
-								key={index}
-								incident={value}
-								onClickIncident={(id) =>
-									navigation.navigate('IncidentHistory', {
-										id: id
-									})
-								}
-								onClickAlarm={(id) =>
-									navigation.navigate('AlarmHistory', {
-										id: id
-									})
-								}
-							/>
-						);
-					})}
-			</View>
+			<ScrollView
+				horizontal={true}
+				showsVerticalScrollIndicator={false}
+				contentContainerStyle={{ width: '100%', height: '100%', margin: 0, padding: 0 }}
+			>
+				<FlatList
+					data={incidentData}
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={HistoryStyle().incidentContainer}
+					renderItem={this.incidentCardRender.bind(this)}
+					windowSize={2}
+				/>
+			</ScrollView>
 		);
 	}
 
 	private noIncidentsRender(): React.JSX.Element {
 		return (
-			<View style={HistoryStyle().noIncidentContainer}>
+			<>
 				{this.state.loading ? (
-					<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onBackground} />
+					<LoadingScreen />
 				) : (
-					<Text variant={'titleLarge'}>No active incidents</Text>
+					<View style={HistoryStyle().noIncidentContainer}>
+						<Text variant={'titleLarge'}>No active incidents</Text>
+					</View>
 				)}
-			</View>
-		);
-	}
-
-	private HistoryRender(navigation: NavigationProp<any>): React.JSX.Element {
-		return (
-			<ContentContainer appBar={this.AppBar()} onRefresh={(finished) => this.onRefresh(finished)}>
-				{this.state.incidents === undefined ? this.noIncidentsRender() : this.incidentsRender(navigation)}
-			</ContentContainer>
+			</>
 		);
 	}
 
 	private onRefresh(finished: () => void): void {
-		MockDataGenerator.generateIncident(true);
-		this.getIncidentData(this.state.period).then(() => finished());
+		this.getIncidentResponse(this.state.period).then(() => finished());
 	}
 
 	render(): React.JSX.Element {
 		return (
-			<Stack.Navigator initialRouteName={'Home'}>
-				<Stack.Screen options={{ headerShown: false }} name="HomeRender">
-					{(props: ScreenProps) => this.HistoryRender(props.navigation)}
-				</Stack.Screen>
-				<Stack.Screen options={{ headerShown: false }} name="IncidentHistory">
-					{(props: ScreenProps) => <Incident {...props} />}
-				</Stack.Screen>
-				<Stack.Screen options={{ headerShown: false }} name="AlarmHistory">
-					{(props: ScreenProps) => <Alarm {...props} />}
-				</Stack.Screen>
-			</Stack.Navigator>
+			<View>
+				<LoadingIcon visible={this.state.updating} verticalOffset={60} />
+
+				<ContentContainer appBar={this.AppBar()} onRefresh={(finished) => this.onRefresh(finished)}>
+					{this.incidents === undefined ? this.noIncidentsRender() : this.incidentsRender()}
+				</ContentContainer>
+			</View>
 		);
 	}
 }

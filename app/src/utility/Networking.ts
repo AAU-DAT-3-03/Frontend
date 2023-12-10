@@ -1,4 +1,7 @@
 import LocalStorage from './LocalStorage';
+import { ServerResponse } from './DataHandlerTypes';
+import { AppRender } from '../../App';
+import Logger from './Logger';
 
 enum Method {
 	GET = 'GET',
@@ -25,6 +28,7 @@ type FetchSettings = {
 
 class Networking {
 	private headers: Headers = new Headers();
+	private logger: Logger = new Logger('Networking');
 
 	/**
 	 * Appends header(s) to the current request
@@ -93,7 +97,7 @@ class Networking {
 		};
 
 		if (options?.sendAuthKey === undefined) {
-			this.setHeader('Cookie', LocalStorage.getSettingsValue('authKey'));
+			this.setHeader('Cookie', 'authKey=' + LocalStorage.getSettingsValue('authKey'));
 		}
 
 		if (options?.headers) {
@@ -123,11 +127,15 @@ class Networking {
 			})
 			.then((value: [string, Response]): [Object, Response] => {
 				// Try to convert the body as string to a JSON object
-				let data: Object = JSON.parse(value[0]);
+				let data: ServerResponse<any> = JSON.parse(value[0]);
+				if (data.statusCode !== undefined && data.statusCode === -1) {
+					this.logger.warn('User not logged in');
+					AppRender.onLogOut();
+				}
 				let response: Response = value[1];
-				return [data, response];
+				return [JSON.parse(value[0]), response];
 			})
-			.catch((reason) => console.error(reason));
+			.catch((reason) => reason);
 	}
 }
 

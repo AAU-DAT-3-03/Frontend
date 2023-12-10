@@ -58,9 +58,7 @@ class ContentContainer extends Component<ContentContainerProps, ContentContainer
 				{this.props.appBar === undefined ? null : (
 					<Appbar style={{ backgroundColor: getCurrentTheme().colors.surface }}>{this.props.appBar}</Appbar>
 				)}
-				<ScrollView style={{ flexGrow: 2, overflow: 'hidden' }} refreshControl={this.getRefreshControl()}>
-					{this.props.children ?? null}
-				</ScrollView>
+				<ScrollView refreshControl={this.getRefreshControl()}>{this.props.children ?? null}</ScrollView>
 			</View>
 		);
 	}

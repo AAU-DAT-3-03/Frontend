@@ -6,17 +6,23 @@ import { getCurrentTheme } from '../../themes/ThemeManager';
 interface UserAvatarProps {
 	name: string;
 	onPress?: () => void;
+	cutName?: true;
+	extraUsers?: number;
 }
 
 class UserAvatar extends Component<UserAvatarProps> {
 	render(): React.JSX.Element {
 		// @ts-ignore
 		let onPress = this.props.onPress !== undefined ? () => this.props.onPress() : undefined;
+		let name: string = this.props.cutName === undefined ? this.props.name : this.props.name.split(' ', 1)[0].split('.', 1)[0];
 		return (
 			<TouchableRipple style={{ borderRadius: userAvatarStyle.container.borderRadius }} onPress={onPress} borderless={true}>
 				<View style={userAvatarStyle.container}>
 					<Icon color={userAvatarStyle.contentText.color} size={18} source={'account'} />
-					<Text style={userAvatarStyle.contentText}>{this.props.name}</Text>
+					<Text style={userAvatarStyle.contentText}>
+						{name}
+						{this.props.extraUsers !== undefined && this.props.extraUsers > 0 ? ` +${this.props.extraUsers}` : ''}
+					</Text>
 				</View>
 			</TouchableRipple>
 		);
