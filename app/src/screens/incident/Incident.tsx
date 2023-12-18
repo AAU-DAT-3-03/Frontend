@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import PrioritySelector from '../../components/PrioritySelector';
 import EventLogCard from '../../components/EventLogCard';
 import NoteCard from '../../components/NoteCard';
-import AddUser from '../../components/AddUser';
+import AddUser from '../../components/addUser/AddUser';
 import FABResolved from '../../components/FABResolved';
 import { IncidentCardList } from '../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../themes/ThemeManager';
