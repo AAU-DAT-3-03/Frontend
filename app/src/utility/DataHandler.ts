@@ -387,6 +387,10 @@ class DataHandler {
 				}
 
 				if (incidentError || state === 'error') {
+					if (state === 'acknowledged') {
+						secondaryState = 'acknowledged';
+						stateFound = true;
+					}
 					state = 'error';
 					continue;
 				}
