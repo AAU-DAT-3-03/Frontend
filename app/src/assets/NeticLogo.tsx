@@ -2,6 +2,7 @@ import Svg, { G, Mask, Path, Rect } from 'react-native-svg';
 import React from 'react';
 import { Appearance } from 'react-native';
 
+//The light SVG for the login screen
 const lightSvg = (
 	<G clip-Path="url(#logoMask)">
 		<Path
@@ -82,6 +83,7 @@ const lightSvg = (
 	</G>
 );
 
+//The dark SVG for the login screen
 const darkSvg = (
 	<G mask={'#logoMask'}>
 		<Path

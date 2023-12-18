@@ -9,6 +9,7 @@ interface PrioritySelectorProps {
 	state: number;
 	editable?: boolean;
 }
+
 interface PrioritySelectorState {
 	selectedButton: number;
 	visible: boolean;
@@ -56,6 +57,7 @@ class PriorityConfirm extends Component<PriorityConfirmProps> {
 							Are you sure you want to change the Priority of this?{' '}
 						</Text>
 
+						 {/*Text input for entering the reason for priority change*/}
 						<TextInput
 							underlineColor={'#0000000'}
 							value={this.state.text}
@@ -67,6 +69,7 @@ class PriorityConfirm extends Component<PriorityConfirmProps> {
 							numberOfLines={0}
 							multiline={true}
 						/>
+						{/*Disable the confirm button if no text is entered */} 
 						{this.state.text.trim().length < 1 ? (this.state.disable = true) : (this.state.disable = false)}
 						<View style={styles.textinput}>
 							<Button
@@ -92,7 +95,7 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 		visible: false,
 		selectedButton: this.props.state
 	};
-
+	
 	render(): React.JSX.Element {
 		const { selectedValue } = this.state;
 		return (
@@ -111,6 +114,7 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 					<Text variant={'titleMedium'} style={styles.title}>
 						Priority
 					</Text>
+					{/* If editable, display SegmentedButtons, else display Text */}
 					{this.props.editable === true ? (
 						<SegmentedButtons
 							value={`${selectedValue}`}
@@ -118,6 +122,7 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 							onValueChange={(value) => {
 								this.setState({ selectedButton: parseInt(value, 10) });
 							}}
+							// Button configurations
 							buttons={[
 								{
 									value: '1',
@@ -166,6 +171,12 @@ class PrioritySelector extends Component<PrioritySelectorProps, PrioritySelector
 	}
 }
 
+/**
+ * Function to change the style of the button
+ * @param {number} buttonValue - The value of the button
+ * @param {number} selectedValue - The selected value
+ * @returns The style of the button
+ */
 const changeButtonStyle = (buttonValue: number, selectedValue: number | undefined) => {
 	const selected = buttonValue === selectedValue;
 	return {

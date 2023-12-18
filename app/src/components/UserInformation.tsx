@@ -11,7 +11,9 @@ interface UserInformationProp {
 	onDismiss: () => void;
 	onRemove?: (id: string) => void;
 }
-
+/**
+ * class for Popup of information on a specific User
+ */
 class UserInformation extends Component<UserInformationProp> {
 	state = {
 		confirmVisible: false
@@ -24,6 +26,7 @@ class UserInformation extends Component<UserInformationProp> {
 				<Modal visible={this.props.visible} onDismiss={() => this.props.onDismiss()} style={style.modal}>
 					<View style={style.listContainer}>
 						<Text variant={'titleMedium'}>{this.props.user.name}</Text>
+						{/* Display Team to the user*/}
 						<View style={style.row}>
 							<Icon size={24} source={'account-group'} />
 							<Button
@@ -34,6 +37,7 @@ class UserInformation extends Component<UserInformationProp> {
 								{this.props.user.team}
 							</Button>
 						</View>
+						{/* Display User phone number*/}
 						<View style={style.row}>
 							<Icon size={24} source={'phone'} />
 							<Button
@@ -44,6 +48,7 @@ class UserInformation extends Component<UserInformationProp> {
 								{this.props.user.phoneNumber}
 							</Button>
 						</View>
+						{/* Display User email*/}
 						<View style={style.row}>
 							<Icon size={24} source={'email'} />
 							<Button
@@ -54,6 +59,7 @@ class UserInformation extends Component<UserInformationProp> {
 								{this.props.user.email}
 							</Button>
 						</View>
+						{/* If removable, display button to remove, else nothing*/}
 						{this.props.onRemove !== undefined ? (
 							<View>
 								<Button
@@ -65,6 +71,7 @@ class UserInformation extends Component<UserInformationProp> {
 								>
 									Remove user
 								</Button>
+								{/*Popup to remove the user */} 
 								<UserAvatarConfirm
 									user={this.props.user.name}
 									onConfirm={() => {

@@ -46,6 +46,9 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 		);
 	}
 
+	/**
+	* Get resolved data from the server when the component gets mounted
+	*/
 	componentDidMount() {
 		this.getIncidentResponse();
 		this.props.navigation.addListener('focus', () => {
@@ -53,10 +56,17 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 		});
 	}
 
+	/**
+	 *Refreshs the incident response.
+	 */
 	public refresh(): void {
 		this.getIncidentResponse();
 	}
 
+	/**
+	 *Fetches the incident response and updates the state.
+	 * @returns {Promise<void>}
+	 */
 	private async getIncidentResponse(): Promise<void> {
 		let filteredIncident: IncidentResponse[] = [];
 		this.setState({ updating: true });
@@ -71,11 +81,20 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 		this.setState({ incidents: filteredIncident, loading: false, updating: false });
 	}
 
+	/**
+	 * Called when the screen is refreshed.
+	 * It updates the loading state and fetches the incident response.
+	 * @param {() => void} finished - The callback to be called after refreshing.
+	 */
 	private onRefresh(finished: () => void): void {
 		this.setState({ loading: true });
 		this.getIncidentResponse().then(() => finished());
 	}
 
+	/**
+	 * Renders a message when there are no incidents.
+	 * @returns {React.JSX.Element} A JSX element.
+	 */
 	private noIncidentsRender(): React.JSX.Element {
 		return (
 			<>
@@ -92,6 +111,11 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 		);
 	}
 
+	/**
+	 * Renders all the incidents.
+	 * @param {any} navigation - The navigation prop.
+	 * @returns {React.JSX.Element} A JSX element.
+	 */
 	private incidentsRender(navigation: any): React.JSX.Element {
 		return (
 			<View style={cslStyle().incidentContainer}>

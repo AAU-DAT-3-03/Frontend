@@ -11,6 +11,9 @@ interface ToastProps {
 	onDismiss?: () => void;
 }
 
+/**
+ * Renders Component for Notication popup toast.
+ */
 class Toast extends Component<ToastProps> {
 	render(): React.JSX.Element {
 		let stylesheet = style(getCurrentTheme(), this.props.visible, this.props.yOffset ?? 0);
@@ -31,7 +34,7 @@ class Toast extends Component<ToastProps> {
 	}
 }
 
-export default Toast;
+
 
 const style = (theme: MD3Theme, visible: boolean, yOffset: number) => {
 	return StyleSheet.create({
@@ -61,3 +64,5 @@ const style = (theme: MD3Theme, visible: boolean, yOffset: number) => {
 		}
 	});
 };
+
+export default Toast;

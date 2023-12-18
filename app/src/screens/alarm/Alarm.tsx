@@ -11,6 +11,9 @@ interface AlarmState {
 	id: string;
 }
 
+/**
+ * Renders the Alarm Screen with relevant information
+ */
 class Alarm extends Component<ScreenProps, AlarmState> {
 	state: AlarmState = {
 		alarm: this.props.route.params?.alarm,
@@ -33,7 +36,6 @@ class Alarm extends Component<ScreenProps, AlarmState> {
 	}
 
 	render(): React.JSX.Element {
-		console.log(this.state.alarm);
 		return (
 			<ContentContainer appBar={this.AppBar()}>
 				<View style={container.padding}>
