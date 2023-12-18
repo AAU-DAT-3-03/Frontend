@@ -27,12 +27,17 @@ export function getToday(offset?: number): [number, number, number] {
 	let month: number = now.getMonth() + 1;
 	let year: number = now.getFullYear();
 	let day: number = now.getDate() + (offset ?? 0);
+
+	// Ensure day isn't later than the last day of the month or before the first day
 	if (day > daysInMonth(now.getFullYear(), month)) {
+		// Offset month if it's later
 		day = 1;
 		month += 1;
 	} else if (day < 1) {
+		// Offset month if it's earlier
 		month -= 1;
 		if (month < 1) {
+			// Offset year if month is out of bounds
 			month = 12;
 			year -= 1;
 		}
@@ -54,8 +59,7 @@ export function getToday(offset?: number): [number, number, number] {
 export function compareDatesLessThanOrEqual(date1: [number, number, number], date2: [number, number, number]): boolean {
 	if (date1[2] < date2[2]) return true;
 	if (date1[2] === date2[2] && date1[1] < date2[1]) return true;
-	if (date1[2] === date2[2] && date1[1] == date2[1] && date1[0] <= date2[0]) return true;
-	return false;
+	return date1[2] === date2[2] && date1[1] === date2[1] && date1[0] <= date2[0];
 }
 
 /**
