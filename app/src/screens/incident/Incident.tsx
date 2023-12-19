@@ -8,7 +8,6 @@ import EventLogCard from '../../components/EventLogCard';
 import NoteCard from '../../components/NoteCard';
 import AddUser from '../../components/addUser/AddUser';
 import FABResolved from '../../components/FABResolved';
-import { IncidentCardList } from '../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import ContainerCard from '../../components/ContainerCard';
 import MergeIncident from '../../components/MergeIncident';
@@ -19,6 +18,7 @@ import Logger from '../../utility/Logger';
 import Toast from '../../components/Toast';
 import LoadingIcon from '../../components/LoadingIcon';
 import LoadingScreen from '../../components/LoadingScreen';
+import IncidentCardList from '../../components/incidentCard/IncidentCardList';
 
 interface IncidentState {
 	incidentId: string;
@@ -133,7 +133,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		DataHandler.updateIncidentResponse(data).then(() => {
 			this.toast(toastText, toastIcon);
 			this.setState({ updatingServer: false });
-			this.loadIncidentResponse();
+			this.loadIncidentResponse().then(() => this.forceUpdate());
 		});
 	}
 

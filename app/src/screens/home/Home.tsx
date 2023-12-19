@@ -132,7 +132,7 @@ export class Home extends Component<any, HomeState> {
 	state: HomeState = {
 		hasIncidents: false,
 		loading: true,
-		filter: 0,
+		filter: Filter.CALLED,
 		query: '',
 		updating: false
 	};

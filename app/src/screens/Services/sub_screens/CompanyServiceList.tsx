@@ -5,7 +5,7 @@ import { ScreenProps } from '../../../../App';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import IncidentCard from '../../../components/incidentCard/IncidentCard';
 import { getCurrentTheme } from '../../../themes/ThemeManager';
-import { CompanyData, IncidentResponse } from '../../../utility/DataHandlerTypes';
+import { AlarmResponse, CompanyData, IncidentResponse } from '../../../utility/DataHandlerTypes';
 import DataHandler from '../../../utility/DataHandler';
 import LoadingScreen from '../../../components/LoadingScreen';
 
@@ -47,8 +47,8 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 	}
 
 	/**
-	* Get resolved data from the server when the component gets mounted
-	*/
+	 * Get resolved data from the server when the component gets mounted
+	 */
 	componentDidMount() {
 		this.getIncidentResponse();
 		this.props.navigation.addListener('focus', () => {
@@ -129,9 +129,10 @@ class CompanyServiceList extends Component<ScreenProps, CompanyServiceLisState> 
 									id: id
 								})
 							}
-							onClickAlarm={(id) =>
+							onClickAlarm={(id: string, alarm: AlarmResponse) =>
 								navigation.navigate('Alarm', {
-									id: id
+									id: id,
+									alarm: alarm
 								})
 							}
 						/>
