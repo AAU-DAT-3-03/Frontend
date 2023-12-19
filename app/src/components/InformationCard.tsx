@@ -9,6 +9,9 @@ interface InformationCardProps {
 	errorInfo: string;
 }
 
+/**
+ * Component responsible for displaying information for an alarm
+ */
 class InformationCard extends Component<InformationCardProps> {
 	render(): React.JSX.Element {
 		let textStyle = { ...informationStylesheet.logTitle, borderTopColor: getCurrentTheme().colors.onSurface };

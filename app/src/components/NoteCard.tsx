@@ -23,11 +23,16 @@ interface NoteEditorState {
 	text: string;
 }
 
+/**
+ * Component for the note card
+ */
 class NoteCard extends Component<NoteCardProps, NoteCardState> {
 	state: NoteCardState = {
 		editorActive: false,
 		text: ''
 	};
+
+	// Constructor to set initial state based on props
 	constructor(props: NoteCardProps) {
 		super(props);
 		this.state.text = props.noteInfo;
@@ -41,6 +46,7 @@ class NoteCard extends Component<NoteCardProps, NoteCardState> {
 						{this.props.title === 'incident' ? <Text variant={'titleMedium'}>Incident Note</Text> : null}
 						{this.props.title === 'alarm' ? <Text variant={'titleMedium'}>Alarm Note</Text> : null}
 						{this.props.title === '' ? null : null}
+						{/* Shows edit icon if editable prop is true */}
 						{this.props.editable === true ? (
 							<TouchableRipple
 								style={noteCardStylesheet.icon}
@@ -55,6 +61,7 @@ class NoteCard extends Component<NoteCardProps, NoteCardState> {
 						) : null}
 					</View>
 				</ContainerCard.Header>
+				{/* Rendering NoteEditor or Text based on editorActive state */}
 				{this.state.editorActive ? (
 					<NoteEditor
 						noteInfo={this.state.text}
@@ -71,6 +78,9 @@ class NoteCard extends Component<NoteCardProps, NoteCardState> {
 	}
 }
 
+/**
+ * The NoteEditor component for editing the note text
+ */
 class NoteEditor extends Component<NoteEditorProps, NoteEditorState> {
 	state: NoteEditorState = {
 		text: ''
@@ -81,7 +91,9 @@ class NoteEditor extends Component<NoteEditorProps, NoteEditorState> {
 	}
 	render(): React.JSX.Element {
 		return (
+			// ScrollView to handle keyboard and allow scrolling
 			<ScrollView keyboardShouldPersistTaps={'handled'}>
+				{/* TextInput for editing note text */}
 				<TextInput
 					style={noteCardStylesheet.textInput}
 					multiline={true}
@@ -90,6 +102,7 @@ class NoteEditor extends Component<NoteEditorProps, NoteEditorState> {
 						this.setState({ text: event.nativeEvent.text });
 					}}
 				/>
+				{/* Button for saving changes */}
 				<IconButton
 					icon={'check'}
 					size={22}
