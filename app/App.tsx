@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { AppRegistry } from 'react-native';
 import { NavigationContainer, NavigationProp, RouteProp, useNavigation } from '@react-navigation/native';
 import 'react-native-gesture-handler';
-import Home, { HomeRender } from './src/screens/home/Home';
+import Home from './src/screens/home/Home';
 import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Icon, PaperProvider } from 'react-native-paper';
 import History from './src/screens/history/History';
@@ -89,7 +89,7 @@ export class AppRender extends Component {
 	private static main: AppRender;
 	private logger: Logger = new Logger('App');
 	private loadedBaseData: boolean = false;
-	public static home: HomeRender;
+	public static home: Home;
 	public static history: History;
 	public static navigation: NavigationProp<any>;
 

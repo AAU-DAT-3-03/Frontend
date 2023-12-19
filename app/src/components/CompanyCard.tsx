@@ -8,8 +8,7 @@ import ContainerCard from './ContainerCard';
 enum Status {
 	NONE,
 	ACKNOWLEDGED,
-	ERROR,
-	ERRORACKNOWLEDGED
+	ERROR
 }
 
 interface CompanyCardProps {
@@ -20,34 +19,16 @@ interface CompanyCardProps {
 }
 
 class CompanyCard extends Component<CompanyCardProps> {
+	/**
+	 * Returns the element to render acknowledge or error icon depending on state
+	 * @returns {React.JSX.Element} The icon render
+	 */
 	private iconRender(): React.JSX.Element {
-		let icon = 'exclamation';
+		let icon: string = this.props.state === Status.ACKNOWLEDGED ? 'account-check-outline' : 'exclamation';
 		let style = cardStyle(getCurrentTheme());
-		let barStyle = { ...cardStyle(getCurrentTheme()).colorStripe };
-		let colorStripe: any = style.colorStripe;
-		if (this.props.state === Status.ACKNOWLEDGED) {
-			icon = 'account-check-outline';
-			colorStripe = { ...barStyle, backgroundColor: Colors.warn };
-		}
 		return (
 			<View style={style.iconContainer}>
-				<IconButton
-					icon={icon}
-					iconColor={getCurrentTheme().colors.onError}
-					size={25}
-					containerColor={colorStripe.backgroundColor}
-					style={{ marginRight: 16 }}
-				/>
-				<View style={style.barStyle}>
-					<View
-						style={
-							this.props.state === Status.ERRORACKNOWLEDGED
-								? { ...barStyle, backgroundColor: Colors.warn }
-								: { ...barStyle, backgroundColor: undefined }
-						}
-					/>
-					<View style={colorStripe} />
-				</View>
+				<IconButton icon={icon} iconColor={getCurrentTheme().colors.onSurface} size={25} style={style.icon} />
 			</View>
 		);
 	}
@@ -64,12 +45,14 @@ class CompanyCard extends Component<CompanyCardProps> {
 					<View style={style.cardContent}>
 						<View style={style.textContainer}>
 							<Text variant={'titleMedium'}>{this.props.company}</Text>
+							{/* Only render priority text if company has active incidents */}
 							{this.props.priority === -1 ? null : (
 								<Text variant={'titleSmall'} style={{ color: PriorityColor(this.props.priority) }}>
 									Priority {this.props.priority}
 								</Text>
 							)}
 						</View>
+						{/* Only render icon if company has active incidents */}
 						{this.props.state !== Status.NONE ? this.iconRender() : null}
 					</View>
 				</TouchableRipple>
@@ -120,6 +103,9 @@ const cardStyle = (theme: MD3Theme) => {
 			flexDirection: 'row',
 			flexWrap: 'nowrap',
 			alignItems: 'center'
+		},
+		icon: {
+			marginRight: 16
 		}
 	});
 };

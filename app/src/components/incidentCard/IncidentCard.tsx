@@ -1,26 +1,16 @@
 import React, { Component } from 'react';
-import { IconButton, MD3Theme, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import StatusIcon from '../StatusIcon';
-import UserAvatar from './UserAvatar';
+import { StyleSheet, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import ContainerCard from '../ContainerCard';
-import { AlarmResponse, IncidentResponse, UserResponse } from '../../utility/DataHandlerTypes';
-import UserInformation from '../UserInformation';
+import { AlarmResponse, IncidentResponse } from '../../utility/DataHandlerTypes';
+import IncidentCardHeader from './IncidentCardHeader';
+import IncidentCardList from './IncidentCardList';
 
-interface IncidentCardHeaderProps {
-	collapsed: boolean;
-	onClickButton?: () => void;
-	onClickIncident: () => void;
-	incident: IncidentResponse;
-}
-
-interface UserListProps {
-	users?: UserResponse[];
-	visible: boolean;
-	onDismiss: () => void;
-}
-
+/**
+ * Get the correct color for the priority indicator
+ * @param {number} priority - The priority 1-4, anything outside range returns transparent
+ * @return {string} - Returns the colour for the priority
+ */
 export const PriorityColor = (priority: number): string => {
 	switch (priority) {
 		case 1:
@@ -35,187 +25,6 @@ export const PriorityColor = (priority: number): string => {
 			return 'transparent';
 	}
 };
-
-interface UserListState {
-	userInfoVisible: boolean;
-	selectedUser: UserResponse | undefined;
-}
-
-class UserList extends Component<UserListProps, UserListState> {
-	state: UserListState = {
-		userInfoVisible: false,
-		selectedUser: undefined
-	};
-	render(): React.JSX.Element {
-		let style = UserListStyle(getCurrentTheme());
-		return (
-			<Portal>
-				<Modal style={style.modal} visible={this.props.visible} onDismiss={() => this.props.onDismiss()}>
-					{this.state.userInfoVisible && this.state.selectedUser !== undefined ? (
-						<UserInformation
-							user={this.state.selectedUser}
-							visible={this.state.userInfoVisible}
-							onDismiss={() => this.setState({ userInfoVisible: false })}
-						/>
-					) : null}
-					<View style={style.listContainer}>
-						{this.props.users?.map((value, key) => {
-							return (
-								<UserAvatar
-									key={key}
-									name={value.name}
-									onPress={() => {
-										this.setState({ userInfoVisible: true, selectedUser: value });
-									}}
-								/>
-							);
-						})}
-					</View>
-				</Modal>
-			</Portal>
-		);
-	}
-}
-
-const UserListStyle = (theme: MD3Theme) => {
-	return StyleSheet.create({
-		listContainer: {
-			maxWidth: '90%',
-			backgroundColor: theme.colors.surface,
-			borderRadius: 20,
-			padding: 16,
-			gap: 16
-		},
-		modal: {
-			flex: 1,
-			alignItems: 'center',
-			justifyContent: 'center',
-			backgroundColor: undefined,
-			position: 'absolute'
-		}
-	});
-};
-
-export class IncidentCardHeader extends Component<IncidentCardHeaderProps> {
-	state = {
-		usersVisible: false
-	};
-	render(): React.JSX.Element {
-		let outerContainer: StyleProp<ViewStyle> = { flexGrow: 2 };
-		if (this.props.onClickButton !== undefined) {
-			outerContainer = {
-				...outerContainer,
-				borderBottomWidth: this.props.collapsed ? 0 : 0.5,
-				borderBottomColor: getCurrentTheme().colors.onSurface,
-				paddingBottom: 16,
-				paddingHorizontal: 12
-			};
-		}
-
-		let icon: string = this.props.collapsed ? 'menu-down' : 'menu-up';
-		return (
-			<View style={outerContainer}>
-				<UserList
-					visible={this.state.usersVisible}
-					users={this.props.incident.users}
-					onDismiss={() => this.setState({ usersVisible: false })}
-				/>
-				<TouchableRipple style={incidentCardStyle().headerRipple} onPress={() => this.props.onClickIncident()} borderless={true}>
-					<View style={incidentCardStyle().headerContainer}>
-						<View style={incidentCardStyle().headerSection}>
-							<View style={{ marginRight: 16 }}>
-								<StatusIcon
-									status={
-										this.props.incident.resolved
-											? 'resolved'
-											: this.props.incident.users.length > 0
-											? 'acknowledged'
-											: 'error'
-									}
-								/>
-							</View>
-							<View style={{ flexShrink: 2 }}>
-								<Text variant={'titleMedium'} adjustsFontSizeToFit={true} allowFontScaling={true} style={{ width: '100%' }}>
-									{this.props.incident.companyPublic.name} #{this.props.incident.caseNumber}
-								</Text>
-								<Text style={{ color: PriorityColor(this.props.incident.priority) }} variant={'bodyMedium'}>
-									Priority {this.props.incident.priority}
-								</Text>
-							</View>
-						</View>
-						<View style={{ ...incidentCardStyle().headerSection, flexShrink: 0 }}>
-							<View>
-								{this.props.incident.users?.length === 0 ? null : (
-									<UserAvatar
-										onPress={() => {
-											this.setState({ usersVisible: true });
-										}}
-										cutName={true}
-										extraUsers={this.props.incident.users.length - 1}
-										name={this.props.incident.users[0].name}
-									/>
-								)}
-							</View>
-							{this.props.onClickButton !== undefined ? (
-								<View>
-									<IconButton
-										icon={icon}
-										onPress={() => {
-											if (this.props.onClickButton !== undefined) this.props.onClickButton();
-										}}
-									/>
-								</View>
-							) : null}
-						</View>
-					</View>
-				</TouchableRipple>
-			</View>
-		);
-	}
-}
-
-interface IncidentCardListItemProps {
-	alarm: AlarmResponse;
-	alternate: boolean;
-	onClickAlarm: (id: string) => void;
-}
-
-class IncidentCardListItem extends Component<IncidentCardListItemProps> {
-	render(): React.JSX.Element {
-		return (
-			<TouchableRipple onPress={() => this.props.onClickAlarm(this.props.alarm.id)} borderless={true}>
-				<View style={this.props.alternate ? incidentCardStyle().listItemAlternate : incidentCardStyle().listItem}>
-					<Text>
-						{this.props.alarm.serviceName} - {this.props.alarm.name}
-					</Text>
-				</View>
-			</TouchableRipple>
-		);
-	}
-}
-interface IncidentCardListProps {
-	alarms: AlarmResponse[];
-	onClickAlarm: (id: string, alarm: AlarmResponse) => void;
-}
-
-export class IncidentCardList extends Component<IncidentCardListProps> {
-	render(): React.JSX.Element {
-		return (
-			<View style={{ borderBottomRightRadius: 16, borderBottomLeftRadius: 16, overflow: 'hidden' }}>
-				{this.props.alarms !== undefined
-					? this.props.alarms.map((alarm: AlarmResponse, key: number) => (
-							<IncidentCardListItem
-								key={key}
-								alarm={alarm}
-								alternate={key % 2 === 0}
-								onClickAlarm={(id: string) => this.props.onClickAlarm(id, alarm)}
-							/>
-					  ))
-					: null}
-			</View>
-		);
-	}
-}
 
 interface IncidentCardProps {
 	incident: IncidentResponse;
@@ -232,15 +41,24 @@ class IncidentCard extends Component<IncidentCardProps, IncidentCardState> {
 		collapsed: true
 	};
 
+	/**
+	 * Is called when an update to the component is requested. This sets the rules for when the component can update.
+	 * The reason for this is to avoid unnecessary updates, which will cause lag when there is a lot of incidents.
+	 * @param nextProps {Readonly<IncidentCardProps>} - The updated props for the component
+	 * @param nextState {Readonly<IncidentCardState>} - The updated state for the component
+	 * @param nextContext {any} - The updated context for the component
+	 * @return {boolean} - Whether the component should update
+	 */
 	shouldComponentUpdate(nextProps: Readonly<IncidentCardProps>, nextState: Readonly<IncidentCardState>, nextContext: any): boolean {
+		// Update if the incident has changed
 		if (nextProps.incident !== this.props.incident) return true;
-		if (nextState.collapsed !== this.state.collapsed) return true;
-		return false;
+		// Update if the collapse button has been pressed
+		return nextState.collapsed !== this.state.collapsed;
 	}
 
 	render(): React.JSX.Element {
 		return (
-			<ContainerCard style={{ paddingBottom: 0 }}>
+			<ContainerCard style={incidentCardStyle().containerCard}>
 				<ContainerCard.Content>
 					<IncidentCardHeader
 						collapsed={this.state.collapsed}
@@ -249,6 +67,7 @@ class IncidentCard extends Component<IncidentCardProps, IncidentCardState> {
 						onClickIncident={() => this.props.onClickIncident(this.props.incident.id)}
 					/>
 					<View style={incidentCardStyle().list}>
+						{/* If the card isn't collapsed show the list of alarms */}
 						{this.state.collapsed ? null : (
 							<IncidentCardList
 								alarms={this.props.incident.alarms}
@@ -291,6 +110,9 @@ const incidentCardStyle = () => {
 			backgroundColor: getCurrentTheme().colors.elevation.level4,
 			padding: 16,
 			width: '100%'
+		},
+		containerCard: {
+			paddingBottom: 0
 		}
 	});
 };
