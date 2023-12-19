@@ -1,26 +1,42 @@
-import { Dimensions, FlatList, StyleSheet, View } from 'react-native';
+// Importing libraries and components.
+import { Dimensions, FlatList, ListRenderItemInfo, NativeSyntheticEvent, StyleSheet, TextInputChangeEventData, View } from 'react-native';
 import { getCurrentTheme } from '../../themes/ThemeManager';
 import { UserResponse } from '../../utility/DataHandlerTypes';
 import React, { Component } from 'react';
 import { Icon, Modal, Portal, Searchbar, Text, TouchableRipple } from 'react-native-paper';
 
+/**
+ * @brief Defines the props for the AssignUser component.
+ */
 interface AssignUserProps {
 	users: UserResponse[];
 	visible: boolean;
 	onDismiss: (user: UserResponse | undefined) => void;
 }
 
-class AssignUser extends Component<AssignUserProps> {
-	state = {
+interface AssignUserState {
+	query: string;
+}
+
+/**
+ * @brief A class component that allows assigning a user.
+ * @details This component displays a list of users in a modal and allows selecting a user to assign.
+ */
+class AssignUser extends Component<AssignUserProps, AssignUserState> {
+	state: AssignUserState = {
 		query: ''
 	};
 
+	/**
+	 * @brief Renders the component.
+	 * @return {React.JSX.Element} - The rendered AssignUser component.
+	 */
 	render(): React.JSX.Element {
 		return (
 			<Portal>
 				<Modal style={styles.container} visible={this.props.visible} onDismiss={() => this.props.onDismiss(undefined)}>
 					<View style={styles.view}>
-						<View style={{ width: '100%', backgroundColor: getCurrentTheme().colors.elevation.level4 }}>
+						<View style={styles.searchbarWrapper}>
 							<Searchbar
 								style={styles.searchbar}
 								placeholder={'Search User'}
@@ -29,21 +45,23 @@ class AssignUser extends Component<AssignUserProps> {
 								value={this.state.query}
 								traileringIcon={'close'}
 								onTraileringIconPress={() => this.props.onDismiss(undefined)}
-								onChange={(e) => this.setState({ query: e.nativeEvent.text })}
+								onChange={(e: NativeSyntheticEvent<TextInputChangeEventData>) =>
+									this.setState({ query: e.nativeEvent.text })
+								}
 							/>
 						</View>
 
 						<FlatList
-							style={{ width: '100%' }}
+							style={styles.fullWidth}
 							data={this.props.users
 								.filter(
-									(value) =>
+									(value: UserResponse) =>
 										value.name.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1 ||
 										(value.team !== undefined &&
 											value.team.toLowerCase().indexOf(this.state.query.toLowerCase()) !== -1)
 								)
-								.sort((user1, user2) => user1.name.localeCompare(user2.name))}
-							renderItem={(info) => {
+								.sort((user1: UserResponse, user2: UserResponse) => user1.name.localeCompare(user2.name))}
+							renderItem={(info: ListRenderItemInfo<UserResponse>) => {
 								return (
 									<TouchableRipple onPress={() => this.props.onDismiss(info.item)}>
 										<View style={styles.buttons}>
@@ -65,6 +83,9 @@ class AssignUser extends Component<AssignUserProps> {
 	}
 }
 
+/**
+ * @brief Styles for the AssignUser component.
+ */
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
@@ -105,6 +126,13 @@ const styles = StyleSheet.create({
 		borderTopRightRadius: 16,
 		borderTopLeftRadius: 16,
 		backgroundColor: getCurrentTheme().colors.elevation.level4
+	},
+	searchbarWrapper: {
+		width: '100%',
+		backgroundColor: getCurrentTheme().colors.elevation.level4
+	},
+	fullWidth: {
+		width: '100%'
 	}
 });
 

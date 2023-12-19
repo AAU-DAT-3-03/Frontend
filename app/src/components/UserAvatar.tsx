@@ -17,6 +17,9 @@ interface UserAvatarConfirmProps {
 	user: string;
 }
 
+/**
+ * Component renders a Popup for removing people from an incident
+ */
 export class UserAvatarConfirm extends Component<UserAvatarConfirmProps> {
 	render() {
 		let buttonStyle = {
@@ -72,6 +75,7 @@ class UserAvatar extends Component<UserAvatarProps> {
 		};
 		return (
 			<View>
+					{/* If visible is true, display user information popup,  else nothing*/}
 				{this.state.confirmVisible ? (
 					<UserInformation
 						user={this.props.user}

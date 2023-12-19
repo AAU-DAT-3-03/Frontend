@@ -26,13 +26,22 @@ class Companies extends Component<any, CompanyState> {
 		state: 0
 	};
 
+	/**
+	* Get resolved data from the server when the component gets mounted.
+	*/
 	componentDidMount() {
 		this.getCompanyData();
 	}
 
+	/**
+	 * Asynchronous function, gets company data through DataHandler.
+	 * It fetches the company data, sorts it and updates the state.
+	 * @returns {Promise<void>}
+	 */
 	private async getCompanyData(): Promise<void> {
 		let data: CompanyData[] = await DataHandler.getCompanies();
 		console.log(data);
+		//Sorts the companies for their priority and then state.
 		data = data.sort((a, b) => {
 			if (a.priority === -1) return 1;
 			if (b.priority === -1) return -1;
@@ -69,6 +78,13 @@ class Companies extends Component<any, CompanyState> {
 		);
 	}
 
+	/**
+	 * Handles the onPress event.
+	 * It navigates to the ServiceList screen.
+	 * @param {string} company - The company name.
+	 * @param {string} id - The id of the company.
+	 * @param {NavigationProp<any>} navigation - The navigation prop.
+	 */
 	private onPress(company: string, id: string, navigation: NavigationProp<any>): void {
 		navigation.navigate('ServiceList', {
 			company: company,
@@ -76,10 +92,20 @@ class Companies extends Component<any, CompanyState> {
 		});
 	}
 
+	/**
+	 * Handles the onRefresh event.
+	 * It calls the getCompanyData method and then calls the finished callback.
+	 * @param {() => void} finished - The callback to be called after refreshing.
+	 */
 	private onRefresh(finished: () => void): void {
 		this.getCompanyData().then(() => finished());
 	}
 
+	/**
+	 * filters the company list based on the query - SearchFunction.
+	 * @param {CompanyData} company - The company data to be filtered.
+	 * @returns {boolean} Whether the company data matches the query.
+	 */
 	private filterCompanyList(company: CompanyData): boolean {
 		if (this.state.query !== '') {
 			let queries: [boolean, string][] = this.state.query

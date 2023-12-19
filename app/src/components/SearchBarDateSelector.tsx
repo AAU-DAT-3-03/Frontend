@@ -21,6 +21,9 @@ interface SearchBarDateSelectorState {
 	endDate: PickerDate;
 }
 
+/**
+ * Component for date selecting when searching - Used in history screen
+ */
 class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, SearchBarDateSelectorState> {
 	state: SearchBarDateSelectorState = {
 		query: '',
@@ -29,6 +32,12 @@ class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, Search
 		endDate: getToday()
 	};
 
+	/**
+	 * Gets called when the search query changes.
+	 * It updates the state with the new query and calls the onChange prop.
+	 * @private
+	 * @param {string} query - The new search query.
+	 */
 	private onChangeSearch(query: string) {
 		this.setState({ query: query }, () => {
 			if (this.props.onChange !== undefined) {
@@ -37,8 +46,15 @@ class SearchBarDateSelector extends Component<SearchBarDateSelectorProps, Search
 		});
 	}
 
+	/**
+	 * Gets called when the date selection is dismissed.
+	 * It updates the state with the selected dates and hides the date picker.
+	 * @param {PickerDate[]} date - The selected start and end dates.
+	 * @returns {Promise<void>}
+	 */
 	private async onDismiss(date: [PickerDate, PickerDate]): Promise<void> {
 		let today: PickerDate = getToday();
+		// Ensure the selected dates are not in the future
 		if (compareDatesLessThanOrEqual(today, date[0])) {
 			date[0] = today;
 		}

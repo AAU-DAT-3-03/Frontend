@@ -1,3 +1,4 @@
+// Importing libraries and components.
 import React, { Component } from 'react';
 import { Card, IconButton, Text } from 'react-native-paper';
 import { getCurrentTheme } from '../../themes/ThemeManager';
@@ -6,6 +7,9 @@ import UserAvatar from '../UserAvatar';
 import { UserResponse } from '../../utility/DataHandlerTypes';
 import AssignUser from './AssignUser';
 
+/**
+ * @brief Defines the arbitrary inputs (props) for the AddUser component.
+ */
 interface AddUserProps {
 	type: string;
 	usersAll: UserResponse[];
@@ -15,20 +19,32 @@ interface AddUserProps {
 	onAdd?: (user: string, name: string) => void;
 	editable: boolean;
 }
-
+/**
+ * @brief Defines the state for the AddUser component.
+ */
 interface AddUserState {
 	assignVisible: boolean;
 	users: UserResponse[];
 }
-
+/**
+ * @brief A class component that allows adding and removing users.
+ * @details This component displays a list of users and allows adding and removing users if editable. It also provides a modal to assign users.
+ */
 class AddUser extends Component<AddUserProps, AddUserState> {
 	state: AddUserState = { assignVisible: false, users: this.props.users };
 
+	/**
+	 * @brief Deletes a user from the state and calls the onRemove prop if defined.
+	 * @param {String} user - The user to be deleted.
+	 */
 	private onDeleteUser(user: UserResponse): void {
-		this.setState({ users: this.state.users.filter((value) => value.id !== user.id) });
+		this.setState({ users: this.state.users.filter((value: UserResponse): boolean => value.id !== user.id) });
 		if (this.props.onRemove !== undefined) this.props.onRemove(user.id, user.name);
 	}
-
+	/**
+	 * @brief Renders the component.
+	 * @return {React.JSX.Element} - The rendered AddUser component.
+	 */
 	render(): React.JSX.Element {
 		return (
 			<Card style={addUserStyle.card}>
@@ -44,8 +60,8 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 									user={user}
 									onDelete={
 										this.props.removable && this.props.editable
-											? (user: UserResponse) => {
-													this.onDeleteUser(user);
+											? (deletedUser: UserResponse): void => {
+													this.onDeleteUser(deletedUser);
 											  }
 											: undefined
 									}
@@ -80,6 +96,10 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 		);
 	}
 
+	/**
+	 * @brief Adds a user to the state and calls the onAdd prop if defined.
+	 * @param {String} user - The user to be added.
+	 */
 	private addUser(user: UserResponse): void {
 		let users: UserResponse[] = this.state.users.filter((value: UserResponse) => {
 			return value.name === user.name && value.phoneNumber === user.phoneNumber;
@@ -92,6 +112,9 @@ class AddUser extends Component<AddUserProps, AddUserState> {
 	}
 }
 
+/**
+ * @brief Styles for the AddUser component.
+ */
 const addUserStyle = StyleSheet.create({
 	cardContent: {
 		flexDirection: 'row',

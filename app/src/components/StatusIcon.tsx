@@ -9,6 +9,9 @@ interface StatusIconProps {
 	status: IncidentState;
 }
 
+/**
+ * Renders the correct icon on incidents depending on the state of them. 
+ */
 class StatusIcon extends Component<StatusIconProps> {
 	render(): React.JSX.Element {
 		let backgroundColor: string = 'transparent';
