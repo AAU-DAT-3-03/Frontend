@@ -13,7 +13,7 @@ interface LoginProps {
 }
 
 /**
- * @todo slet login imformation
+ * Login component for user authentication
  */
 class Login extends Component<LoginProps> {
 	state = {
@@ -25,34 +25,54 @@ class Login extends Component<LoginProps> {
 		debugTestText: undefined
 	};
 
+	/**
+	 * Function that handles the login process, validating user input and triggering the login operation
+	 */
 	private handleLogin(): void {
+		// Check if email or password is empty, which will set the error state to true and exit the function
 		if (this.state.email.length === 0 || this.state.password.length === 0) {
 			this.setState({ error: true });
 			return;
 		}
+
+		// Clear any previous error state
 		this.setState({ error: false });
+		// Attempt to login using the provided credentials
 		DataHandler.login(this.state.email.toLowerCase(), this.state.password).then((value: [boolean, object]) => {
+			// Check if the login was successful
 			if (value[0] === true) {
+				// Call the onLoggedIn to notify that the user has successfully logged in
 				this.props.onLoggedIn();
 			} else {
+				// Set error state to true if login failed
 				this.setState({ error: true });
 			}
+			// Store debug text for reference
 			this.setState({ debugText: value });
 		});
 	}
 
+	/**
+	 * Renders the login screen component
+	 * The screen includes a logo, email and password input fields, a login button,
+	 * and options for displaying debug information
+	 */
 	render(): React.JSX.Element {
 		return (
 			<ContentContainer appBar={undefined}>
 				<View style={loginStyle().wrapper}>
+					{/* Logo section */}
 					<View style={loginStyle().logo}>
 						<NeticLogo />
 					</View>
+					{/* Login form section */}
 					<View style={loginStyle().containerCard}>
 						<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.onSurface, alignSelf: 'center' }}>
 							Login
 						</Text>
+						{/* Display error message if login credentials are invalid */}
 						{this.state.error ? <Text style={{ color: Colors.error, alignSelf: 'center' }}>Credentials not valid</Text> : null}
+						{/* Email input field */}
 						<TextInput
 							defaultValue={this.state.email}
 							placeholder={'Email'}
@@ -69,6 +89,7 @@ class Login extends Component<LoginProps> {
 							inputMode={'email'}
 							textContentType={'emailAddress'}
 						/>
+						{/* Password input field */}
 						<TextInput
 							defaultValue={this.state.password}
 							placeholder={'Password'}
@@ -86,11 +107,13 @@ class Login extends Component<LoginProps> {
 							secureTextEntry={true}
 							textContentType={'password'}
 						/>
+						{/* Login Button */}
 						<Button buttonColor={Colors.error} textColor={'white'} onPress={() => this.handleLogin()}>
 							Login
 						</Button>
 					</View>
 				</View>
+				{/* Debug information Modal */}
 				<Portal>
 					<Modal visible={this.state.debug} onDismiss={() => this.setState({ debug: false })}>
 						<View style={{ backgroundColor: getCurrentTheme().colors.surface }}>
@@ -98,10 +121,12 @@ class Login extends Component<LoginProps> {
 							<Text>{DataHandler.ip}</Text>
 							<Text>{JSON.stringify(this.state.debugText)}</Text>
 							<Text>{JSON.stringify(this.state.debugTestText)}</Text>
+							{/* Test Connection Button */}
 							<Button onPress={() => this.testConnection()}>Test</Button>
 						</View>
 					</Modal>
 				</Portal>
+				{/* Debug toggle Button */}
 				<Button
 					style={{ position: 'absolute', top: 5, right: 5, padding: 16 }}
 					buttonColor={getCurrentTheme().colors.background}
@@ -114,6 +139,11 @@ class Login extends Component<LoginProps> {
 		);
 	}
 
+	/**
+	 * Initiates a network test connection to the server's IP.
+	 * Creates an instance of a `Networking` class, then performs a GET request to the server's IP,
+	 * and updates the component's state with the debug test result
+	 */
 	private testConnection(): void {
 		let networking: Networking = new Networking();
 		networking.get(DataHandler.ip, undefined, (value: void | [object, Response]): void => {
