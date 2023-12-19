@@ -32,8 +32,11 @@ interface IncidentState {
 }
 
 class Incident extends Component<ScreenProps, IncidentState> {
+	// Local username retrieved from LocalStorage
 	private userName: string = LocalStorage.getSettingsValue('username');
+	// Logger instance for logging
 	private logger: Logger = new Logger('IncidentScreen');
+	// Timeout for toast dismissal
 	private toastTimeout: NodeJS.Timeout | undefined;
 
 	state: IncidentState = {
@@ -47,6 +50,9 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		updatingServer: false
 	};
 
+	/**
+	 * Function to load incident data from the server
+	 */
 	private async loadIncidentResponse(): Promise<void> {
 		this.logger.info(`Loading data for: ${this.state.incidentId}`);
 		let incidentData: IncidentResponse | undefined = await DataHandler.getIncidentResponse(this.state.incidentId);
@@ -57,10 +63,12 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		}
 		this.logger.info(`Rendering data`);
 
+		// Fetching users and updating state
 		DataHandler.getUsers().then((value: UserResponse[]) => {
 			this.setState({ users: value });
 		});
 
+		// Updating state with incident data and setting loading to false
 		this.setState({
 			incidentData: incidentData,
 			loading: false,
@@ -68,6 +76,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		});
 	}
 
+	// Method to load incident data on component mount
 	componentDidMount(): void {
 		requestAnimationFrame(() => {
 			setTimeout(() => {
@@ -76,7 +85,11 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		});
 	}
 
+	/**
+	 * Function to render the AppBar
+	 */
 	private AppBar(): React.JSX.Element {
+		// Formatting date for display
 		const formattedDate: string | null = this.state.incidentData
 			? new Date(this.state.incidentData.creationDate).toLocaleDateString([], { hour: '2-digit', minute: '2-digit', hour12: false })
 			: null;
@@ -85,6 +98,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 			<>
 				<View style={IncidentScreenStylesheet.header}>
 					<View style={IncidentScreenStylesheet.insideHeader}>
+						{/* Back button in the AppBar */}
 						<Appbar.BackAction
 							onPress={() => {
 								this.props.navigation.goBack();
@@ -103,6 +117,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 						)}
 					</View>
 					<View style={IncidentScreenStylesheet.insideHeader}>
+						{/* Formatted date of the incident */}
 						<Text>{formattedDate}</Text>
 					</View>
 				</View>
@@ -110,6 +125,9 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		);
 	}
 
+	/**
+	 * Function to update incident response and trigger a toast message
+	 */
 	private updateIncidentResponse(data: UpdateIncident, toastText: string, toastIcon?: string): void {
 		this.setState({ updatingServer: true });
 		DataHandler.updateIncidentResponse(data).then(() => {
@@ -119,15 +137,22 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		});
 	}
 
+	/**
+	 * Renders the incidents section
+	 */
 	private incidentsRender(): React.JSX.Element {
 		if (this.state.incidentData === undefined) {
 			return <Text>Error loading data</Text>;
 		}
+
+		// Determines if the incident is editable
 		let editable: boolean = !this.state.incidentData.resolved;
 		return (
 			<View style={{ width: '100%', height: '100%' }}>
+				{/* Makes the container for incidents scrollable */}
 				<ScrollView showsVerticalScrollIndicator={false}>
 					<View style={IncidentScreenStylesheet.incidentContainer}>
+						{/* AddUser component for assigned users */}
 						<AddUser
 							editable={editable}
 							users={this.state.incidentData?.users}
@@ -149,6 +174,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 								)
 							}
 						/>
+						{/* PrioritySelector component for setting incident priority */}
 						<PrioritySelector
 							editable={editable}
 							state={this.state.incidentData?.priority}
@@ -160,6 +186,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 								)
 							}
 						/>
+						{/* AddUser component for called users */}
 						<AddUser
 							editable={editable}
 							users={this.state.incidentData?.calls}
@@ -179,16 +206,19 @@ class Incident extends Component<ScreenProps, IncidentState> {
 								<Text variant={'titleMedium'} style={IncidentScreenStylesheet.text}>
 									Alarms
 								</Text>
+								{/* IncidentCardList for displaying alarms */}
 								<IncidentCardList
 									alarms={this.state.incidentData?.alarms}
 									onClickAlarm={(id, alarm) => this.props.navigation.navigate('Alarm', { id: id, alarm: alarm })}
 								/>
 							</ContainerCard.Content>
 						</ContainerCard>
+						{/* NoteCard component for incident notes */}
 						<NoteCard
 							title={'incident'}
 							editable={editable}
 							noteInfo={this.state.incidentData?.incidentNote}
+							// Update incident response when incident note is changed
 							onChange={(text) =>
 								this.updateIncidentResponse(
 									{ id: this.state.incidentId, incidentNote: text },
@@ -210,6 +240,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 									}}
 								>
 									<View style={{ flexGrow: 2 }}>
+										{/* MergeIncident component */}
 										<MergeIncident
 											incident={this.state.incidentData}
 											user={this.userName}
@@ -221,7 +252,9 @@ class Incident extends Component<ScreenProps, IncidentState> {
 										/>
 									</View>
 									<View style={{ flexGrow: 2 }}>
+										{/* FABResolved component for resolving incidents */}
 										<FABResolved
+											// Update incident response when resolving the incident
 											onResolve={() => {
 												this.updateIncidentResponse(
 													{ id: this.state.incidentId, resolved: true },
@@ -234,6 +267,7 @@ class Incident extends Component<ScreenProps, IncidentState> {
 								</View>
 							</ContainerCard>
 						) : null}
+						{/* Display EventLogCard if event log exists */}
 						{this.state.incidentData.eventLog !== undefined ? (
 							<EventLogCard eventLog={this.state.incidentData?.eventLog} />
 						) : null}
@@ -243,36 +277,55 @@ class Incident extends Component<ScreenProps, IncidentState> {
 		);
 	}
 
+	/**
+	 * Function to display a toast message with an optional icon
+	 * @param {string} text - The text message to be displayed in the toast
+	 * @param {string} icon - Optional icon to be displayed alongside the text
+	 */
 	private toast(text: string, icon?: string) {
+		// Set state to show the toast with the provided message and icon
 		this.setState({ toastVisible: true, toastIcon: icon, toastMessage: text });
+		// Set a timeout to hide the toast after 3000 milliseconds (3 seconds)
 		this.toastTimeout = setTimeout(() => {
 			this.setState({ toastVisible: false });
 		}, 3000);
 	}
 
+	/**
+	 * Function to handle the dismissal of the toast
+	 */
 	private toastOnDismiss() {
+		// Clear the timeout to prevent hiding the toast if it is manually dismissed
 		clearTimeout(this.toastTimeout);
 		this.toastTimeout = undefined;
+		// Set state to hide the toast
 		this.setState({ toastVisible: false });
 	}
 
+	/**
+	 * Render function for the Incident component
+	 */
 	render(): React.JSX.Element {
 		return (
 			<View>
+				{/* Toast component to display messages */}
 				<Toast
 					message={this.state.toastMessage}
 					visible={this.state.toastVisible}
 					onDismiss={() => this.toastOnDismiss()}
 					icon={this.state.toastIcon}
 				/>
+				{/* LoadingIcon component to show loading spinner */}
 				<LoadingIcon visible={this.state.updatingServer} verticalOffset={60} />
 				<ContentContainer
 					appBar={this.AppBar()}
+					// Refresh incident data
 					onRefresh={async (finished) => {
 						await this.loadIncidentResponse();
 						finished();
 					}}
 				>
+					{/* Display loading screen if data is still loading, otherwise render incident details */}
 					{this.state.loading ? <LoadingScreen /> : this.incidentsRender()}
 				</ContentContainer>
 			</View>
