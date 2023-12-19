@@ -23,7 +23,7 @@ This repository contains the frontend of the project, it's an Android app.
    4. CMake 3.22.1
    5. Android SDK platform tools
    6. A Android phone or Android emulator running Tiramisu api 33
-4. To connect to the server requires being on the Aau network is required either physical or through the VPN: https://www.its.aau.dk/vejledninger/VPN
+4. Connecting to the server requires being on the Aau network either physical or through the VPN: https://www.its.aau.dk/vejledninger/VPN
 
 ### Installing modules
 ```shell
@@ -46,7 +46,7 @@ npm start
 
 ## Potential fixes if it doesn't work
 Android sdk 33.0.0, Android tiramisu emulator. \
-Use Webstorms. \
+Use Webstorm. \
 Use following commands.
 ```
 cd app
