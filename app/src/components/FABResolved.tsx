@@ -11,14 +11,23 @@ interface ResolvedProps {
 	timer: number;
 }
 
-class ResolvedConfirm extends Component<ResolvedProps> {
-	state = { assignVisible: false, resolvedActive: false };
+interface ResolvedState {
+	// Controls when the user can actually resolve
+	resolvedActive: boolean;
+}
+
+/**
+ * Component that renders the confirmation modal
+ */
+class ResolvedConfirm extends Component<ResolvedProps, ResolvedState> {
+	state: ResolvedState = { resolvedActive: false };
 
 	render(): React.JSX.Element {
 		let buttonStyle = {
 			...styles.resolveButton,
 			backgroundColor: !this.props.resolvedActive ? getCurrentTheme().colors.onSurfaceDisabled : getCurrentTheme().colors.onPrimary
 		};
+		// Render the confirmation modal
 		return (
 			<Portal>
 				<Modal style={styles.container} visible={this.props.visible} onDismiss={() => this.props.onDismiss()}>
@@ -67,13 +76,28 @@ class ResolvedConfirm extends Component<ResolvedProps> {
 interface FABResolvedProps {
 	onResolve: () => void;
 }
-class FABResolved extends Component<FABResolvedProps> {
-	state = { assignVisible: false, resolvedActive: false, timer: 5 };
+
+interface FABResolvedState extends ResolvedState {
+	resolveVisible: boolean; // Controls the visibility of the resolve confirmation modal
+	timer: number;
+}
+/**
+ * Component responsible for displaying the resolve button and initiating the resolvedTimeout when pressed.
+ * It includes a floating action button (FAB) to resolve an incident and a confirmation modal (ResolvedConfirm).
+ */
+class FABResolved extends Component<FABResolvedProps, FABResolvedState> {
+	state: FABResolvedState = { resolveVisible: false, resolvedActive: false, timer: 5 };
 	timeout: NodeJS.Timeout | undefined;
 	interval: NodeJS.Timeout | undefined;
 
+	/**
+	 * Initiates the resolve timeout (started when resolve button is pressed)
+	 * First: Sets the resolveVisible to true -> shows the confirmation
+	 * Second: Initiates an interval to update the timer every second until it reaches 0
+	 * Third: Sets a timeout to activate the resolveActive (after 5 seconds)
+	 */
 	private resolvedTimeout(): void {
-		this.setState({ assignVisible: true });
+		this.setState({ resolveVisible: true });
 		this.interval = setInterval((): void => {
 			if (this.state.timer === 0) {
 				clearInterval(this.interval);
@@ -100,16 +124,18 @@ class FABResolved extends Component<FABResolvedProps> {
 				>
 					Resolve
 				</Button>
+				{/* Render the confirmation modal */}
 				<ResolvedConfirm
 					onResolve={() => {
 						this.props.onResolve();
-						this.setState({ resolvedActive: false, assignVisible: false });
+						this.setState({ resolvedActive: false, resolveVisible: false });
 					}}
 					timer={this.state.timer}
-					visible={this.state.assignVisible}
+					visible={this.state.resolveVisible}
 					resolvedActive={this.state.resolvedActive}
+					// Clear timeout and interval
 					onDismiss={() => {
-						this.setState({ assignVisible: false }, () => {
+						this.setState({ resolveVisible: false }, () => {
 							this.setState({ resolvedActive: false });
 							if (this.interval !== undefined) {
 								clearInterval(this.interval);

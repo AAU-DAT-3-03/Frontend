@@ -3,6 +3,9 @@ import { ActivityIndicator, Dimensions, StyleProp, View, ViewStyle } from 'react
 import Color from 'color';
 import { getCurrentTheme } from '../themes/ThemeManager';
 
+/**
+ * Loading screen component used, for example, before any incidents gets rendered
+ */
 class LoadingScreen extends Component {
 	render(): React.JSX.Element {
 		let style: StyleProp<ViewStyle> = {

@@ -6,6 +6,10 @@ interface LoadingIconProps {
 	visible: boolean;
 	verticalOffset?: number;
 }
+
+/**
+ * Loading Icon component used, for example, when updating incidents on home screen
+ */
 class LoadingIcon extends Component<LoadingIconProps> {
 	render() {
 		return (

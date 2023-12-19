@@ -16,6 +16,9 @@ interface MergeIncidentProps {
 	incident: IncidentResponse;
 }
 
+/**
+ * Merge incident component for merging incidents
+ */
 class MergeIncident extends Component<MergeIncidentProps> {
 	state = {
 		id: this.props.id,
@@ -35,6 +38,7 @@ class MergeIncident extends Component<MergeIncidentProps> {
 					}}
 					incident={this.props.incident}
 				/>
+				{/* Button to trigger the display of the MergeIncidentModal */}
 				<Button
 					buttonColor={getCurrentTheme().colors.primary}
 					textColor={'white'}
@@ -66,7 +70,11 @@ interface MergeIncidentModalState {
 	loading: boolean;
 }
 
+/**
+ * MergeIncidentModal component for modal functionality in merging incidents
+ */
 class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeIncidentModalState> {
+	// Logger instance for logging
 	private logger: Logger = new Logger('MergeIncidentScreen');
 
 	state: MergeIncidentModalState = {
@@ -80,26 +88,46 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		loading: true
 	};
 
+	// Fetch incidents on component mount
 	componentDidMount(): void {
 		this.getIncidentResponse();
 	}
 
+	/**
+	 * Function to handle merging incidents
+	 * This function sets the merging state, iteratively merges incidents, and updates the component state accordingly
+	 * Finally, it resets the merging state and calls the onDismiss callback with the merged incident's id
+	 */
 	private async mergeIncidents(): Promise<void> {
+		// Set the confirmation modal visibility to false and indicating that merging is in progress
 		this.setState({ confirmVisible: false, merging: true });
 		let id: string = this.props.id;
+
+		// Iterate through selected incidents for merging
 		for (let selectedId of this.state.selectedIds) {
 			let data: IncidentResponse | undefined = await DataHandler.mergeIncidents(id, selectedId);
 			this.setState({ mergingCount: this.state.mergingCount + 1 });
+
+			// Log an error if merging encounters issues, and skip to the next merge
 			if (data === undefined) {
 				this.logger.error(`Error occurred while merging incidents: ${id} with ${selectedId}, skipping this merge`);
 				continue;
 			}
+
+			// Update the id with the merged incident's id
 			id = data.id;
 		}
+
+		// Reset the merging state and call the onDismiss callback with the final merged incident ID
 		this.setState({ merging: false });
 		this.props.onDismiss(id);
 	}
 
+	/**
+	 * Function to handle checkbox selection
+	 * If the checkbox is already selected, it is deselected. Otherwise, it is selected
+	 * @param {string} id - The identifier of the checkbox.
+	 */
 	private checkBoxSelector(id: string): void {
 		if (this.state.selectedIds.has(id)) {
 			let ids: Set<string> = this.state.selectedIds;
@@ -110,17 +138,31 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		}
 	}
 
+	/**
+	 * Function to fetch incident responses for the current company and updates the component state
+	 */
 	private async getIncidentResponse(): Promise<void> {
+		// Initialize an empty array to hold the filtered incidents
 		let filteredIncident: IncidentResponse[] = [];
+
+		// Fetch information about the current company
 		let companies: CompanyData | undefined = await DataHandler.getCompany(this.props.incident.companyPublic.id);
+
 		if (companies !== undefined) {
+			// Get the active incidents for the current company
 			let activeCompanyIncidents: Map<string, IncidentResponse> = DataHandler.getIncidentResponseNoUpdate();
+
+			// Iterate through incident references associated with the company
 			for (let incidentReference of companies.incidentReferences) {
+				// Skip incidents associated with the current incident ID
 				if (incidentReference.includes(this.props.id)) continue;
 				let incident: IncidentResponse | undefined = activeCompanyIncidents.get(incidentReference);
+
+				// If incident details are available, add it to the filtered incidents array
 				if (incident !== undefined) filteredIncident.push(incident);
 			}
 		}
+		// Update the component state with the filtered incidents, and set refreshing and loading states
 		this.setState({ incidents: filteredIncident, refreshing: false, loading: false });
 	}
 
@@ -133,6 +175,9 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		return <RefreshControl refreshing={this.state.refreshing} onRefresh={() => this.onRefresh()} />;
 	}
 
+	/**
+	 * Function to render each incident list item
+	 */
 	private listItemRender(key: number, value: IncidentResponse): React.JSX.Element {
 		let styleSheet = style(getCurrentTheme());
 
@@ -156,6 +201,9 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		);
 	}
 
+	/**
+	 * Function to render the confirmation modal for merging
+	 */
 	private confirmMergeRender(): React.JSX.Element {
 		let styleSheet = style(getCurrentTheme());
 		return (
@@ -173,6 +221,7 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 							onPress={() => this.setState({ confirmVisible: false })}
 						/>
 						<Text variant={'titleMedium'}>Are you sure you want to merge?</Text>
+						{/* Button for confirming merging and starting MergeIncidents*/}
 						<Button
 							style={{ width: '100%' }}
 							buttonColor={getCurrentTheme().colors.primary}
@@ -187,17 +236,24 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		);
 	}
 
+	/**
+	 * Renders the content for the merging incident modal.
+	 * Handles the UI components and logic for selecting and merging incidents.
+	 */
 	private mergeSelectorRender(): React.JSX.Element {
 		let styleSheet = style(getCurrentTheme());
 
 		return (
 			<>
 				{this.state.loading ? (
+					// Display loading indicator if data is still loading
 					<ActivityIndicator size={'large'} color={getCurrentTheme().colors.onSurface} />
 				) : (
 					<>
+						{/* Render the confirmation modal */}
 						{this.confirmMergeRender()}
 						<View style={styleSheet.modalContainerStyle}>
+							{/* Close button to dismiss the modal */}
 							<IconButton
 								style={styleSheet.closeButton}
 								icon={'close-thick'}
@@ -205,6 +261,7 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 								onPress={() => this.props.onDismiss()}
 							/>
 							<Text variant={'titleLarge'}>Merge incident</Text>
+							{/* Searchbar for filtering incidents */}
 							<Searchbar
 								style={{ backgroundColor: getCurrentTheme().colors.surfaceVariant }}
 								inputMode={'text'}
@@ -212,6 +269,7 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 								onChange={(querystring) => this.setState({ query: querystring.nativeEvent.text })}
 							/>
 
+							{/* Display incident list if there are incidents */}
 							{this.state.incidents.length > 0 ? (
 								<ScrollView
 									style={{ width: '100%', height: '100%' }}
@@ -226,12 +284,14 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 									</View>
 								</ScrollView>
 							) : (
+								// Display a message when no active incidents are available
 								<View style={styleSheet.noActiveText}>
 									<Text variant={'titleLarge'} style={{ color: getCurrentTheme().colors.outlineVariant }}>
 										No Active Incidents
 									</Text>
 								</View>
 							)}
+							{/* Merge button to initiate the merging process */}
 							<Button
 								style={{ width: '100%' }}
 								buttonColor={getCurrentTheme().colors.primary}
@@ -247,6 +307,10 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 		);
 	}
 
+	/**
+	 * Renders the content for the currently merging state in the merging incident modal.
+	 * Displays a loading indicator and information about the ongoing merging process.
+	 */
 	private currentlyMergingRender(): React.JSX.Element {
 		let styleSheet = style(getCurrentTheme());
 
@@ -262,7 +326,10 @@ class MergeIncidentModal extends Component<MergeIncidentModalProps, MergeInciden
 			</View>
 		);
 	}
-
+	/**
+	 * Renders the component, displaying a modal that either shows the currently merging state
+	 * or the merging selector based on the merging state in the component's state.
+	 */
 	render(): React.JSX.Element {
 		let styleSheet = style(getCurrentTheme());
 		return (
