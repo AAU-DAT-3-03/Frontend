@@ -28,52 +28,61 @@ export interface ScreenProps {
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
+/**
+ * Creates the render and navigation stack for the navigation bar at the bottom of the screen.
+ */
 class NavigationBar extends Component {
 	render(): React.JSX.Element {
 		return (
-			<Tab.Navigator
-				initialRouteName={'Home'}
-				screenOptions={{
-					headerShown: false
-				}}
-				tabBar={({ navigation, state, descriptors, insets }: BottomTabBarProps) => (
-					<ButtonBarTabBar navigation={navigation} state={state} descriptors={descriptors} insets={insets} />
-				)}
-			>
-				<Tab.Screen
-					name="Overview"
-					component={Companies}
-					options={{
-						headerShown: false,
-						tabBarLabel: 'Companies',
-						tabBarIcon: ({ color, size }: { color: string; size: number }) => {
-							return <Icon source="view-list" size={size} color={color} />;
-						}
+			<>
+				{/* The main stack navigator */}
+				<Tab.Navigator
+					initialRouteName={'Home'}
+					screenOptions={{
+						headerShown: false
 					}}
-				/>
-				<Tab.Screen
-					name="Home"
-					component={Home}
-					options={{
-						headerShown: false,
-						tabBarLabel: 'Incidents',
-						tabBarIcon: ({ color, size }: { color: string; size: number }) => {
-							return <Icon source="home" size={size} color={color} />;
-						}
-					}}
-				/>
-				<Tab.Screen
-					name="History"
-					component={History}
-					options={{
-						headerShown: false,
-						tabBarLabel: 'History',
-						tabBarIcon: ({ color, size }: { color: string; size: number }) => {
-							return <Icon source="history" size={size} color={color} />;
-						}
-					}}
-				/>
-			</Tab.Navigator>
+					tabBar={({ navigation, state, descriptors, insets }: BottomTabBarProps) => (
+						<ButtonBarTabBar navigation={navigation} state={state} descriptors={descriptors} insets={insets} />
+					)}
+				>
+					{/* The overview route */}
+					<Tab.Screen
+						name="Overview"
+						component={Companies}
+						options={{
+							headerShown: false,
+							tabBarLabel: 'Companies',
+							tabBarIcon: ({ color, size }: { color: string; size: number }) => {
+								return <Icon source="view-list" size={size} color={color} />;
+							}
+						}}
+					/>
+					{/* The home route */}
+					<Tab.Screen
+						name="Home"
+						component={Home}
+						options={{
+							headerShown: false,
+							tabBarLabel: 'Incidents',
+							tabBarIcon: ({ color, size }: { color: string; size: number }) => {
+								return <Icon source="home" size={size} color={color} />;
+							}
+						}}
+					/>
+					{/* The history route */}
+					<Tab.Screen
+						name="History"
+						component={History}
+						options={{
+							headerShown: false,
+							tabBarLabel: 'History',
+							tabBarIcon: ({ color, size }: { color: string; size: number }) => {
+								return <Icon source="history" size={size} color={color} />;
+							}
+						}}
+					/>
+				</Tab.Navigator>
+			</>
 		);
 	}
 }
@@ -100,12 +109,13 @@ export class AppRender extends Component {
 		toastId: undefined
 	};
 
-	public static updateToast(toastMessage: string): void {
-		AppRender.main.setState({
-			toastMessage: toastMessage
-		});
-	}
-
+	/**
+	 * Creates a toast to display important messages, specifically notification
+	 * @param {string} toastMessage - The message to display in the toast
+	 * @param {string} toastId - The id of the incident, to be able to route on click
+	 * @param {string} toastIcon - Optional icon to display
+	 * @constructor
+	 */
 	public static Toast(toastMessage: string, toastId?: string, toastIcon?: string): void {
 		AppRender.main.setState({
 			toastVisible: true,
@@ -120,16 +130,27 @@ export class AppRender extends Component {
 		AppRender.main = this;
 	}
 
+	/**
+	 * Can be called to log out of the app
+	 */
 	public static onLogOut(): void {
 		AppRender.main.forceUpdate();
 		AppRender.main.loadedBaseData = false;
 	}
 
+	/**
+	 * Loads the basic data for the application being the all the users and all the companies.
+	 * Checks if the application was opened by a notification
+	 */
 	private loadBaseData(): void {
+		// Check if the base data has already been loaded
 		if (!this.loadedBaseData) {
+			// Check if the application was opened by a notification
 			let notificationHandler: NotificationHandler = new NotificationHandler();
-			notificationHandler.openedByNotification().then((value: Notification | undefined) => {
+			notificationHandler.openedByNotification().then((value: Notification | undefined): void => {
+				// Check if a notification is available
 				if (value !== undefined) {
+					// Try to navigate to the incident screen if it has an incident id
 					this.logger.info('Opened by notification', value);
 					if (value.payload.incidentId) {
 						this.logger.info(`Opened with incident id: ${value.payload.incidentId}`);
@@ -140,12 +161,16 @@ export class AppRender extends Component {
 				}
 			});
 
+			// Load all users and companies
 			DataHandler.getUsers();
 			DataHandler.getCompanies();
 			this.loadedBaseData = true;
 		}
 	}
 
+	/**
+	 * Gets triggered when the component first gets mounted. Check if the user has an authentication screen and loads base data.
+	 */
 	componentDidMount(): void {
 		let key: string = LocalStorage.getSettingsValue('authKey');
 		if (key === 'null' || key === '' || key === null) {
@@ -155,6 +180,7 @@ export class AppRender extends Component {
 	}
 
 	render(): React.JSX.Element {
+		// If authentication token is missing or empty send the user to the login screen
 		let key: string = LocalStorage.getSettingsValue('authKey');
 		let loggedIn: boolean = true;
 		if (key === 'null' || key === '' || key === null) {
@@ -202,6 +228,11 @@ interface ForegroundNotificationProps extends AppRenderState {
 	onDismiss: () => void;
 }
 
+/**
+ * Handles foreground notification, by creating a render for the toast.
+ * @param {ForegroundNotificationProps} props - the props for the foreground notification handler, includes the onDismiss
+ * @constructor
+ */
 function ForegroundNotification(props: ForegroundNotificationProps): React.JSX.Element {
 	let navigation: NavigationProp<any> = useNavigation();
 	const onDismiss = (): void => {
