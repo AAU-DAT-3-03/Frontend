@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import { Button, Checkbox, IconButton, MD3Theme, Modal, Portal, Searchbar, Text } from 'react-native-paper';
 import { getCurrentTheme } from '../themes/ThemeManager';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { IncidentCardHeader } from './incidentCard/IncidentCard';
 import Color from 'color';
 import { CompanyData, IncidentResponse } from '../utility/DataHandlerTypes';
 import DataHandler from '../utility/DataHandler';
 import Logger from '../utility/Logger';
 import { compareIncident, filterIncidentList } from '../utility/IncidentSort';
+import IncidentCardHeader from './incidentCard/IncidentCardHeader';
 
 interface MergeIncidentProps {
 	id: string;
