@@ -14,12 +14,11 @@ import {
 } from './DataHandlerTypes';
 import LocalStorage from './LocalStorage';
 import { IncidentState } from '../components/StatusIcon';
-import Logger from './Logger';
 import NotificationHandler from './NotificationHandler';
+import Logger from './Logger';
 
 const longDataCacheTime: number = 300000;
 const shortDataCacheTime: number = 5000;
-
 
 class DataHandler {
 	public static readonly ip: string = 'http://10.92.0.231/';
@@ -32,7 +31,7 @@ class DataHandler {
 	private static notificationRegistered: boolean = false;
 
 	/**
-	 * Registers a notification token.
+	 * Registers a notification token with the server.
 	 * @param {string | null} token - The notification token to register.
 	 * @returns {Promise<boolean>} A promise that resolves to a boolean indicating whether the registration was successful.
 	 */
@@ -42,7 +41,7 @@ class DataHandler {
 		let body: NotificationBody = {
 			registrationToken: token
 		};
-		let promise: Promise<boolean> = new Promise((resolve): void => {
+		return new Promise((resolve): void => {
 			// Post the notification to the server
 			networking.post(DataHandler.ip + 'notification', { body: body }, (value: void | [object, Response]): void => {
 				// If the server responds with a value
@@ -67,7 +66,6 @@ class DataHandler {
 				resolve(false);
 			});
 		});
-		return promise;
 	}
 
 	/**
@@ -82,6 +80,7 @@ class DataHandler {
 		if (setCookie === null) {
 			return undefined;
 		}
+
 		let cookiesSplit: string[] = setCookie?.split(';');
 		let cookies: Map<string, string> = new Map<string, string>();
 		for (let cookie of cookiesSplit) {
@@ -97,30 +96,15 @@ class DataHandler {
 	}
 
 	/**
-	 * Creates a map of incidents from a server response.
-	 * @param {Array} value - The server response to create the map from.
-	 * @returns {Promise<Map<string, IncidentResponse>>} A promise that creates a map of incidents.
-	 */
-	private static async createIncidentMap(value: [Object, Response]): Promise<Map<string, IncidentResponse>> {
-		let response: ServerResponse<IncidentResponse[]> = JSON.parse(JSON.stringify(value[0]));
-		let incidentMap: Map<string, IncidentResponse> = new Map<string, IncidentResponse>();
-
-		response.msg.forEach((value: IncidentResponse): void => {
-			incidentMap.set(value.id, value);
-		});
-		return incidentMap;
-	}
-
-	/**
 	 * Creates a map of incidents from an array of incidents.
-	 * @param {IncidentResponse[]} value - The array of incidents to create the map from.
+	 * @param {IncidentResponse[]} incidents - The array of incidents to create the map from.
 	 * @returns {Promise<Map<string, IncidentResponse>>} A promise that creates a map of incidents.
 	 */
-	private static async createIncidentMapFromArray(value: IncidentResponse[]): Promise<Map<string, IncidentResponse>> {
+	private static async createIncidentMapFromArray(incidents: IncidentResponse[]): Promise<Map<string, IncidentResponse>> {
 		let incidentMap: Map<string, IncidentResponse> = new Map<string, IncidentResponse>();
 
-		value.forEach((value: IncidentResponse): void => {
-			incidentMap.set(value.id, value);
+		incidents.forEach((incident: IncidentResponse): void => {
+			incidentMap.set(incident.id, incident);
 		});
 		return incidentMap;
 	}
@@ -155,6 +139,7 @@ class DataHandler {
 				}
 			);
 		});
+
 		// Create a new promise for fetching service data
 		let servicePromise: Promise<Map<string, ServicesResponse>> = new Promise(async (resolve): Promise<void> => {
 			resolve(await this.getServicesMap());
@@ -166,9 +151,10 @@ class DataHandler {
 				async (value: [IncidentResponse[], Map<string, ServicesResponse>]): Promise<void> => {
 					let incidents: IncidentResponse[] = value[0];
 					let services: Map<string, ServicesResponse> = value[1];
+
 					// For each incident, update the service name for each alarm
-					for (let i = incidents.length - 1; i >= 0; i--) {
-						for (let j = incidents[i].alarms.length - 1; j >= 0; j--) {
+					for (let i: number = incidents.length - 1; i >= 0; i--) {
+						for (let j: number = incidents[i].alarms.length - 1; j >= 0; j--) {
 							let serviceName: string = services.get(incidents[i].alarms[j].serviceId)?.name ?? '';
 							incidents[i].alarms[j].serviceName = serviceName;
 						}
@@ -196,13 +182,13 @@ class DataHandler {
 	}
 
 	/**
-	 * Gets resolved incident data.
+	 * Gets resolved incidents data in the given period.
 	 * @param {number} start - The start time for the data fetch.
 	 * @param {number} end - The end time for the data fetch.
-	 * @returns {Promise<IncidentResponse[]>} A promise that cteates an array of resolved incident data.
+	 * @returns {Promise<IncidentResponse[]>} A promise that creates an array of resolved incident data.
 	 */
 	public static async getResolvedIncidentsData(start: number, end: number): Promise<IncidentResponse[]> {
-		// Check if the data in resolvedIncidents is outdated or not present
+		// Check if the cached data in resolvedIncidents is outdated or not present
 		if (Date.now() - this.resolvedIncidents[0] > shortDataCacheTime || this.resolvedIncidents[1].size === 0) {
 			let incidents: Map<string, IncidentResponse> = await DataHandler.getAllIncidentsData(
 				`?resolved=true&start=${start}&end=${end}`
@@ -215,12 +201,12 @@ class DataHandler {
 	}
 
 	/**
-	 * Gets a single incident response.
-	 * @param {string} id - The ID of the incident to get the response for.
+	 * Gets a single incident.
+	 * @param {string} id - The ID of the incident to get the data for.
 	 * @returns {Promise<IncidentResponse | undefined>} A promise that gets the incident response, or undefined if no response was found.
 	 */
 	public static async getIncidentResponse(id: string): Promise<IncidentResponse | undefined> {
-		// Check if the data in activeIncidents is outdated or not present
+		// Check if the cached data in activeIncidents is outdated or not present
 		if (Date.now() - this.activeIncidents[0] > shortDataCacheTime || this.activeIncidents[1].size === 0) {
 			let data: IncidentResponse | undefined = this.activeIncidents[1].get(id);
 			if (data !== undefined) return data;
@@ -237,13 +223,13 @@ class DataHandler {
 	}
 
 	/**
-	 * Updates an incident response.
+	 * Updates an incident
 	 * @param {UpdateIncident} data - The data to update the incident with.
 	 * @returns {Promise<void>} A promise that resolves when the update is complete.
 	 */
 	public static async updateIncidentResponse(data: UpdateIncident): Promise<void> {
 		let networkHandler: Networking = new Networking();
-		
+
 		// Return a promise that resolves when the update is complete
 		return await new Promise((resolve): void => {
 			// Send a PUT request to the server with the update data
@@ -265,8 +251,8 @@ class DataHandler {
 	}
 
 	/**
-	 * Gets the incident response without updating it.
-	 * @returns {Map<string, IncidentResponse>} A map of the incident response.
+	 * Gets the incidents from cache without calling the server
+	 * @returns {Map<string, IncidentResponse>} A map of the incidents
 	 */
 	public static getIncidentResponseNoUpdate(): Map<string, IncidentResponse> {
 		return this.activeIncidents[1];
@@ -276,23 +262,23 @@ class DataHandler {
 	 * Gets alarm data for a given ID.
 	 * @param {string} id - The ID of the alarm to get the data for.
 	 */
-	public static async getAlarmData(id: string) {
+	public static async getAlarmData(id: string): Promise<void> {
 		let networkHandler: Networking = new Networking();
 		networkHandler.get(DataHandler.ip + `alarm?id=${id}`);
 	}
 
 	/**
-	 * Authenticates the user. -used for login
+	 * Get the user data from the authentication endpoint
 	 * @returns {Promise<boolean>} A promise that resolves to a boolean indicating whether the authentication was successful.
 	 */
 	public static async auth(): Promise<boolean> {
 		let networkHandler: Networking = new Networking();
-		return new Promise((resolve) => {
+		return new Promise((resolve): void => {
 			// Send a GET request to the 'auth' endpoint
 			networkHandler.get(DataHandler.ip + 'auth', undefined, (value: void | [object, Response]): void => {
 				if (value) {
 					let response: ServerResponse<AuthResponse> = JSON.parse(JSON.stringify(value[0]));
-					
+
 					// Store the user's details in local storage
 					LocalStorage.setSettingsValue('username', response.msg.name);
 					LocalStorage.setSettingsValue('phoneNr', response.msg.phoneNumber);
@@ -307,7 +293,7 @@ class DataHandler {
 	}
 
 	/**
-	 * Logs in a user.
+	 * Tries to log the user in
 	 * @param {string} email - The email of the user.
 	 * @param {string} password - The password of the user.
 	 * @returns {Promise<[boolean, object]>} A promise that resolves to a tuple containing a boolean indicating whether the login was successful and an object containing the server response.
@@ -332,19 +318,25 @@ class DataHandler {
 						let response: Response = value[1];
 						// Get the cookies from the response
 						let cookies: Map<string, string> | undefined = this.getCookiesMap(response);
+
+						// If no cookies are sent the login failed, as it should contain an authentication token
 						if (cookies === undefined) {
 							// Resolve the promise with a failure
 							resolve([false, value]);
 							return;
 						}
+
+						// Check if the authentication token was received
 						let token: string | undefined = cookies.get('authToken');
 						if (token === undefined) {
 							// Resolve the promise with a failure
 							resolve([false, value]);
 							return;
 						}
+						// Store the token in local storage, as to not require login later
 						LocalStorage.setSettingsValue('authKey', token);
-						// Authenticate the user
+
+						// Get user data from the authentication endpoint
 						await this.auth();
 						// Resolve the promise with a success
 						resolve([true, value]);
@@ -379,20 +371,27 @@ class DataHandler {
 	 * @returns {Promise<UserResponse[]>} A promise that maps an array of users.
 	 */
 	public static async getUsers(): Promise<UserResponse[]> {
-		// Check if the user data is still valid and return it if it is
-		if (Date.now() - this.users[0] < longDataCacheTime && this.users[1].size > 0) return Array.from(this.users[1].values());
+		// Check if the cached user data is still valid and not stale, return it if it is
+		if (Date.now() - this.users[0] < longDataCacheTime && this.users[1].size > 0) {
+			return Array.from(this.users[1].values());
+		}
+
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
 			// Fetch the user data from the server
 			networkHandler.get(DataHandler.ip + 'users?id=*', undefined, (value: void | [object, Response]): void => {
 				if (value) {
 					this.logger.info('Loaded user data');
+
+					// Parse the data
 					let users: ServerResponse<UserResponse[]> = JSON.parse(JSON.stringify(value[0]));
-					let usersMap: Map<string, UserResponse> = new Map<string, UserResponse>();
+
 					// Map the user data
-					users.msg.forEach((value: UserResponse): void => {
-						usersMap.set(value.id, value);
+					let usersMap: Map<string, UserResponse> = new Map<string, UserResponse>();
+					users.msg.forEach((user: UserResponse): void => {
+						usersMap.set(user.id, user);
 					});
+
 					this.users = [Date.now(), usersMap];
 					resolve(users.msg);
 					return;
@@ -416,25 +415,33 @@ class DataHandler {
 	 * @returns {Promise<ServicesResponse[]>} A promise that resolves to an array of services data.
 	 */
 	private static async getServicesData(): Promise<ServicesResponse[]> {
-		// Check if the services data is still valid and return it if it is
-		if (Date.now() - this.services[0] < longDataCacheTime && this.services[1].size > 0) return Array.from(this.services[1].values());
+		// Check if the cached services data is still valid and not stale, return it if it is
+		if (Date.now() - this.services[0] < longDataCacheTime && this.services[1].size > 0) {
+			return Array.from(this.services[1].values());
+		}
+
 		let networkHandler: Networking = new Networking();
 		return new Promise((resolve) => {
 			// Fetch the services data from the server
 			networkHandler.get(DataHandler.ip + 'services?id=*', undefined, (value: void | [object, Response]): void => {
 				if (value) {
 					this.logger.info('Loaded user data');
+
+					// Parse the data
 					let services: ServerResponse<ServicesResponse[]> = JSON.parse(JSON.stringify(value[0]));
-					let servicesMap: Map<string, ServicesResponse> = new Map<string, ServicesResponse>();
+
 					// Map the services data
-					services.msg.forEach((value: ServicesResponse): void => {
-						servicesMap.set(value.id, value);
+					let servicesMap: Map<string, ServicesResponse> = new Map<string, ServicesResponse>();
+					services.msg.forEach((service: ServicesResponse): void => {
+						servicesMap.set(service.id, service);
 					});
+
 					// Update the services data and its timestamp
 					this.services = [Date.now(), servicesMap];
 					resolve(services.msg);
 					return;
 				}
+
 				// If no services data was found, resolve with an empty array
 				resolve([]);
 			});
@@ -487,17 +494,19 @@ class DataHandler {
 	 * @returns {Promise<CompanyData[]>} A promise that creates an array of companies.
 	 */
 	public static async getCompanies(): Promise<CompanyData[]> {
-		// Check if the companies data is still calid
+		// Check if the companies data is still valid
 		if (Date.now() - this.companies[0] < shortDataCacheTime && this.companies[1].size > 0)
 			return Array.from(this.companies[1].values());
 
 		let companies: CompanyResponse[] = [];
 		let incidentData: IncidentResponse[] = [];
+
 		// Fetch the company and incident data in parallel
 		let companiesPromise: Promise<void> = new Promise(async (resolve): Promise<void> => {
 			companies = await this.getCompanyData();
 			resolve();
 		});
+
 		let incidentDataPromise: Promise<void> = new Promise(async (resolve): Promise<void> => {
 			incidentData = await this.getIncidentsData();
 			resolve();
@@ -508,6 +517,7 @@ class DataHandler {
 		// If no companies were found, return an empty array
 		if (companies.length === 0) return [];
 		let companiesData: Map<string, CompanyData> = new Map<string, CompanyData>();
+
 		// Process each company
 		for (let i = 0; i < companies.length; i++) {
 			let priority: number = 5;
@@ -515,13 +525,16 @@ class DataHandler {
 			let secondaryState: IncidentState = 'none';
 			let stateFound: boolean = false;
 			let incidentReferences: string[] = [];
+
 			// Process each incident
 			for (let incidentsKey in incidentData) {
 				let incident: IncidentResponse = incidentData[incidentsKey];
 
 				// Skip incidents that don't belong to the current company
 				if (incident.companyPublic.id !== companies[i].id) continue;
+
 				incidentReferences.push(incident.id);
+
 				// Update the company's priority if the incident's priority is higher
 				if (priority > incident.priority) priority = incident.priority;
 				if (stateFound) continue;
@@ -549,6 +562,7 @@ class DataHandler {
 				if (incidentAcknowledged) state = 'acknowledged';
 				if (incidentResolved && !incidentAcknowledged) state = 'resolved';
 			}
+
 			// Add the processed company to the companies data
 			companiesData.set(companies[i].id, {
 				id: companies[i].id,
@@ -559,6 +573,7 @@ class DataHandler {
 				incidentReferences: incidentReferences
 			});
 		}
+
 		// Update the companies data and its timestamp
 		this.companies = [Date.now(), companiesData];
 		return Array.from(companiesData.values());
