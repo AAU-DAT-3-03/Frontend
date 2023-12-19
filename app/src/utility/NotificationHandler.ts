@@ -22,7 +22,6 @@ class NotificationHandler {
 
 	/**
 	 * Initializes all required for receiving notifications
-	 * @private
 	 */
 	private async init(): Promise<void> {
 		if (NotificationHandler.registered) return;
@@ -114,7 +113,6 @@ class NotificationHandler {
 
 	/**
 	 * Returns a notification if the app was launched by a notification
-	 * @public
 	 * @return {Notification | undefined}
 	 */
 	public async openedByNotification(): Promise<Notification | undefined> {
